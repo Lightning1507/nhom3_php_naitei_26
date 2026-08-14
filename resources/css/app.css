@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -7,6 +8,114 @@
 @source '../**/*.jsx';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-inter: 'Inter', sans-serif;
+    --font-georgia: 'Georgia', serif;
+    --font-consolas: 'Consolas', monospace;
+
+    /* Base Colors Extracted exactly from Figma */
+    --color-primary: #0052CC;
+    --color-primary-hover: #0043A6;
+    --color-secondary: #E5E7EB;
+    --color-secondary-hover: #D1D5DB;
+    --color-secondary-text: #374151;
+    --color-danger: #DC2626;
+    --color-danger-hover: #B91C1C;
+    --color-success: #059669;
+    --color-surface: #F9FAFB;
+    --color-border: #E5E7EB;
+}
+
+@layer components {
+    /* Button Variants */
+    .btn-primary {
+        @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-white hover:bg-primary-hover focus:ring-primary shadow-sm;
+    }
+    
+    .btn-secondary {
+        @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-[#F3F4F6] text-[#374151] hover:bg-[#E5E7EB] focus:ring-gray-300;
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-danger text-white hover:bg-danger-hover focus:ring-danger shadow-sm;
+    }
+
+    .btn-success {
+        @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-success text-white hover:opacity-90 focus:ring-success shadow-sm;
+    }
+
+    .btn-outline {
+        @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border border-border text-gray-700 hover:bg-surface hover:text-gray-900 focus:ring-primary;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-transparent text-primary hover:bg-blue-50 focus:ring-primary;
+    }
+
+    /* Form Inputs */
+    .input-field {
+        @apply border border-border bg-white rounded-2xl px-6 py-4 font-inter text-lg w-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder-gray-400;
+    }
+    
+    .input-error {
+        @apply border-danger focus:ring-danger text-danger;
+    }
+
+    .label {
+        @apply block text-sm font-bold text-gray-700 mb-2 font-inter uppercase tracking-wide;
+    }
+
+    /* Capsules / Badges */
+    .capsule-sm {
+        @apply inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold font-inter;
+    }
+    
+    .capsule-lg {
+        @apply inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold font-inter gap-2 border;
+    }
+
+    /* Small Capsule Colors (No border) */
+    .capsule-sm.c-danger { @apply bg-[#FEF2F2] text-[#DC2626]; }
+    .capsule-sm.c-success { @apply bg-[#F0FDF4] text-[#16A34A]; }
+    .capsule-sm.c-warning { @apply bg-[#FEFCE8] text-[#CA8A04]; }
+    .capsule-sm.c-info { @apply bg-[#EFF6FF] text-[#2563EB]; }
+    .capsule-sm.c-neutral { @apply bg-[#F3F4F6] text-[#4B5563]; }
+
+    /* Large Status Capsule Colors (With border) */
+    .capsule-lg.c-danger { @apply bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]; }
+    .capsule-lg.c-success { @apply bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]; }
+    .capsule-lg.c-warning { @apply bg-[#FEFCE8] text-[#CA8A04] border-[#FEF08A]; }
+    .capsule-lg.c-info { @apply bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]; }
+    .capsule-lg.c-neutral { @apply bg-[#F9FAFB] text-[#4B5563] border-[#E5E7EB]; }
+
+    /* Layout & Boxes */
+    .card-container {
+        @apply bg-white shadow-md rounded-3xl p-8 border border-border;
+    }
+
+    .page-header {
+        @apply text-3xl font-bold font-inter text-gray-900 mb-6;
+    }
+
+    /* Checkbox */
+    .checkbox-field {
+        @apply w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2 transition-colors cursor-pointer;
+    }
+
+    /* Tables */
+    .table-container {
+        @apply w-full border-collapse bg-white rounded-2xl overflow-hidden;
+    }
+    
+    .table-header {
+        @apply bg-surface text-left text-sm font-semibold text-secondary uppercase tracking-wider py-4 px-6 border-b border-border;
+    }
+
+    .table-row {
+        @apply hover:bg-gray-50 transition-colors border-b border-border last:border-b-0;
+    }
+
+    .table-cell {
+        @apply py-4 px-6 text-sm text-gray-900 font-inter;
+    }
 }
