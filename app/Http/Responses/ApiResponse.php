@@ -17,4 +17,19 @@ final class ApiResponse
             'data' => $data,
         ], $status);
     }
+
+    /**
+     * @param  array<string, mixed>|null  $errors
+     */
+    public static function error(
+        string $message,
+        ?array $errors = null,
+        int $status = 400,
+    ): JsonResponse {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors,
+        ], $status);
+    }
 }

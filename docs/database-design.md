@@ -1,89 +1,149 @@
-# Database Design
+# Thiết kế cơ sở dữ liệu
 
-## Scope and conventions
+## Phạm vi và quy ước
 
-This schema is the shared database foundation for the Public Service Management System. It contains domain data structures, relationships, constraints, and Laravel infrastructure tables only. Controllers, workflow behavior, file upload behavior, notifications, and activity logging automation belong to later Spec-Kit features.
+Lược đồ này là nền tảng cơ sở dữ liệu dùng chung cho Hệ thống Quản lý Dịch vụ
+Công. Tài liệu chỉ bao gồm cấu trúc dữ liệu nghiệp vụ, các mối quan hệ, ràng buộc
+và những bảng hạ tầng của Laravel. Controller, quy trình xử lý, chức năng tải tệp,
+thông báo và cơ chế tự động ghi nhật ký hoạt động sẽ được triển khai trong các
+feature Spec-Kit sau.
 
-Migrations use Laravel Schema Builder with PostgreSQL/Supabase as the only supported database. Fixed values are stored in `VARCHAR` columns and cast to PHP backed enums instead of PostgreSQL enum types. Primary keys follow Laravel's `BIGINT` convention.
+Migration sử dụng Laravel Schema Builder và chỉ hỗ trợ PostgreSQL/Supabase. Các
+giá trị cố định được lưu trong cột `VARCHAR` và được cast sang PHP backed enum
+thay vì sử dụng kiểu enum riêng của PostgreSQL. Khóa chính tuân theo quy ước
+`BIGINT` của Laravel.
 
-`Application` is the core entity because it connects the citizen, selected service, submitted values, uploaded document metadata, current processing state, assignment history, and status timeline.
+`Application` là thực thể trung tâm vì nó liên kết công dân, dịch vụ được chọn,
+dữ liệu đã khai báo, metadata của tài liệu đã tải lên, trạng thái xử lý hiện tại,
+lịch sử phân công và dòng thời gian thay đổi trạng thái.
 
-## Domain tables
+## Các bảng nghiệp vụ
 
 ### `users`
 
-Stores citizens and internal users. `email` and the optional business identifier `citizen_id` are unique. The `role` column is cast to `UserRole`. Profile and notification preference columns are shared here to keep the initial design simple. `is_active` disables access without deleting the account, while soft deletion preserves references from public-service records.
+Lưu công dân và người dùng nội bộ. `email` và mã định danh nghiệp vụ không bắt
+buộc `citizen_id` là duy nhất. Cột `role` được cast sang `UserRole`. Thông tin hồ
+sơ và tùy chọn nhận thông báo được đặt chung trong bảng này để giữ cho thiết kế
+ban đầu đơn giản. `is_active` cho phép vô hiệu hóa quyền truy cập mà không xóa tài
+khoản, trong khi soft delete giúp bảo toàn các tham chiếu từ hồ sơ dịch vụ công.
 
-Note that `users.citizen_id` is a public identity value, while `applications.citizen_id` is a numeric foreign key to `users.id`.
+Cần phân biệt: `users.citizen_id` là mã định danh công dân, còn
+`applications.citizen_id` là khóa ngoại dạng số tham chiếu đến `users.id`.
 
-### `departments` and `department_user`
+### `departments` và `department_user`
 
-`departments` stores internal organizational units. `code` is unique and `leader_id` optionally references a manager in `users`. `department_user` is the timestamped many-to-many membership table and enforces uniqueness on `(department_id, user_id)`.
+`departments` lưu các đơn vị tổ chức nội bộ. `code` là duy nhất và `leader_id` có
+thể tham chiếu đến một manager trong `users`. `department_user` là bảng trung
+gian many-to-many có timestamps, đồng thời bảo đảm cặp
+`(department_id, user_id)` là duy nhất.
 
 ### `service_categories`
 
-Groups public services into stable categories. `code` is a unique machine-readable identifier. A category has many service types.
+Nhóm các dịch vụ công thành những danh mục ổn định. `code` là mã định danh duy
+nhất, dùng được cho máy đọc. Một danh mục có nhiều loại dịch vụ.
 
-### `service_types` and `service_staff`
+### `service_types` và `service_staff`
 
-`service_types` defines a public service and references its category and responsible department. `code` is unique. `service_staff` identifies eligible staff members and enforces uniqueness on `(service_type_id, staff_id)`.
+`service_types` định nghĩa một dịch vụ công và tham chiếu đến danh mục cùng phòng
+ban chịu trách nhiệm. `code` là duy nhất. `service_staff` xác định các nhân viên
+đủ điều kiện xử lý dịch vụ và bảo đảm cặp `(service_type_id, staff_id)` là duy
+nhất.
 
-`form_schema` and `document_requirements` are JSON because fields and required document sets vary by service. Stable searchable attributes such as name, fee, processing time, category, and department remain relational columns.
+`form_schema` và `document_requirements` sử dụng JSON vì trường biểu mẫu và tập
+tài liệu bắt buộc thay đổi theo từng dịch vụ. Các thuộc tính ổn định cần tìm kiếm
+như tên, lệ phí, thời gian xử lý, danh mục và phòng ban vẫn được lưu trong các cột
+quan hệ.
 
 ### `applications`
 
-Stores the current snapshot of a citizen's submitted application. `application_code` is a unique public identifier; generation is intentionally deferred. Foreign keys connect the citizen, service type, and optional current assigned staff member. `status` is cast to `ApplicationStatus`, while `form_data` contains values corresponding to the selected service's dynamic `form_schema`.
+Lưu ảnh chụp trạng thái hiện tại của hồ sơ do công dân gửi. `application_code` là
+mã hồ sơ công khai và duy nhất; cơ chế sinh mã sẽ được triển khai sau. Các khóa
+ngoại liên kết công dân, loại dịch vụ và nhân viên đang được phân công nếu có.
+`status` được cast sang `ApplicationStatus`, còn `form_data` chứa các giá trị
+tương ứng với `form_schema` động của dịch vụ đã chọn.
 
-Indexes support lookup by public code, citizen, service type, current assignee, status, submission time, citizen timeline, and service work queue.
+Các index hỗ trợ tra cứu theo mã hồ sơ công khai, công dân, loại dịch vụ, nhân
+viên đang xử lý, trạng thái, thời điểm nộp, dòng thời gian của công dân và hàng đợi
+xử lý theo dịch vụ.
 
 ### `application_documents`
 
-Stores document metadata only. Binary files remain on a Laravel filesystem disk. Each record references its application and uploader. `document_kind` is cast to `DocumentKind`. Soft deletion allows a document to be withdrawn without erasing its audit trail.
+Chỉ lưu metadata của tài liệu. Tệp nhị phân được lưu trên Laravel filesystem
+disk. Mỗi bản ghi tham chiếu đến hồ sơ và người tải lên. `document_kind` được cast
+sang `DocumentKind`. Soft delete cho phép thu hồi tài liệu mà không xóa dấu vết
+kiểm toán.
 
 ### `application_assignments`
 
-Append-oriented assignment history. Each record identifies the application, assigned staff member, optional department, assigning user, assignment time, optional end time, and note.
+Lưu lịch sử phân công theo hướng chỉ bổ sung bản ghi mới. Mỗi bản ghi xác định hồ
+sơ, nhân viên được phân công, phòng ban nếu có, người thực hiện phân công, thời
+điểm phân công, thời điểm kết thúc nếu có và ghi chú.
 
-`applications.assigned_staff_id` is intentionally retained for fast access to the current assignee. `application_assignments` preserves every assignment period for audit and reporting.
+`applications.assigned_staff_id` được giữ lại có chủ đích để truy xuất nhanh
+người đang xử lý. `application_assignments` lưu toàn bộ các giai đoạn phân công
+phục vụ kiểm toán và báo cáo.
 
 ### `application_status_histories`
 
-Append-only status timeline. `from_status` is nullable for the first event; `to_status` is required. Both values use `ApplicationStatus` casts. Only `created_at` is present because history rows should not be updated.
+Dòng thời gian trạng thái chỉ cho phép bổ sung. `from_status` có thể null đối với
+sự kiện đầu tiên; `to_status` là bắt buộc. Cả hai giá trị dùng cast
+`ApplicationStatus`. Bảng chỉ có `created_at` vì các bản ghi lịch sử không nên bị
+cập nhật.
 
-`applications.status` is intentionally retained for efficient current-state queries. `application_status_histories` explains how and by whom the current state was reached.
+`applications.status` được giữ lại có chủ đích để truy vấn trạng thái hiện tại
+hiệu quả. `application_status_histories` giải thích trạng thái hiện tại được hình
+thành như thế nào và do ai thay đổi.
 
 ### `activity_logs`
 
-Generic audit records with an optional actor and polymorphic-style `(subject_type, subject_id)` reference. `metadata` stores context whose shape depends on the action. No automatic logging is implemented in this foundation.
+Lưu nhật ký kiểm toán tổng quát với người thực hiện không bắt buộc và tham chiếu
+dạng polymorphic `(subject_type, subject_id)`. `metadata` lưu ngữ cảnh có cấu
+trúc phụ thuộc vào từng hành động. Nền tảng hiện tại chưa triển khai cơ chế ghi
+nhật ký tự động.
 
-### Laravel infrastructure tables
+### Các bảng hạ tầng Laravel
 
-- `password_reset_tokens` and `sessions` support Laravel session authentication.
-- `personal_access_tokens` supports Sanctum API authentication.
-- `notifications` uses Laravel's standard database notification schema.
-- `cache` and `cache_locks` support the database cache store.
-- `jobs`, `job_batches`, and `failed_jobs` support the database queue.
+- `password_reset_tokens` và `sessions` hỗ trợ xác thực bằng Laravel session.
+- `personal_access_tokens` hỗ trợ xác thực API bằng Sanctum.
+- `notifications` sử dụng lược đồ database notification tiêu chuẩn của Laravel.
+- `cache` và `cache_locks` hỗ trợ database cache store.
+- `jobs`, `job_batches` và `failed_jobs` hỗ trợ database queue.
 
-## Main constraints and indexes
+## Các ràng buộc và index chính
 
-- Unique: user email, optional user citizen identifier, department code, category code, service code, and application code.
-- Pivot uniqueness: `(department_id, user_id)` and `(service_type_id, staff_id)`.
-- Application indexes: citizen, service type, assigned staff, status, submitted time, `(citizen_id, submitted_at)`, and `(status, service_type_id)`.
-- History indexes: `(application_id, assigned_at)` and `(application_id, created_at)`.
-- Activity indexes: actor, action, creation time, and `(subject_type, subject_id)`.
-- Foreign keys enforce valid references without encoding role-specific business authorization in the database.
+- Giá trị duy nhất: email người dùng, mã công dân không bắt buộc, mã phòng ban,
+  mã danh mục, mã dịch vụ và mã hồ sơ.
+- Tính duy nhất của bảng trung gian: `(department_id, user_id)` và
+  `(service_type_id, staff_id)`.
+- Index của hồ sơ: công dân, loại dịch vụ, nhân viên được phân công, trạng thái,
+  thời điểm nộp, `(citizen_id, submitted_at)` và `(status, service_type_id)`.
+- Index lịch sử: `(application_id, assigned_at)` và
+  `(application_id, created_at)`.
+- Index nhật ký hoạt động: người thực hiện, hành động, thời điểm tạo và
+  `(subject_type, subject_id)`.
+- Khóa ngoại bảo đảm các tham chiếu hợp lệ nhưng không mã hóa quy tắc phân quyền
+  theo vai trò nghiệp vụ ngay trong cơ sở dữ liệu.
 
-## Delete strategy
+## Chiến lược xóa dữ liệu
 
-- Soft deletes: `users`, `departments`, `service_types`, `applications`, and `application_documents`.
-- Pivot rows cascade when a linked department, user, or service type is physically deleted.
-- Current optional references such as department leader, assigned staff, assignment department, and activity actor become `NULL` on physical deletion where preserving the surrounding record is more important than retaining the optional link.
-- Core application, document, assignment, and status-history references use restricted physical deletion. Historical public-service records must not disappear because a user, department, or service is removed.
-- Service categories are protected from physical deletion while referenced by a service type.
+- Soft delete: `users`, `departments`, `service_types`, `applications` và
+  `application_documents`.
+- Bản ghi bảng trung gian được xóa cascade khi phòng ban, người dùng hoặc loại
+  dịch vụ liên kết bị xóa vật lý.
+- Các tham chiếu hiện tại không bắt buộc như trưởng phòng, nhân viên được phân
+  công, phòng ban phân công và người thực hiện hoạt động sẽ chuyển thành `NULL`
+  khi bản ghi liên quan bị xóa vật lý, trong trường hợp việc giữ bản ghi xung
+  quanh quan trọng hơn giữ liên kết không bắt buộc.
+- Các tham chiếu cốt lõi của hồ sơ, tài liệu, phân công và lịch sử trạng thái hạn
+  chế xóa vật lý. Dữ liệu lịch sử dịch vụ công không được biến mất chỉ vì người
+  dùng, phòng ban hoặc dịch vụ bị xóa.
+- Danh mục dịch vụ không thể bị xóa vật lý khi vẫn còn loại dịch vụ tham chiếu.
 
-Normal application behavior should prefer deactivation or soft deletion. Physical deletion is an exceptional administrative/database maintenance operation.
+Hoạt động thông thường của ứng dụng nên ưu tiên vô hiệu hóa hoặc soft delete. Xóa
+vật lý chỉ là thao tác quản trị hoặc bảo trì cơ sở dữ liệu trong trường hợp đặc
+biệt.
 
-## Backed enums
+## Backed enum
 
 ### `UserRole`
 
@@ -106,13 +166,18 @@ Normal application behavior should prefer deactivation or soft deletion. Physica
 - `supplement`
 - `result`
 
-The database uses strings so migrations remain portable and future enum changes do not require database-specific enum alterations.
+Cơ sở dữ liệu lưu các giá trị dưới dạng chuỗi để migration có tính di động và
+việc thay đổi enum trong tương lai không yêu cầu chỉnh sửa kiểu enum đặc thù của
+cơ sở dữ liệu.
 
-## Development seed data
+## Dữ liệu seed cho môi trường phát triển
 
-`DatabaseSeeder` creates one super admin, one manager, two staff members, two citizens, three departments, five categories, and five service types. No applications are seeded. Development accounts use the obvious password `password` and `.test` email addresses; they must never be used as production credentials.
+`DatabaseSeeder` tạo một super admin, một manager, hai staff, hai citizen, ba
+phòng ban, năm danh mục và năm loại dịch vụ. Không tạo dữ liệu hồ sơ. Các tài
+khoản phát triển sử dụng mật khẩu dễ nhận biết `password` và địa chỉ email có
+đuôi `.test`; tuyệt đối không sử dụng chúng làm thông tin đăng nhập production.
 
-## Entity relationship diagram
+## Sơ đồ quan hệ thực thể
 
 ```mermaid
 erDiagram
@@ -203,24 +268,24 @@ erDiagram
         timestamp read_at
     }
 
-    USERS o|--o{ DEPARTMENTS : leads
-    USERS ||--o{ DEPARTMENT_USER : belongs_to
-    DEPARTMENTS ||--o{ DEPARTMENT_USER : includes
-    SERVICE_CATEGORIES ||--o{ SERVICE_TYPES : groups
-    DEPARTMENTS ||--o{ SERVICE_TYPES : owns
-    USERS ||--o{ SERVICE_STAFF : eligible_staff
-    SERVICE_TYPES ||--o{ SERVICE_STAFF : has_staff
-    USERS ||--o{ APPLICATIONS : submits
-    USERS o|--o{ APPLICATIONS : currently_assigned
-    SERVICE_TYPES ||--o{ APPLICATIONS : receives
-    APPLICATIONS ||--o{ APPLICATION_DOCUMENTS : contains
-    USERS ||--o{ APPLICATION_DOCUMENTS : uploads
-    APPLICATIONS ||--o{ APPLICATION_ASSIGNMENTS : assignment_history
-    USERS ||--o{ APPLICATION_ASSIGNMENTS : assigned_staff
-    USERS ||--o{ APPLICATION_ASSIGNMENTS : assigned_by
-    DEPARTMENTS o|--o{ APPLICATION_ASSIGNMENTS : assignment_department
-    APPLICATIONS ||--o{ APPLICATION_STATUS_HISTORIES : status_timeline
-    USERS ||--o{ APPLICATION_STATUS_HISTORIES : changed_by
-    USERS o|--o{ ACTIVITY_LOGS : acts
-    USERS ||--o{ NOTIFICATIONS : receives
+    USERS o|--o{ DEPARTMENTS : quan_ly
+    USERS ||--o{ DEPARTMENT_USER : tham_gia
+    DEPARTMENTS ||--o{ DEPARTMENT_USER : bao_gom
+    SERVICE_CATEGORIES ||--o{ SERVICE_TYPES : phan_nhom
+    DEPARTMENTS ||--o{ SERVICE_TYPES : phu_trach
+    USERS ||--o{ SERVICE_STAFF : nhan_vien_phu_hop
+    SERVICE_TYPES ||--o{ SERVICE_STAFF : co_nhan_vien
+    USERS ||--o{ APPLICATIONS : nop
+    USERS o|--o{ APPLICATIONS : dang_duoc_phan_cong
+    SERVICE_TYPES ||--o{ APPLICATIONS : tiep_nhan
+    APPLICATIONS ||--o{ APPLICATION_DOCUMENTS : chua
+    USERS ||--o{ APPLICATION_DOCUMENTS : tai_len
+    APPLICATIONS ||--o{ APPLICATION_ASSIGNMENTS : lich_su_phan_cong
+    USERS ||--o{ APPLICATION_ASSIGNMENTS : nhan_vien_duoc_giao
+    USERS ||--o{ APPLICATION_ASSIGNMENTS : nguoi_phan_cong
+    DEPARTMENTS o|--o{ APPLICATION_ASSIGNMENTS : phong_ban_phan_cong
+    APPLICATIONS ||--o{ APPLICATION_STATUS_HISTORIES : lich_su_trang_thai
+    USERS ||--o{ APPLICATION_STATUS_HISTORIES : nguoi_thay_doi
+    USERS o|--o{ ACTIVITY_LOGS : thuc_hien
+    USERS ||--o{ NOTIFICATIONS : nhan
 ```
