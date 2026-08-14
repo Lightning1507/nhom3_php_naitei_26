@@ -33,4 +33,8 @@ Quy ước tạo ticket, estimate time và liên kết Pull Request với Redmin
 4. Init models, add relationship
 5. Design static pages
 6. Other pulls
+
+## Technical architecture
+
+See `docs/technology-stack.md` for the current technology stack and architecture.
 # nhom3_php_naitei_26
