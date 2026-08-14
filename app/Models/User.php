@@ -33,6 +33,40 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    public function isCitizen(): bool
+    {
+        return $this->role === UserRole::Citizen;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === UserRole::Staff;
+    }
+
+    public function isManager(): bool
+    {
+        return $this->role === UserRole::Manager;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === UserRole::SuperAdmin;
+    }
+
+    public function isInternalUser(): bool
+    {
+        return in_array($this->role, [
+            UserRole::Staff,
+            UserRole::Manager,
+            UserRole::SuperAdmin,
+        ], true);
+    }
+
+    public function canAccessProtectedResources(): bool
+    {
+        return $this->is_active && ! $this->trashed();
+    }
+
     public function submittedApplications(): HasMany
     {
         return $this->hasMany(Application::class, 'citizen_id');
