@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'citizen.app')->name('citizen.app');
 
+Route::view('/ui-showcase', 'ui-showcase')->name('ui-showcase');
+
 Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
 });
