@@ -53,15 +53,6 @@ class User extends Authenticatable
         return $this->role === UserRole::SuperAdmin;
     }
 
-    public function isInternalUser(): bool
-    {
-        return in_array($this->role, [
-            UserRole::Staff,
-            UserRole::Manager,
-            UserRole::SuperAdmin,
-        ], true);
-    }
-
     public function canAccessProtectedResources(): bool
     {
         return $this->is_active && ! $this->trashed();
