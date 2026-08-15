@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { getApiError, registerCitizen } from '../api/auth';
+import { getApiError, getRememberedCitizen, registerCitizen } from '../api/auth';
 import { BrandMark } from '../components/AuthShell';
 import FormField, { FieldError } from '../components/FormField';
 
@@ -22,6 +22,12 @@ export default function RegisterPage() {
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (getRememberedCitizen()) {
+            navigate('/profile', { replace: true });
+        }
+    }, [navigate]);
 
     function updateField(event) {
         setForm((current) => ({
@@ -80,104 +86,101 @@ export default function RegisterPage() {
                     </aside>
 
                     <form className="card-container rounded-lg p-5 shadow-sm sm:p-6" noValidate onSubmit={submitForm}>
-                    <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
-                        <FormField
-                            autoComplete="name"
-                            errors={errors.name}
-                            label="Họ và tên"
-                            name="name"
-                            onChange={updateField}
-                            value={form.name}
-                        />
-                        <FormField
-                            autoComplete="email"
-                            errors={errors.email}
-                            label="Email"
-                            name="email"
-                            onChange={updateField}
-                            type="email"
-                            value={form.email}
-                        />
-                        <FormField
-                            errors={errors.citizen_id}
-                            helpText="CCCD gồm 12 chữ số và không thể thay đổi sau khi đăng ký."
-                            label="Số CCCD"
-                            name="citizen_id"
-                            onChange={updateField}
-                            value={form.citizen_id}
-                        />
-                        <FormField
-                            errors={errors.date_of_birth}
-                            label="Ngày sinh"
-                            name="date_of_birth"
-                            onChange={updateField}
-                            type="date"
-                            value={form.date_of_birth}
-                        />
-                        <FormField
-                            autoComplete="tel"
-                            errors={errors.phone}
-                            label="Số điện thoại"
-                            name="phone"
-                            onChange={updateField}
-                            value={form.phone}
-                        />
-                        <FormField
-                            autoComplete="new-password"
-                            errors={errors.password}
-                            helpText="Mật khẩu tối thiểu 8 ký tự."
-                            label="Mật khẩu"
-                            name="password"
-                            onChange={updateField}
-                            type="password"
-                            value={form.password}
-                        />
-                        <FormField
-                            autoComplete="new-password"
-                            errors={errors.password_confirmation}
-                            label="Xác nhận mật khẩu"
-                            name="password_confirmation"
-                            onChange={updateField}
-                            type="password"
-                            value={form.password_confirmation}
-                        />
-                        <div className="md:col-span-2">
-                            <label className="label mb-1.5 normal-case tracking-normal" htmlFor="address">
-                                Địa chỉ
-                            </label>
-                            <textarea
-                                className={`input-field min-h-20 resize-y rounded-lg px-3.5 py-2.5 text-sm ${
-                                    errors.address ? 'input-error' : ''
-                                }`}
-                                id="address"
-                                name="address"
+                        <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+                            <FormField
+                                autoComplete="name"
+                                errors={errors.name}
+                                label="Họ và tên"
+                                name="name"
                                 onChange={updateField}
-                                value={form.address}
+                                value={form.name}
                             />
-                            <FieldError errors={errors.address} />
+                            <FormField
+                                autoComplete="email"
+                                errors={errors.email}
+                                label="Email"
+                                name="email"
+                                onChange={updateField}
+                                type="email"
+                                value={form.email}
+                            />
+                            <FormField
+                                errors={errors.citizen_id}
+                                helpText="CCCD gồm 12 chữ số và không thể thay đổi sau khi đăng ký."
+                                label="Số CCCD"
+                                name="citizen_id"
+                                onChange={updateField}
+                                value={form.citizen_id}
+                            />
+                            <FormField
+                                errors={errors.date_of_birth}
+                                label="Ngày sinh"
+                                name="date_of_birth"
+                                onChange={updateField}
+                                type="date"
+                                value={form.date_of_birth}
+                            />
+                            <FormField
+                                autoComplete="tel"
+                                errors={errors.phone}
+                                label="Số điện thoại"
+                                name="phone"
+                                onChange={updateField}
+                                value={form.phone}
+                            />
+                            <FormField
+                                autoComplete="new-password"
+                                errors={errors.password}
+                                helpText="Mật khẩu tối thiểu 8 ký tự."
+                                label="Mật khẩu"
+                                name="password"
+                                onChange={updateField}
+                                type="password"
+                                value={form.password}
+                            />
+                            <FormField
+                                autoComplete="new-password"
+                                errors={errors.password_confirmation}
+                                label="Xác nhận mật khẩu"
+                                name="password_confirmation"
+                                onChange={updateField}
+                                type="password"
+                                value={form.password_confirmation}
+                            />
+                            <div className="md:col-span-2">
+                                <label className="label mb-1.5 normal-case tracking-normal" htmlFor="address">
+                                    Địa chỉ
+                                </label>
+                                <textarea
+                                    className={`input-field min-h-20 resize-y rounded-lg px-3.5 py-2.5 text-sm ${
+                                        errors.address ? 'input-error' : ''
+                                    }`}
+                                    id="address"
+                                    name="address"
+                                    onChange={updateField}
+                                    value={form.address}
+                                />
+                                <FieldError errors={errors.address} />
+                            </div>
                         </div>
-                    </div>
 
-                    {message && (
-                        <p className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-danger">
-                            {message}
-                        </p>
-                    )}
+                        {message && (
+                            <p className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-danger">
+                                {message}
+                            </p>
+                        )}
 
-                    <div className="mt-6 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-center text-sm text-gray-600 sm:text-left">
-                            Đã có tài khoản?{' '}
-                            <Link className="font-semibold text-primary hover:text-primary-hover" to="/login">
-                                Đăng nhập
-                            </Link>
-                        </p>
-                        <button
-                            className="btn-primary rounded-full px-8 py-3 text-base"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? 'Đang tạo tài khoản...' : 'Đăng ký'}
-                        </button>
-                    </div>
+                        <div className="mt-6 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-center text-sm text-gray-600 sm:text-left">
+                                Đã có tài khoản?{' '}
+                                <Link className="font-semibold text-primary hover:text-primary-hover" to="/login">
+                                    Đăng nhập
+                                </Link>
+                            </p>
+                            <button className="btn-primary rounded-full px-8 py-3 text-base" disabled={isSubmitting}>
+                                {isSubmitting ? 'Đang tạo tài khoản...' : 'Đăng ký'}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </section>

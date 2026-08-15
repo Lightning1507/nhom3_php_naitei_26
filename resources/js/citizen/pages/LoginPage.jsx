@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-import { getApiError, loginCitizen, rememberCitizenSession } from '../api/auth';
+import { getApiError, getRememberedCitizen, loginCitizen, rememberCitizenSession } from '../api/auth';
 import AuthShell from '../components/AuthShell';
 import FormField from '../components/FormField';
 
@@ -18,6 +18,12 @@ export default function LoginPage() {
     const [message, setMessage] = useState('');
     const [flash, setFlash] = useState(location.state?.flash ?? '');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (getRememberedCitizen()) {
+            navigate('/profile', { replace: true });
+        }
+    }, [navigate]);
 
     useEffect(() => {
         if (!flash) {
