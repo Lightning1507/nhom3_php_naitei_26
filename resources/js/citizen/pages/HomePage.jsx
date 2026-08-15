@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { forgetCitizenSession, getRememberedCitizen, logoutCitizen } from '../api/auth';
@@ -7,10 +7,25 @@ export default function HomePage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [citizen, setCitizen] = useState(() => getRememberedCitizen());
+    const [flash, setFlash] = useState(location.state?.flash ?? '');
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    useEffect(() => {
+        if (!flash) {
+            return undefined;
+        }
+
+        const timeout = window.setTimeout(() => {
+            setFlash('');
+            window.history.replaceState({}, document.title);
+        }, 4000);
+
+        return () => window.clearTimeout(timeout);
+    }, [flash]);
 
     async function handleLogout() {
         setIsLoggingOut(true);
+        setFlash('');
 
         try {
             await logoutCitizen();
@@ -63,9 +78,9 @@ export default function HomePage() {
                 </header>
 
                 <div className="flex flex-1 flex-col justify-center py-16">
-                {location.state?.flash && (
+                {flash && (
                     <p className="mb-6 w-fit rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-success">
-                        {location.state.flash}
+                        {flash}
                     </p>
                 )}
 

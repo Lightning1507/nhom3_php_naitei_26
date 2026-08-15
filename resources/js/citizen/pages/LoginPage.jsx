@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getApiError, loginCitizen, rememberCitizenSession } from '../api/auth';
 import AuthShell from '../components/AuthShell';
@@ -16,7 +16,21 @@ export default function LoginPage() {
     const [form, setForm] = useState(initialForm);
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
+    const [flash, setFlash] = useState(location.state?.flash ?? '');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!flash) {
+            return undefined;
+        }
+
+        const timeout = window.setTimeout(() => {
+            setFlash('');
+            window.history.replaceState({}, document.title);
+        }, 4000);
+
+        return () => window.clearTimeout(timeout);
+    }, [flash]);
 
     function updateField(event) {
         setForm((current) => ({
@@ -29,6 +43,7 @@ export default function LoginPage() {
         event.preventDefault();
         setErrors({});
         setMessage('');
+        setFlash('');
         setIsSubmitting(true);
 
         try {
@@ -54,9 +69,9 @@ export default function LoginPage() {
             description="Đăng nhập bằng email đã đăng ký."
             title="Đăng nhập"
         >
-            {location.state?.flash && (
+            {flash && (
                 <p className="mb-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-semibold text-success">
-                    {location.state.flash}
+                    {flash}
                 </p>
             )}
 
