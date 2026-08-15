@@ -195,6 +195,41 @@ class ApplicationSubmissionTest extends TestCase
         $this->assertSame(1, $response->json('data.meta.total'));
     }
 
+    public function test_citizen_cannot_view_another_citizens_application(): void
+    {
+        $citizenA = $this->makeCitizen();
+        $citizenB = $this->makeCitizen();
+        $service = $this->makeActiveService();
+
+        $application = Application::query()->create([
+            'application_code' => 'HS-20260815-00031',
+            'citizen_id' => $citizenA->id,
+            'service_type_id' => $service->id,
+            'status' => ApplicationStatus::Received,
+            'form_data' => ['full_name' => 'Nguyen Van A'],
+            'submitted_at' => now(),
+        ]);
+
+        $this->actingAs($citizenB, 'sanctum')
+            ->getJson("/api/v1/applications/{$application->id}")
+            ->assertForbidden();
+    }
+
+    public function test_staff_cannot_submit_an_application(): void
+    {
+        $staff = User::factory()->withRole(UserRole::Staff)->create();
+        $service = $this->makeActiveService();
+
+        $this->actingAs($staff, 'sanctum')
+            ->postJson('/api/v1/applications', [
+                'service_type_id' => $service->id,
+                'form_data' => ['full_name' => 'Nguyen Van E'],
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('applications', 0);
+    }
+
     public function test_show_returns_the_requested_application(): void
     {
         $citizen = $this->makeCitizen();

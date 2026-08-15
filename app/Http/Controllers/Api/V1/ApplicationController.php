@@ -8,7 +8,6 @@ use App\Http\Requests\Api\V1\StoreApplicationRequest;
 use App\Http\Resources\Api\V1\ApplicationResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Application;
-use App\Models\ServiceType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,11 +15,11 @@ class ApplicationController extends Controller
 {
     public function store(StoreApplicationRequest $request, CreateApplicationAction $action): JsonResponse
     {
-        $serviceType = ServiceType::query()->findOrFail($request->validated('service_type_id'));
+        $this->authorize('create', Application::class);
 
         $application = $action->execute(
             $request->user(),
-            $serviceType,
+            $request->serviceType(),
             $request->validated('form_data', []),
         );
 
@@ -37,7 +36,7 @@ class ApplicationController extends Controller
             ->where('citizen_id', $request->user()->id)
             ->with(['serviceType'])
             ->latest('submitted_at')
-            ->paginate((int) $request->integer('per_page', 15));
+            ->paginate(min(max((int) $request->integer('per_page', 15), 1), 100));
 
         $payload = ApplicationResource::collection($applications)->response()->getData();
 
@@ -53,6 +52,8 @@ class ApplicationController extends Controller
 
     public function show(Application $application): JsonResponse
     {
+        $this->authorize('view', $application);
+
         $application->load(['serviceType']);
 
         return ApiResponse::success(

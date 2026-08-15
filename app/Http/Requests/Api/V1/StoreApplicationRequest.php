@@ -8,6 +8,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreApplicationRequest extends FormRequest
 {
+    private ?ServiceType $resolvedServiceType = null;
+
+    private bool $serviceTypeResolved = false;
+
     /**
      * @return array<string, list<Closure|string>>
      */
@@ -41,15 +45,28 @@ class StoreApplicationRequest extends FormRequest
         return $rules;
     }
 
+    public function serviceType(): ServiceType
+    {
+        $serviceType = $this->serviceTypeOrNull();
+
+        abort_unless($serviceType !== null, 422, 'The selected service type is invalid.');
+
+        return $serviceType;
+    }
+
     private function serviceTypeOrNull(): ?ServiceType
     {
-        $id = $this->input('service_type_id');
+        if (! $this->serviceTypeResolved) {
+            $id = $this->input('service_type_id');
 
-        if ($id === null) {
-            return null;
+            $this->resolvedServiceType = $id === null
+                ? null
+                : ServiceType::query()->find($id);
+
+            $this->serviceTypeResolved = true;
         }
 
-        return ServiceType::query()->find($id);
+        return $this->resolvedServiceType;
     }
 
     private function activeServiceTypeRule(): Closure
