@@ -2,11 +2,21 @@
 
 use App\Http\Controllers\Admin\Auth\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Api\V1\Auth\GoogleCitizenAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'citizen.app')->name('citizen.app');
 
 Route::view('/ui-showcase', 'ui-showcase')->name('ui-showcase');
+
+Route::prefix('api/v1/auth/google')
+    ->name('api.v1.auth.google.')
+    ->group(function (): void {
+        Route::get('/redirect', [GoogleCitizenAuthController::class, 'redirect'])->name('redirect');
+        Route::get('/callback', [GoogleCitizenAuthController::class, 'callback'])->name('callback');
+        Route::get('/pending', [GoogleCitizenAuthController::class, 'pending'])->name('pending');
+        Route::post('/complete', [GoogleCitizenAuthController::class, 'complete'])->name('complete');
+    });
 
 Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware('guest')->group(function (): void {

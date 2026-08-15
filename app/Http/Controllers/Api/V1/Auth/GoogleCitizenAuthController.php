@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,12 +34,20 @@ class GoogleCitizenAuthController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            Log::warning('Google citizen login callback failed.', [
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
             $events->log(
                 action: 'citizen.google_login_failed',
                 request: $request,
                 description: 'Google citizen login callback failed.',
-                metadata: ['reason' => 'provider_callback_failed'],
+                metadata: [
+                    'reason' => 'provider_callback_failed',
+                    'exception' => $exception::class,
+                ],
             );
 
             return redirect('/login?auth_error=google_callback_failed');
