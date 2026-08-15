@@ -10,8 +10,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::prefix('auth')->name('auth.')->group(function (): void {
         Route::post('/register', [CitizenAuthController::class, 'register'])->name('register');
         Route::post('/login', [CitizenAuthController::class, 'login'])->name('login');
-        Route::post('/logout', [CitizenAuthController::class, 'logout'])
-            ->middleware(['auth:sanctum', 'citizen'])
-            ->name('logout');
+
+        Route::middleware(['auth:sanctum', 'citizen'])->group(function (): void {
+            Route::post('/logout', [CitizenAuthController::class, 'logout'])->name('logout');
+        });
     });
 });

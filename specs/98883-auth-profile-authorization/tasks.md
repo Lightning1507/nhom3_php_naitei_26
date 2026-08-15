@@ -103,19 +103,19 @@
 
 ### Tests for User Story 4
 
-- [ ] T038 [P] [US4] Add Citizen protected-route authorization tests in tests/Feature/Api/V1/Auth/CitizenAuthorizationBoundaryTest.php
-- [ ] T039 [P] [US4] Add inactive-account access tests in tests/Feature/Api/V1/Auth/InactiveAccountAccessTest.php
-- [ ] T040 [P] [US4] Add access denial audit tests in tests/Feature/Api/V1/Auth/AccessDeniedAuditTest.php
+- [X] T038 [P] [US4] Add Citizen protected-route authorization tests in tests/Feature/Api/V1/Auth/CitizenAuthorizationBoundaryTest.php
+- [X] T039 [P] [US4] Add inactive-account access tests in tests/Feature/Api/V1/Auth/InactiveAccountAccessTest.php
+- [X] T040 [P] [US4] Add access denial audit tests in tests/Feature/Api/V1/Auth/AccessDeniedAuditTest.php
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Enforce active-account checks in app/Http/Middleware/EnsureCitizen.php
-- [ ] T042 [US4] Enforce active-account checks in app/Http/Middleware/EnsureInternalUser.php
-- [ ] T043 [P] [US4] Create user policy for self-access rules in app/Policies/UserPolicy.php
-- [ ] T044 [US4] Register user policy in app/Providers/AppServiceProvider.php
-- [ ] T045 [US4] Record access-denied events from F01 middleware in app/Support/Auth/AuthEventLogger.php
-- [ ] T046 [US4] Apply Citizen middleware to protected Citizen API routes in routes/api.php
-- [ ] T047 [US4] Apply internal user middleware to protected Admin routes in routes/web.php
+- [X] T041 [US4] Enforce active-account checks in app/Http/Middleware/EnsureCitizen.php
+- [X] T042 [US4] Enforce active-account checks in app/Http/Middleware/EnsureInternalUser.php
+- [X] T043 [P] [US4] Create user policy for self-access rules in app/Policies/UserPolicy.php
+- [X] T044 [US4] Register user policy in app/Providers/AppServiceProvider.php
+- [X] T045 [US4] Record access-denied events from F01 middleware in app/Support/Auth/AuthEventLogger.php
+- [X] T046 [US4] Apply Citizen middleware to protected Citizen API routes in routes/api.php
+- [X] T047 [US4] Apply internal user middleware to protected Admin routes in routes/web.php
 
 **Checkpoint**: US4 is fully functional and independently testable.
 
