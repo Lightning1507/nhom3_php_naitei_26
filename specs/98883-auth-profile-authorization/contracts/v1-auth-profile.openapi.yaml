@@ -1,0 +1,253 @@
+openapi: 3.1.0
+info:
+  title: F01 Authentication, Profile, and Authorization API
+  version: 0.1.0
+  description: Citizen-facing API contract for authentication and profile operations.
+servers:
+  - url: /api/v1
+paths:
+  /auth/register:
+    post:
+      summary: Register a Citizen account
+      tags: [Citizen Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitizenRegisterRequest'
+      responses:
+        '201':
+          description: Citizen registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/login:
+    post:
+      summary: Log in a Citizen
+      tags: [Citizen Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        '401':
+          description: Login failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too many failed attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/logout:
+    post:
+      summary: Log out the current Citizen
+      tags: [Citizen Auth]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyEnvelope'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /me:
+    get:
+      summary: Read the current Citizen profile
+      tags: [Citizen Profile]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Current Citizen profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Wrong role or inactive user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      summary: Update allowed current Citizen profile fields
+      tags: [Citizen Profile]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        '403':
+          description: Forbidden field or wrong role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: laravel_session
+  schemas:
+    CitizenRegisterRequest:
+      type: object
+      required: [name, email, password, password_confirmation, citizen_id, date_of_birth, phone, address]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        password_confirmation:
+          type: string
+          minLength: 8
+        citizen_id:
+          type: string
+          pattern: '^[0-9]{12}$'
+        date_of_birth:
+          type: string
+          format: date
+        phone:
+          type: string
+          maxLength: 30
+        address:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    ProfileUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        date_of_birth:
+          type: string
+          format: date
+        phone:
+          type: string
+          maxLength: 30
+        address:
+          type: string
+    User:
+      type: object
+      required: [id, name, email, role, citizen_id, is_active]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [citizen]
+        citizen_id:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+    UserEnvelope:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/User'
+    EmptyEnvelope:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: object
+    ErrorEnvelope:
+      type: object
+      required: [success, message, errors]
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        errors:
+          type: object

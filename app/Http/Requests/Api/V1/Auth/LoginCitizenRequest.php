@@ -61,7 +61,7 @@ class LoginCitizenRequest extends FormRequest
 
             throw new HttpResponseException(
                 ApiResponse::error(
-                    message: 'These credentials do not match our records.',
+                    message: 'Thông tin đăng nhập không chính xác.',
                     status: 401,
                 ),
             );
@@ -83,7 +83,7 @@ class LoginCitizenRequest extends FormRequest
     {
         throw new HttpResponseException(
             ApiResponse::error(
-                message: 'The given data was invalid.',
+                message: 'Dữ liệu không hợp lệ.',
                 errors: $validator->errors()->toArray(),
                 status: 422,
             ),
@@ -98,9 +98,9 @@ class LoginCitizenRequest extends FormRequest
 
         throw new HttpResponseException(
             ApiResponse::error(
-                message: 'Too many login attempts. Please try again later.',
+                message: 'Bạn đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.',
                 errors: [
-                    'email' => ['Too many login attempts. Please try again later.'],
+                    'email' => ['Bạn đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.'],
                 ],
                 status: 429,
             ),

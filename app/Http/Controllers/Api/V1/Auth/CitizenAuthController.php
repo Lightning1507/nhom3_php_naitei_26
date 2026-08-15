@@ -30,7 +30,7 @@ class CitizenAuthController extends Controller
         );
 
         return ApiResponse::success(
-            message: 'Citizen registered successfully.',
+            message: 'Đăng ký tài khoản công dân thành công.',
             data: UserResource::make($user),
             status: 201,
         );
@@ -40,7 +40,7 @@ class CitizenAuthController extends Controller
     {
         $user = $request->authenticate($events);
 
-        auth()->login($user);
+        auth()->guard('web')->login($user);
         $request->session()->regenerate();
 
         $events->log(
@@ -52,7 +52,7 @@ class CitizenAuthController extends Controller
         );
 
         return ApiResponse::success(
-            message: 'Citizen logged in successfully.',
+            message: 'Đăng nhập thành công.',
             data: UserResource::make($user),
         );
     }
@@ -74,9 +74,10 @@ class CitizenAuthController extends Controller
         auth()->guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        auth()->forgetGuards();
 
         return ApiResponse::success(
-            message: 'Citizen logged out successfully.',
+            message: 'Đăng xuất thành công.',
             data: [],
         );
     }

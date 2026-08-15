@@ -52,7 +52,7 @@ class CitizenRegistrationTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'The given data was invalid.')
+            ->assertJsonPath('message', 'Dữ liệu không hợp lệ.')
             ->assertJsonStructure([
                 'success',
                 'message',

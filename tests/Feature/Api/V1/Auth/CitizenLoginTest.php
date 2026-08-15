@@ -43,7 +43,11 @@ class CitizenLoginTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true);
 
-        $this->assertGuest();
+        $this->postJson('/api/v1/auth/logout')
+            ->assertUnauthorized()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Chưa đăng nhập.');
+
         $this->assertDatabaseHas(ActivityLog::class, [
             'actor_id' => $user->id,
             'action' => 'citizen.logout',
@@ -71,12 +75,12 @@ class CitizenLoginTest extends TestCase
         $wrongPasswordResponse
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'These credentials do not match our records.');
+            ->assertJsonPath('message', 'Thông tin đăng nhập không chính xác.');
 
         $missingAccountResponse
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'These credentials do not match our records.');
+            ->assertJsonPath('message', 'Thông tin đăng nhập không chính xác.');
 
         $this->assertDatabaseHas(ActivityLog::class, [
             'actor_id' => null,
@@ -99,7 +103,7 @@ class CitizenLoginTest extends TestCase
         $response
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'These credentials do not match our records.');
+            ->assertJsonPath('message', 'Thông tin đăng nhập không chính xác.');
 
         $this->assertGuest();
     }
@@ -121,7 +125,7 @@ class CitizenLoginTest extends TestCase
         $response
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'These credentials do not match our records.');
+            ->assertJsonPath('message', 'Thông tin đăng nhập không chính xác.');
 
         $this->assertGuest();
     }
@@ -133,6 +137,6 @@ class CitizenLoginTest extends TestCase
         $response
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'Unauthenticated.');
+            ->assertJsonPath('message', 'Chưa đăng nhập.');
     }
 }

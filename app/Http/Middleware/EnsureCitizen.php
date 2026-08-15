@@ -20,13 +20,13 @@ final readonly class EnsureCitizen
         $user = $request->user();
 
         if (! $user) {
-            return ApiResponse::error('Authentication is required.', null, Response::HTTP_UNAUTHORIZED);
+            return ApiResponse::error('Vui lòng đăng nhập.', null, Response::HTTP_UNAUTHORIZED);
         }
 
         if (! $user->canAccessProtectedResources()) {
             $this->events->accessDenied($user, $request, 'inactive_account');
 
-            return ApiResponse::error('This account cannot access protected resources.', null, Response::HTTP_FORBIDDEN);
+            return ApiResponse::error('Tài khoản này không thể truy cập tài nguyên được bảo vệ.', null, Response::HTTP_FORBIDDEN);
         }
 
         if (! $user->isCitizen()) {
@@ -35,7 +35,7 @@ final readonly class EnsureCitizen
                 'actual_role' => $user->role->value,
             ]);
 
-            return ApiResponse::error('You are not allowed to access this resource.', null, Response::HTTP_FORBIDDEN);
+            return ApiResponse::error('Bạn không có quyền truy cập tài nguyên này.', null, Response::HTTP_FORBIDDEN);
         }
 
         return $next($request);

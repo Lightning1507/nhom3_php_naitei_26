@@ -46,7 +46,7 @@ class RegisterCitizenRequest extends FormRequest
     {
         throw new HttpResponseException(
             ApiResponse::error(
-                message: 'The given data was invalid.',
+                message: 'Dữ liệu không hợp lệ.',
                 errors: $validator->errors()->toArray(),
                 status: 422,
             ),
