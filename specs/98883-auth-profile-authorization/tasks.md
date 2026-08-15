@@ -79,17 +79,17 @@
 
 ### Tests for User Story 2
 
-- [ ] T030 [P] [US2] Add Admin login feature tests in tests/Feature/Admin/Auth/AdminLoginTest.php
-- [ ] T031 [P] [US2] Add Admin role-boundary tests in tests/Feature/Admin/Auth/AdminRoleBoundaryTest.php
+- [X] T030 [P] [US2] Add Admin login feature tests in tests/Feature/Admin/Auth/AdminLoginTest.php
+- [X] T031 [P] [US2] Add Admin role-boundary tests in tests/Feature/Admin/Auth/AdminRoleBoundaryTest.php
 
 ### Implementation for User Story 2
 
-- [ ] T032 [P] [US2] Create Admin login request in app/Http/Requests/Admin/Auth/AdminLoginRequest.php
-- [ ] T033 [US2] Create Admin auth controller in app/Http/Controllers/Admin/Auth/AdminAuthController.php
-- [ ] T034 [US2] Create Admin login Blade view in resources/views/admin/auth/login.blade.php
-- [ ] T035 [US2] Protect Admin dashboard routes with internal user middleware in routes/web.php
-- [ ] T036 [US2] Add Admin login and logout routes in routes/web.php
-- [ ] T037 [US2] Record Admin login, failed login, and logout events in app/Http/Controllers/Admin/Auth/AdminAuthController.php
+- [X] T032 [P] [US2] Create Admin login request in app/Http/Requests/Admin/Auth/AdminLoginRequest.php
+- [X] T033 [US2] Create Admin auth controller in app/Http/Controllers/Admin/Auth/AdminAuthController.php
+- [X] T034 [US2] Create Admin login Blade view in resources/views/admin/auth/login.blade.php
+- [X] T035 [US2] Protect Admin dashboard routes with internal user middleware in routes/web.php
+- [X] T036 [US2] Add Admin login and logout routes in routes/web.php
+- [X] T037 [US2] Record Admin login, failed login, and logout events in app/Http/Controllers/Admin/Auth/AdminAuthController.php
 
 **Checkpoint**: US2 is fully functional and independently testable.
 
