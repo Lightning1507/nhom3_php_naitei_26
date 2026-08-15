@@ -56,16 +56,16 @@
 
 - [X] T018 [P] [US1] Create Citizen registration request in app/Http/Requests/Api/V1/Auth/RegisterCitizenRequest.php
 - [X] T019 [P] [US1] Create Citizen login request in app/Http/Requests/Api/V1/Auth/LoginCitizenRequest.php
-- [ ] T020 [P] [US1] Create user API resource in app/Http/Resources/Api/V1/UserResource.php
+- [X] T020 [P] [US1] Create user API resource in app/Http/Resources/Api/V1/UserResource.php
 - [X] T021 [US1] Create Citizen registration action in app/Actions/Auth/RegisterCitizen.php
 - [X] T022 [US1] Create Citizen auth controller in app/Http/Controllers/Api/V1/Auth/CitizenAuthController.php
 - [X] T023 [US1] Add Citizen auth API routes in routes/api.php
 - [X] T024 [US1] Add login throttling for Citizen login in app/Http/Requests/Api/V1/Auth/LoginCitizenRequest.php
 - [X] T025 [US1] Record Citizen register, login, failed login, and logout events in app/Http/Controllers/Api/V1/Auth/CitizenAuthController.php
-- [ ] T026 [US1] Add Citizen auth API client functions in resources/js/citizen/api/auth.js
-- [ ] T027 [US1] Add Citizen login page in resources/js/citizen/pages/LoginPage.jsx
-- [ ] T028 [US1] Add Citizen register page in resources/js/citizen/pages/RegisterPage.jsx
-- [ ] T029 [US1] Wire Citizen auth routes in resources/js/citizen/App.jsx
+- [X] T026 [US1] Add Citizen auth API client functions in resources/js/citizen/api/auth.js
+- [X] T027 [US1] Add Citizen login page in resources/js/citizen/pages/LoginPage.jsx
+- [X] T028 [US1] Add Citizen register page in resources/js/citizen/pages/RegisterPage.jsx
+- [X] T029 [US1] Wire Citizen auth routes in resources/js/citizen/App.jsx
 
 **Checkpoint**: US1 is fully functional and independently testable.
 
