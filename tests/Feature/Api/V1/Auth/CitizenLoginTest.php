@@ -20,10 +20,14 @@ class CitizenLoginTest extends TestCase
             'citizen_id' => '012345678901',
         ]);
 
-        $loginResponse = $this->postJson('/api/v1/auth/login', [
-            'email' => ' CITIZEN@EXAMPLE.TEST ',
-            'password' => 'password123',
-        ]);
+        $loginResponse = $this->postJson(
+            '/api/v1/auth/login',
+            [
+                'email' => ' CITIZEN@EXAMPLE.TEST ',
+                'password' => 'password123',
+            ],
+            $this->spaHeaders(),
+        );
 
         $loginResponse
             ->assertOk()
@@ -37,13 +41,13 @@ class CitizenLoginTest extends TestCase
             'action' => 'citizen.login_succeeded',
         ]);
 
-        $logoutResponse = $this->postJson('/api/v1/auth/logout');
+        $logoutResponse = $this->postJson('/api/v1/auth/logout', [], $this->spaHeaders());
 
         $logoutResponse
             ->assertOk()
             ->assertJsonPath('success', true);
 
-        $this->postJson('/api/v1/auth/logout')
+        $this->postJson('/api/v1/auth/logout', [], $this->spaHeaders())
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'Chưa đăng nhập.');
@@ -132,11 +136,21 @@ class CitizenLoginTest extends TestCase
 
     public function test_guest_cannot_logout(): void
     {
-        $response = $this->postJson('/api/v1/auth/logout');
+        $response = $this->postJson('/api/v1/auth/logout', [], $this->spaHeaders());
 
         $response
             ->assertUnauthorized()
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'Chưa đăng nhập.');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function spaHeaders(): array
+    {
+        return [
+            'Origin' => 'http://localhost',
+        ];
     }
 }
