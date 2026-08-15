@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { getApiError, loginCitizen } from '../api/auth';
+import { getApiError, loginCitizen, rememberCitizenSession } from '../api/auth';
 import AuthShell from '../components/AuthShell';
 import FormField from '../components/FormField';
 
@@ -32,7 +32,8 @@ export default function LoginPage() {
         setIsSubmitting(true);
 
         try {
-            await loginCitizen(form);
+            const response = await loginCitizen(form);
+            rememberCitizenSession(response.data);
             navigate('/', {
                 replace: true,
                 state: {
