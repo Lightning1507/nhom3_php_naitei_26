@@ -12,19 +12,19 @@ export default function FormField({
 
     return (
         <div>
-            <label className="label normal-case tracking-normal" htmlFor={name}>
+            <label className="label mb-1.5 normal-case tracking-normal" htmlFor={name}>
                 {label}
             </label>
             <input
                 autoComplete={autoComplete}
-                className={`input-field rounded-lg px-4 py-3 text-base ${hasError ? 'input-error' : ''}`}
+                className={`input-field rounded-lg px-3.5 py-2.5 text-sm ${hasError ? 'input-error' : ''}`}
                 id={name}
                 name={name}
                 onChange={onChange}
                 type={type}
                 value={value}
             />
-            {helpText && !hasError && <p className="mt-2 text-xs leading-5 text-gray-500">{helpText}</p>}
+            {helpText && !hasError && <p className="mt-1.5 text-xs leading-5 text-gray-500">{helpText}</p>}
             <FieldError errors={errors} />
         </div>
     );

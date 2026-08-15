@@ -1,18 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-
-import apiClient from '../api/client';
 
 export default function HomePage() {
     const location = useLocation();
-    const [apiStatus, setApiStatus] = useState('Checking API connection...');
-
-    useEffect(() => {
-        apiClient
-            .get('/health')
-            .then(({ data }) => setApiStatus(data.message))
-            .catch(() => setApiStatus('API is unavailable'));
-    }, []);
 
     return (
         <main className="min-h-screen bg-surface px-4 py-10 text-gray-900 sm:px-6 lg:px-8">
@@ -31,12 +20,7 @@ export default function HomePage() {
                     Dịch vụ công trực tuyến cho công dân.
                 </p>
 
-                <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800">
-                    <span className="size-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                    {apiStatus}
-                </div>
-
-                <div className="mt-10 flex flex-wrap gap-4">
+                <div className="mt-8 flex flex-wrap gap-4">
                     <Link className="btn-primary rounded-xl px-6 py-4 text-base" to="/login">
                         Đăng nhập
                     </Link>

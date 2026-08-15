@@ -50,7 +50,7 @@ export default function LoginPage() {
 
     return (
         <AuthShell
-            description="Đăng nhập bằng email đã đăng ký để theo dõi hồ sơ và sử dụng dịch vụ công trực tuyến."
+            description="Đăng nhập bằng email đã đăng ký."
             title="Đăng nhập"
         >
             {location.state?.flash && (
@@ -60,7 +60,7 @@ export default function LoginPage() {
             )}
 
             <form noValidate onSubmit={submitForm}>
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <FormField
                         autoComplete="email"
                         errors={errors.email}

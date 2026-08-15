@@ -31,6 +31,37 @@ class RegisterCitizenRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'name.string' => 'Họ và tên không hợp lệ.',
+            'name.max' => 'Họ và tên không được vượt quá :max ký tự.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không hợp lệ.',
+            'email.max' => 'Email không được vượt quá :max ký tự.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'password.min' => 'Mật khẩu phải có ít nhất :min ký tự.',
+            'citizen_id.required' => 'Vui lòng nhập số CCCD.',
+            'citizen_id.digits' => 'Số CCCD phải gồm đúng :digits chữ số.',
+            'citizen_id.unique' => 'Số CCCD này đã được sử dụng.',
+            'date_of_birth.required' => 'Vui lòng nhập ngày sinh.',
+            'date_of_birth.date' => 'Ngày sinh không hợp lệ.',
+            'date_of_birth.before' => 'Ngày sinh phải trước ngày hôm nay.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.string' => 'Số điện thoại không hợp lệ.',
+            'phone.max' => 'Số điện thoại không được vượt quá :max ký tự.',
+            'address.required' => 'Vui lòng nhập địa chỉ.',
+            'address.string' => 'Địa chỉ không hợp lệ.',
+            'address.max' => 'Địa chỉ không được vượt quá :max ký tự.',
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $this->merge([

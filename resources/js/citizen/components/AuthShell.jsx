@@ -1,48 +1,56 @@
 import { Link } from 'react-router-dom';
 
+export function BrandMark({ className = 'size-10' }) {
+    return (
+        <span className={`flex items-center justify-center rounded-lg bg-primary text-white shadow-sm ${className}`}>
+            <svg aria-hidden="true" className="size-2/3" fill="none" viewBox="0 0 24 24">
+                <path d="M4 10h16" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                <path d="M6 10v8M10 10v8M14 10v8M18 10v8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                <path d="M4.5 18h15M3.5 21h17" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                <path
+                    d="M5 7.5 12 3l7 4.5H5Z"
+                    stroke="currentColor"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                />
+            </svg>
+        </span>
+    );
+}
+
 export default function AuthShell({ children, description, title }) {
     return (
-        <main className="min-h-screen bg-surface text-gray-900 md:grid md:grid-cols-2">
-            <section className="hidden min-h-screen flex-col items-center justify-center bg-blue-50 px-12 text-center md:flex">
-                <Link
-                    aria-label="Public Service Management System"
-                    className="flex size-24 items-center justify-center rounded-2xl bg-primary text-3xl font-bold text-white shadow-sm"
-                    to="/"
-                >
-                    DV
-                </Link>
-                <h1 className="mt-8 max-w-lg text-3xl font-bold leading-tight text-gray-950">
-                    Hệ thống Quản lý Dịch vụ Công
-                </h1>
-                <p className="mt-4 max-w-md text-base leading-7 text-gray-600">
-                    Cổng thông tin để thực hiện thủ tục hành chính, tra cứu hồ sơ và theo dõi
-                    tiến độ xử lý trực tuyến.
-                </p>
-            </section>
+        <main className="min-h-screen bg-surface px-4 py-8 text-gray-900 sm:px-6 lg:px-8">
+            <section className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center gap-8 md:grid-cols-[1fr_420px]">
+                <div className="max-w-xl">
+                    <Link className="flex w-fit items-center gap-3 text-sm font-semibold text-primary" to="/">
+                        <BrandMark className="size-12" />
+                        Hệ thống Quản lý Dịch vụ Công
+                    </Link>
+                    <h2 className="mt-8 text-4xl font-bold leading-tight text-gray-950">
+                        Quản lý hồ sơ dịch vụ công của bạn
+                    </h2>
+                    <p className="mt-4 text-base leading-7 text-gray-600">
+                        Đăng nhập để nộp hồ sơ, theo dõi trạng thái xử lý và cập nhật thông tin
+                        liên hệ khi cần.
+                    </p>
+                    <div className="mt-7 grid gap-3 text-sm text-gray-700">
+                        <p className="rounded-lg border border-border bg-white px-4 py-3">
+                            Theo dõi tiến độ xử lý hồ sơ trực tuyến
+                        </p>
+                        <p className="rounded-lg border border-border bg-white px-4 py-3">
+                            Sử dụng một tài khoản công dân cho các dịch vụ
+                        </p>
+                    </div>
+                </div>
 
-            <section className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-10">
-                <div className="w-full max-w-md">
-                    <div className="mb-8 text-center md:hidden">
-                        <Link
-                            aria-label="Public Service Management System"
-                            className="mx-auto flex size-14 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white"
-                            to="/"
-                        >
-                            DV
-                        </Link>
-                        <p className="mt-3 text-sm font-semibold text-primary">Dịch vụ Công</p>
+                <div className="card-container rounded-lg p-6 shadow-sm sm:p-7">
+                    <div className="mb-5 text-center">
+                        <h1 className="text-2xl font-bold text-gray-950">{title}</h1>
+                        {description && <p className="mt-2 text-sm leading-6 text-gray-600">{description}</p>}
                     </div>
 
-                    <div className="card-container rounded-lg p-6 shadow-sm sm:p-8">
-                        <div className="mb-6">
-                            <h2 className="text-3xl font-bold text-gray-950">{title}</h2>
-                            {description && (
-                                <p className="mt-2 text-sm leading-6 text-gray-600">{description}</p>
-                            )}
-                        </div>
-
-                        {children}
-                    </div>
+                    {children}
                 </div>
             </section>
         </main>

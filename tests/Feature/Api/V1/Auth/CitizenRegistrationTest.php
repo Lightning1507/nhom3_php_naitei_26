@@ -53,6 +53,10 @@ class CitizenRegistrationTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'Dữ liệu không hợp lệ.')
+            ->assertJsonPath('errors.name.0', 'Vui lòng nhập họ và tên.')
+            ->assertJsonPath('errors.email.0', 'Vui lòng nhập email.')
+            ->assertJsonPath('errors.password.0', 'Vui lòng nhập mật khẩu.')
+            ->assertJsonPath('errors.citizen_id.0', 'Vui lòng nhập số CCCD.')
             ->assertJsonStructure([
                 'success',
                 'message',
@@ -84,6 +88,7 @@ class CitizenRegistrationTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonPath('success', false)
+            ->assertJsonPath('errors.citizen_id.0', 'Số CCCD phải gồm đúng 12 chữ số.')
             ->assertJsonValidationErrors(['citizen_id']);
     }
 }

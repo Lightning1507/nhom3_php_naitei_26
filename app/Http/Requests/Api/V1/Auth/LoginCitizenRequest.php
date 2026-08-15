@@ -32,6 +32,19 @@ class LoginCitizenRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không hợp lệ.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.string' => 'Mật khẩu không hợp lệ.',
+        ];
+    }
+
     public function authenticate(AuthEventLogger $events): User
     {
         $this->ensureIsNotRateLimited();
