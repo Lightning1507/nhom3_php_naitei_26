@@ -39,7 +39,7 @@ flowchart LR
 | ORM | Laravel Eloquent ORM | Đang sử dụng |
 | Citizen Site | React.js + Tailwind CSS, sử dụng Laravel REST API | Đã có auth và profile UI cơ bản |
 | Admin Site | Laravel Blade SSR + Alpine.js + Tailwind CSS | Đã có dashboard và auth boundary cơ bản |
-| API Authentication | Laravel Sanctum, SPA cookie authentication | Đã có Citizen đăng ký, đăng nhập, đăng xuất và profile |
+| API Authentication | Laravel Sanctum, SPA cookie authentication; Laravel Socialite cho Google OAuth | Đã có Citizen đăng ký, đăng nhập, đăng xuất, Google OAuth và profile |
 | Admin Authentication | Laravel session authentication | Đã có đăng nhập/đăng xuất nội bộ dưới `/admin` |
 | Authorization | Middleware + Gates/Policies | Đã có role middleware, active-account checks và Citizen self-access policy |
 | API Documentation | OpenAPI/Swagger với Scramble | Dự kiến, chưa cài đặt |
@@ -137,6 +137,10 @@ OpenAPI/Swagger bằng Scramble sẽ là nguồn tài liệu endpoint sau khi pa
 
 - Citizen React SPA dùng Sanctum cookie/session authentication và CSRF
   protection; không lưu access token của first-party SPA trong `localStorage`.
+- Citizen có thể đăng nhập bằng Google OAuth thông qua Laravel Socialite. Nếu
+  email Google chưa có tài khoản, hệ thống giữ thông tin Google trong session và
+  yêu cầu bổ sung CCCD, ngày sinh, số điện thoại và địa chỉ trước khi tạo tài
+  khoản Citizen.
 - Citizen profile sử dụng `/api/v1/me`; chỉ các trường `name`, `date_of_birth`,
   `phone` và `address` được phép cập nhật từ phía Citizen.
 - Admin Blade dùng Laravel web session authentication.
