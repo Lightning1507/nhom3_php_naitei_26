@@ -1,14 +1,51 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-import { forgetCitizenSession, getRememberedCitizen, logoutCitizen } from '../api/auth';
+import { forgetCitizenSession, getRememberedCitizen, logoutCitizen, rememberCitizenSession } from '../api/auth';
+import { fetchCitizenProfile } from '../api/profile';
 
 export default function HomePage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [citizen, setCitizen] = useState(() => getRememberedCitizen());
     const [flash, setFlash] = useState(location.state?.flash ?? '');
+    const [isCheckingSession, setIsCheckingSession] = useState(() => !getRememberedCitizen());
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    useEffect(() => {
+        if (citizen) {
+            setIsCheckingSession(false);
+
+            return undefined;
+        }
+
+        let isMounted = true;
+
+        async function syncAuthenticatedCitizen() {
+            try {
+                const response = await fetchCitizenProfile();
+
+                if (!isMounted) {
+                    return;
+                }
+
+                rememberCitizenSession(response.data);
+                setCitizen(response.data);
+            } catch {
+                forgetCitizenSession();
+            } finally {
+                if (isMounted) {
+                    setIsCheckingSession(false);
+                }
+            }
+        }
+
+        syncAuthenticatedCitizen();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [citizen]);
 
     useEffect(() => {
         if (!flash) {
@@ -68,7 +105,7 @@ export default function HomePage() {
                                 {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
                             </button>
                         </div>
-                    ) : (
+                    ) : !isCheckingSession ? (
                         <div className="flex flex-wrap gap-3 sm:justify-end">
                             <Link className="btn-secondary rounded-xl px-4 py-2 text-sm" to="/login">
                                 Đăng nhập
@@ -77,7 +114,7 @@ export default function HomePage() {
                                 Đăng ký
                             </Link>
                         </div>
-                    )}
+                    ) : null}
                 </header>
 
                 <div className="flex flex-1 flex-col justify-center py-16">
@@ -94,7 +131,7 @@ export default function HomePage() {
                         Dịch vụ công trực tuyến cho công dân.
                     </p>
 
-                    {!citizen && (
+                    {!citizen && !isCheckingSession && (
                         <div className="mt-8 flex flex-wrap gap-4">
                             <Link className="btn-primary rounded-xl px-6 py-4 text-base" to="/login">
                                 Đăng nhập

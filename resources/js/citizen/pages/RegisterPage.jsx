@@ -25,7 +25,7 @@ export default function RegisterPage() {
 
     useEffect(() => {
         if (getRememberedCitizen()) {
-            navigate('/profile', { replace: true });
+            navigate('/', { replace: true });
         }
     }, [navigate]);
 

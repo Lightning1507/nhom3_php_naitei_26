@@ -140,7 +140,8 @@ OpenAPI/Swagger bằng Scramble sẽ là nguồn tài liệu endpoint sau khi pa
 - Citizen có thể đăng nhập bằng Google OAuth thông qua Laravel Socialite. Nếu
   email Google chưa có tài khoản, hệ thống giữ thông tin Google trong session và
   yêu cầu bổ sung CCCD, ngày sinh, số điện thoại và địa chỉ trước khi tạo tài
-  khoản Citizen.
+  khoản Citizen. Cấu hình local được mô tả trong
+  `docs/google-oauth-local-setup.md`.
 - Citizen profile sử dụng `/api/v1/me`; chỉ các trường `name`, `date_of_birth`,
   `phone` và `address` được phép cập nhật từ phía Citizen.
 - Admin Blade dùng Laravel web session authentication.

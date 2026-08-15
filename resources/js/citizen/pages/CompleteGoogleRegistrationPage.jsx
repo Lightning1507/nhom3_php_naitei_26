@@ -81,7 +81,7 @@ export default function CompleteGoogleRegistrationPage() {
             const response = await completeGoogleCitizenRegistration(form);
 
             rememberCitizenSession(response.data);
-            navigate('/profile', { replace: true });
+            navigate('/', { replace: true });
         } catch (error) {
             const apiError = getApiError(error);
             setMessage(apiError.message);

@@ -37,4 +37,9 @@ Quy ước tạo ticket, estimate time và liên kết Pull Request với Redmin
 ## Technical architecture
 
 See `docs/technology-stack.md` for the current technology stack and architecture.
+
+## Google OAuth local setup
+
+See `docs/google-oauth-local-setup.md` for local Google OAuth setup, including
+Windows PHP CA certificate configuration.
 # nhom3_php_naitei_26

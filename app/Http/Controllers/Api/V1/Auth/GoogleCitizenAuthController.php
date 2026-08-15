@@ -109,7 +109,7 @@ class GoogleCitizenAuthController extends Controller
             metadata: ['email' => $email],
         );
 
-        return redirect('/profile');
+        return redirect('/');
     }
 
     public function pending(Request $request): JsonResponse

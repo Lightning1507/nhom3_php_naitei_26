@@ -41,7 +41,7 @@ class GoogleCitizenAuthTest extends TestCase
         $this->fakeGoogleUser(email: ' Citizen@Example.Test ', name: 'Citizen User');
 
         $this->get('/api/v1/auth/google/callback')
-            ->assertRedirect('/profile');
+            ->assertRedirect('/');
 
         $this->assertAuthenticatedAs($citizen);
         $this->assertDatabaseHas(ActivityLog::class, [
