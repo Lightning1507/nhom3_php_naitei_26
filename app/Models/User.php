@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -56,6 +57,27 @@ class User extends Authenticatable
     public function canAccessProtectedResources(): bool
     {
         return $this->is_active && ! $this->trashed();
+    }
+
+    public function scopeEligibleDepartmentMembers(Builder $query): Builder
+    {
+        return $query
+            ->where('is_active', true)
+            ->whereIn('role', [UserRole::Staff->value, UserRole::Manager->value]);
+    }
+
+    public function scopeEligibleDepartmentStaff(Builder $query): Builder
+    {
+        return $query
+            ->where('is_active', true)
+            ->where('role', UserRole::Staff->value);
+    }
+
+    public function scopeEligibleDepartmentLeaders(Builder $query): Builder
+    {
+        return $query
+            ->where('is_active', true)
+            ->where('role', UserRole::Manager->value);
     }
 
     public function submittedApplications(): HasMany

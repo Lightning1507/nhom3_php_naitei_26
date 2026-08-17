@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\StaleDepartmentVersion;
 use App\Http\Middleware\EnsureCitizen;
 use App\Http\Middleware\EnsureInternalUser;
 use App\Http\Responses\ApiResponse;
@@ -26,6 +27,22 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (StaleDepartmentVersion $exception, $request) {
+            if ($request->expectsJson()) {
+                return ApiResponse::error(
+                    message: $exception->getMessage(),
+                    errors: [
+                        'conflict' => ['Tải lại dữ liệu phòng ban trước khi thử lại.'],
+                    ],
+                    status: 409,
+                );
+            }
+
+            return response()->view('errors.department-version-conflict', [
+                'message' => $exception->getMessage(),
+            ], 409);
+        });
+
         $exceptions->render(function (AuthenticationException $exception, $request) {
             if ($request->is('api/*')) {
                 return ApiResponse::error('Chưa đăng nhập.', null, 401);

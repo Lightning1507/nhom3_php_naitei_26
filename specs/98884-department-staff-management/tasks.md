@@ -20,9 +20,9 @@
 
 **Purpose**: Prepare reusable test data and Admin presentation primitives without adding new dependencies.
 
-- [ ] T001 Add F03 factory states for active/inactive Staff, Manager, led Department and archived Department in database/factories/UserFactory.php and database/factories/DepartmentFactory.php
-- [ ] T002 [P] Add compact Admin-only button, input, table, card and destructive variants without changing Citizen component sizing in resources/css/app.css
-- [ ] T003 [P] Extend the shared Admin navigation shell with Department navigation, flash-message slots and responsive container behavior in resources/views/admin/layouts/app.blade.php
+- [X] T001 Add F03 factory states for active/inactive Staff, Manager, led Department and archived Department in database/factories/UserFactory.php and database/factories/DepartmentFactory.php
+- [X] T002 [P] Add compact Admin-only button, input, table, card and destructive variants without changing Citizen component sizing in resources/css/app.css
+- [X] T003 [P] Extend the shared Admin navigation shell with Department navigation, flash-message slots and responsive container behavior in resources/views/admin/layouts/app.blade.php
 
 **Checkpoint**: Test fixtures and Admin shell conventions are ready for the shared foundation.
 
@@ -34,13 +34,13 @@
 
 **CRITICAL**: No user-story implementation should begin until this phase is complete.
 
-- [ ] T004 Create the PostgreSQL migration that preflights canonical code collisions, normalizes valid codes, adds the code check constraint, `lock_version`, `departments.leader_id` index and `department_user.user_id` index in database/migrations/2026_08_17_000000_harden_departments_for_management.php
-- [ ] T005 [P] Add `lock_version`, scoped active/archived queries, historical leader/member relationships, count helpers and soft-deleted route resolution to app/Models/Department.php
-- [ ] T006 [P] Add reusable active Staff/Manager membership and active Manager leadership query scopes while preserving existing F01 role helpers in app/Models/User.php
-- [ ] T007 [P] Create the stale-version domain exception and render its actionable Blade `409` response in app/Exceptions/StaleDepartmentVersion.php and bootstrap/app.php
-- [ ] T008 [P] Create the focused Department audit writer with actor/request context and before/after snapshots in app/Support/Department/DepartmentActivityLogger.php
-- [ ] T009 Implement deny-by-default Department abilities and explicit policy registration in app/Policies/DepartmentPolicy.php and app/Providers/AppServiceProvider.php
-- [ ] T010 [P] Create reusable accessible Admin button, badge and native-dialog Blade components in resources/views/components/admin/button.blade.php, resources/views/components/admin/badge.blade.php and resources/views/components/admin/dialog.blade.php
+- [X] T004 Create the PostgreSQL migration that preflights canonical code collisions, normalizes valid codes, adds the code check constraint, `lock_version`, `departments.leader_id` index and `department_user.user_id` index in database/migrations/2026_08_17_000000_harden_departments_for_management.php
+- [X] T005 [P] Add `lock_version`, scoped active/archived queries, historical leader/member relationships, count helpers and soft-deleted route resolution to app/Models/Department.php
+- [X] T006 [P] Add reusable active Staff/Manager membership and active Manager leadership query scopes while preserving existing F01 role helpers in app/Models/User.php
+- [X] T007 [P] Create the stale-version domain exception and render its actionable Blade `409` response in app/Exceptions/StaleDepartmentVersion.php and bootstrap/app.php
+- [X] T008 [P] Create the focused Department audit writer with actor/request context and before/after snapshots in app/Support/Department/DepartmentActivityLogger.php
+- [X] T009 Implement deny-by-default Department abilities and explicit policy registration in app/Policies/DepartmentPolicy.php and app/Providers/AppServiceProvider.php
+- [X] T010 [P] Create reusable accessible Admin button, badge and native-dialog Blade components in resources/views/components/admin/button.blade.php, resources/views/components/admin/badge.blade.php and resources/views/components/admin/dialog.blade.php
 
 **Checkpoint**: Database integrity, scoped access, audit, optimistic concurrency and shared Admin components are ready; user-story work may begin.
 

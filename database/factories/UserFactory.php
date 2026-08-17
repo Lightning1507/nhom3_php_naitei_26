@@ -44,6 +44,31 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => true,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
+
+    public function staff(): static
+    {
+        return $this->withRole(UserRole::Staff);
+    }
+
+    public function manager(): static
+    {
+        return $this->withRole(UserRole::Manager);
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */
