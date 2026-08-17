@@ -73,7 +73,9 @@ interface immediately recognizable and prevent duplicate business logic.
 
 ### VII. Quality & Definition of Done
 A feature is Done only when its approved scope is implemented, required validation and
-authorization are present, relevant tests pass, and the code has been reviewed and merged. Tests
+authorization are present, relevant tests pass, and the code has been reviewed and merged. All code
+MUST pass the configured frontend and backend linters (`npm run lint` and `composer run lint`). 
+Agents MUST run these tools and fix formatting issues before considering a task Done. Tests
 MUST cover applicable core workflow transitions, authorization boundaries, data-integrity rules,
 and other critical business rules. Security and data-integrity defects MUST receive high priority.
 Additional tests SHOULD be proportional to business risk and regression impact. This definition
