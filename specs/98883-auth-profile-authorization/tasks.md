@@ -129,19 +129,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T048 [P] [US3] Add Citizen profile read tests in tests/Feature/Api/V1/Profile/CitizenProfileReadTest.php
-- [ ] T049 [P] [US3] Add Citizen profile update tests in tests/Feature/Api/V1/Profile/CitizenProfileUpdateTest.php
-- [ ] T050 [P] [US3] Add forbidden profile field tests in tests/Feature/Api/V1/Profile/CitizenProfileForbiddenFieldsTest.php
+- [X] T048 [P] [US3] Add Citizen profile read tests in tests/Feature/Api/V1/Profile/CitizenProfileReadTest.php
+- [X] T049 [P] [US3] Add Citizen profile update tests in tests/Feature/Api/V1/Profile/CitizenProfileUpdateTest.php
+- [X] T050 [P] [US3] Add forbidden profile field tests in tests/Feature/Api/V1/Profile/CitizenProfileForbiddenFieldsTest.php
 
 ### Implementation for User Story 3
 
-- [ ] T051 [P] [US3] Create Citizen profile update request in app/Http/Requests/Api/V1/Profile/UpdateCitizenProfileRequest.php
-- [ ] T052 [US3] Create Citizen profile controller in app/Http/Controllers/Api/V1/ProfileController.php
-- [ ] T053 [US3] Add current Citizen profile API routes in routes/api.php
-- [ ] T054 [US3] Record profile update events in app/Http/Controllers/Api/V1/ProfileController.php
-- [ ] T055 [US3] Add Citizen profile API client functions in resources/js/citizen/api/profile.js
-- [ ] T056 [US3] Add Citizen profile page in resources/js/citizen/pages/ProfilePage.jsx
-- [ ] T057 [US3] Wire Citizen profile route in resources/js/citizen/App.jsx
+- [X] T051 [P] [US3] Create Citizen profile update request in app/Http/Requests/Api/V1/Profile/UpdateCitizenProfileRequest.php
+- [X] T052 [US3] Create Citizen profile controller in app/Http/Controllers/Api/V1/ProfileController.php
+- [X] T053 [US3] Add current Citizen profile API routes in routes/api.php
+- [X] T054 [US3] Record profile update events in app/Http/Controllers/Api/V1/ProfileController.php
+- [X] T055 [US3] Add Citizen profile API client functions in resources/js/citizen/api/profile.js
+- [X] T056 [US3] Add Citizen profile page in resources/js/citizen/pages/ProfilePage.jsx
+- [X] T057 [US3] Wire Citizen profile route in resources/js/citizen/App.jsx
 
 **Checkpoint**: US3 is fully functional and independently testable.
 
@@ -151,15 +151,15 @@
 
 **Purpose**: Final verification, documentation, and cleanup across all user stories.
 
-- [ ] T058 [P] Update F01 implementation notes in docs/technology-stack.md
-- [ ] T059 [P] Update F01 UI status in docs/ui-guidelines.md
-- [ ] T060 Run Laravel Pint for touched PHP files with vendor/bin/pint
-- [ ] T061 Run Vite build for touched Citizen assets with npm run build
-- [ ] T062 Run F01 targeted tests with php artisan test --filter=Auth
-- [ ] T063 Run F01 targeted tests with php artisan test --filter=Profile
-- [ ] T064 Run Admin auth tests with php artisan test --filter=Admin
-- [ ] T065 Run full backend test suite with php artisan test
-- [ ] T066 Validate F01 quickstart scenarios in specs/98883-auth-profile-authorization/quickstart.md
+- [X] T058 [P] Update F01 implementation notes in docs/technology-stack.md
+- [X] T059 [P] Update F01 UI status in docs/ui-guidelines.md
+- [X] T060 Run Laravel Pint for touched PHP files with vendor/bin/pint
+- [X] T061 Run Vite build for touched Citizen assets with npm run build
+- [X] T062 Run F01 targeted tests with php artisan test --filter=Auth
+- [X] T063 Run F01 targeted tests with php artisan test --filter=Profile
+- [X] T064 Run Admin auth tests with php artisan test --filter=Admin
+- [X] T065 Run full backend test suite with php artisan test
+- [X] T066 Validate F01 quickstart scenarios in specs/98883-auth-profile-authorization/quickstart.md
 
 ---
 

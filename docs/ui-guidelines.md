@@ -17,10 +17,11 @@ Dựa trên thiết kế Figma hiện tại, dưới đây là phân tích chi t
 ### F01 – Authentication, User Profile & Authorization
 *   **Gồm các màn hình:** Đăng nhập, Đăng ký, Quên mật khẩu, Thông tin tài khoản.
 *   **Đã có trên Figma:** (Chưa thiết kế)
-*   **Cần bổ sung:**
+*   **Đã triển khai trong codebase:**
     *   `Citizen - Login / Register`
     *   `Citizen - Profile` (Quản lý thông tin cá nhân)
     *   `Admin - Login` (Dành cho cán bộ)
+*   **Cần bổ sung sau F01:** `Forgot Password` khi có feature khôi phục mật khẩu riêng.
 
 ### F02 – Public Service Catalog Management
 *   **Gồm các màn hình:** Trang chủ, Danh sách dịch vụ công, Chi tiết dịch vụ công, Quản lý danh mục (Admin).

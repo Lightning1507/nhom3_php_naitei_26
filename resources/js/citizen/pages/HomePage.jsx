@@ -56,6 +56,9 @@ export default function HomePage() {
                                 <p className="text-sm font-semibold text-gray-950">{citizen.name}</p>
                                 <p className="text-xs text-gray-500">{citizen.email}</p>
                             </div>
+                            <Link className="btn-primary rounded-xl px-4 py-2 text-sm" to="/profile">
+                                Hồ sơ
+                            </Link>
                             <button
                                 className="btn-secondary rounded-xl px-4 py-2 text-sm"
                                 disabled={isLoggingOut}
@@ -78,29 +81,29 @@ export default function HomePage() {
                 </header>
 
                 <div className="flex flex-1 flex-col justify-center py-16">
-                {flash && (
-                    <p className="mb-6 w-fit rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-success">
-                        {flash}
+                    {flash && (
+                        <p className="mb-6 w-fit rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-success">
+                            {flash}
+                        </p>
+                    )}
+
+                    <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-gray-950 sm:text-6xl">
+                        Hệ thống Quản lý Dịch vụ Công
+                    </h1>
+                    <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+                        Dịch vụ công trực tuyến cho công dân.
                     </p>
-                )}
 
-                <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-gray-950 sm:text-6xl">
-                    Hệ thống Quản lý Dịch vụ Công
-                </h1>
-                <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-                    Dịch vụ công trực tuyến cho công dân.
-                </p>
-
-                {!citizen && (
-                    <div className="mt-8 flex flex-wrap gap-4">
-                        <Link className="btn-primary rounded-xl px-6 py-4 text-base" to="/login">
-                            Đăng nhập
-                        </Link>
-                        <Link className="btn-secondary rounded-xl px-6 py-4 text-base" to="/register">
-                            Đăng ký
-                        </Link>
-                    </div>
-                )}
+                    {!citizen && (
+                        <div className="mt-8 flex flex-wrap gap-4">
+                            <Link className="btn-primary rounded-xl px-6 py-4 text-base" to="/login">
+                                Đăng nhập
+                            </Link>
+                            <Link className="btn-secondary rounded-xl px-6 py-4 text-base" to="/register">
+                                Đăng ký
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </section>
         </main>

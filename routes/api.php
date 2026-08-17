@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\ApplicationController;
 use App\Http\Controllers\Api\V1\Auth\CitizenAuthController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
@@ -21,5 +22,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::middleware(['auth:sanctum', 'citizen'])->group(function (): void {
             Route::post('/logout', [CitizenAuthController::class, 'logout'])->name('logout');
         });
+    });
+
+    Route::middleware(['auth:sanctum', 'citizen'])->group(function (): void {
+        Route::get('/me', [ProfileController::class, 'show'])->name('profile.show');
+        Route::patch('/me', [ProfileController::class, 'update'])->name('profile.update');
     });
 });

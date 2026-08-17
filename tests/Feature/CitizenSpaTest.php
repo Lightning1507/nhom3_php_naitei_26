@@ -27,7 +27,7 @@ class CitizenSpaTest extends TestCase
 
     public function test_citizen_auth_routes_render_the_same_spa(): void
     {
-        foreach (['/login', '/register'] as $path) {
+        foreach (['/login', '/register', '/profile'] as $path) {
             $this->get($path)
                 ->assertOk()
                 ->assertViewIs('citizen.app');

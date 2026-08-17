@@ -34,14 +34,14 @@ flowchart LR
 
 | Thành phần | Công nghệ | Trạng thái |
 |---|---|---|
-| Backend | PHP 8.5 + Laravel 13 | Đang sử dụng |
+| Backend | PHP 8.3+ + Laravel 13 | Đang sử dụng |
 | Database | PostgreSQL hosted on Supabase | PostgreSQL đã cấu hình; Supabase là môi trường triển khai dự kiến |
 | ORM | Laravel Eloquent ORM | Đang sử dụng |
-| Citizen Site | React.js + Tailwind CSS, sử dụng Laravel REST API | Đã có bộ khung cơ bản |
-| Admin Site | Laravel Blade SSR + Alpine.js + Tailwind CSS | Đã có bộ khung cơ bản |
-| API Authentication | Laravel Sanctum, SPA cookie authentication | Đã cấu hình nền tảng; luồng đăng nhập sẽ được bổ sung theo feature |
-| Admin Authentication | Laravel session authentication | Sẽ hoàn thiện theo feature authentication |
-| Authorization | Middleware + Gates/Policies | Kiến trúc đã chọn; policies sẽ được bổ sung theo nghiệp vụ |
+| Citizen Site | React.js + Tailwind CSS, sử dụng Laravel REST API | Đã có auth và profile UI cơ bản |
+| Admin Site | Laravel Blade SSR + Alpine.js + Tailwind CSS | Đã có dashboard và auth boundary cơ bản |
+| API Authentication | Laravel Sanctum, SPA cookie authentication | Đã có Citizen đăng ký, đăng nhập, đăng xuất và profile |
+| Admin Authentication | Laravel session authentication | Đã có đăng nhập/đăng xuất nội bộ dưới `/admin` |
+| Authorization | Middleware + Gates/Policies | Đã có role middleware, active-account checks và Citizen self-access policy |
 | API Documentation | OpenAPI/Swagger với Scramble | Dự kiến, chưa cài đặt |
 | File Storage | Laravel Filesystem, private local storage | Đã cấu hình |
 | Notifications | Laravel Notifications + Mail | Kiến trúc đã chọn; chưa có notification nghiệp vụ |
@@ -137,6 +137,8 @@ OpenAPI/Swagger bằng Scramble sẽ là nguồn tài liệu endpoint sau khi pa
 
 - Citizen React SPA dùng Sanctum cookie/session authentication và CSRF
   protection; không lưu access token của first-party SPA trong `localStorage`.
+- Citizen profile sử dụng `/api/v1/me`; chỉ các trường `name`, `date_of_birth`,
+  `phone` và `address` được phép cập nhật từ phía Citizen.
 - Admin Blade dùng Laravel web session authentication.
 - Middleware bảo vệ route theo trạng thái đăng nhập hoặc vai trò.
 - Gates/Policies kiểm soát quyền thực hiện hành động trên từng resource.
