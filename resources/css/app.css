@@ -24,6 +24,8 @@
     --color-success: #059669;
     --color-surface: #F9FAFB;
     --color-border: #E5E7EB;
+    --color-admin-page: #F1F3F6;
+    --color-admin-muted: #6B7280;
 }
 
 @layer components {
@@ -117,5 +119,72 @@
 
     .table-cell {
         @apply py-4 px-6 text-sm text-gray-900 font-inter;
+    }
+
+    /* Compact Admin variants. Keep these separate from Citizen controls above. */
+    .admin-btn {
+        @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] px-5 py-2.5 font-inter text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .admin-btn-primary {
+        @apply bg-primary text-white shadow-sm hover:bg-primary-hover focus:ring-primary;
+    }
+
+    .admin-btn-secondary {
+        @apply border border-border bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-300;
+    }
+
+    .admin-btn-danger {
+        @apply bg-danger text-white shadow-sm hover:bg-danger-hover focus:ring-danger;
+    }
+
+    .admin-btn-ghost {
+        @apply bg-transparent text-primary hover:bg-blue-50 focus:ring-primary;
+    }
+
+    .admin-label {
+        @apply mb-1.5 block font-inter text-[13px] font-semibold text-gray-700;
+    }
+
+    .admin-input,
+    .admin-select {
+        @apply min-h-10 w-full rounded-[10px] border border-gray-300 bg-white px-3.5 py-2.5 font-inter text-[13px] text-gray-900 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500;
+    }
+
+    .admin-input[aria-invalid='true'],
+    .admin-select[aria-invalid='true'] {
+        @apply border-danger focus:ring-danger;
+    }
+
+    .admin-field-error {
+        @apply mt-1.5 font-inter text-xs font-medium text-danger;
+    }
+
+    .admin-card {
+        @apply rounded-2xl border border-border bg-white shadow-sm;
+    }
+
+    .admin-card-body {
+        @apply p-4 sm:p-5;
+    }
+
+    .admin-table-wrap {
+        @apply w-full overflow-x-auto rounded-2xl border border-border bg-white;
+    }
+
+    .admin-table {
+        @apply min-w-full border-collapse text-left font-inter;
+    }
+
+    .admin-table th {
+        @apply whitespace-nowrap border-b border-border bg-gray-50 px-5 py-3 text-xs font-bold uppercase tracking-[0.07em] text-gray-500;
+    }
+
+    .admin-table td {
+        @apply border-b border-border px-5 py-4 text-sm text-gray-900 last:border-b-0;
+    }
+
+    .admin-table tbody tr {
+        @apply transition-colors hover:bg-gray-50;
     }
 }
