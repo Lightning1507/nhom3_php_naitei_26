@@ -12,6 +12,12 @@
             <a href="{{ route('admin.dashboard') }}" class="font-semibold">
                 {{ config('app.name') }}
             </a>
+            <form class="float-right" method="POST" action="{{ route('admin.logout') }}">
+                @csrf
+                <button class="text-sm font-semibold text-primary" type="submit">
+                    Đăng xuất
+                </button>
+            </form>
         </div>
     </header>
 

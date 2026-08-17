@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureCitizen;
+use App\Http\Middleware\EnsureInternalUser;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -15,8 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->redirectGuestsTo(fn ($request): string => $request->is('admin/*') || $request->is('admin')
+            ? route('admin.login')
+            : route('citizen.app'));
         $middleware->alias([
             'citizen' => EnsureCitizen::class,
+            'internal' => EnsureInternalUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
