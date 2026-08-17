@@ -163,6 +163,23 @@
 
 ---
 
+## Phase 8: Supplemental Task - Google OAuth Login for Citizen Accounts
+
+**Redmine**: [#99007](https://edu-redmine.sun-asterisk.vn/issues/99007)
+
+**Purpose**: Allow Citizens to authenticate with Google while preserving the existing Citizen identity requirements.
+
+- [X] T067 Add Laravel Socialite dependency for Google OAuth in composer.json
+- [X] T068 Add Google OAuth service configuration and safe env example values in config/services.php and .env.example
+- [X] T069 Add Google OAuth redirect, callback, pending, and complete endpoints in routes/api.php
+- [X] T070 Add Google Citizen auth controller in app/Http/Controllers/Api/V1/Auth/GoogleCitizenAuthController.php
+- [X] T071 Add Google completion request validation in app/Http/Requests/Api/V1/Auth/CompleteGoogleCitizenRegistrationRequest.php
+- [X] T072 Add Google login button and completion screen in resources/js/citizen
+- [X] T073 Add Google OAuth login and completion tests in tests/Feature/Api/V1/Auth/GoogleCitizenAuthTest.php
+- [X] T074 Update F01 docs for Google OAuth in docs/technology-stack.md and docs/ui-guidelines.md
+
+---
+
 ## Dependencies and Execution Order
 
 ### Phase Dependencies

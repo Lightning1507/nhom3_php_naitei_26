@@ -10,18 +10,28 @@ const initialForm = {
     password: '',
 };
 
+const googleErrorMessages = {
+    google_callback_failed: 'Không thể đăng nhập bằng Google. Vui lòng thử lại.',
+    google_login_denied: 'Tài khoản Google này không thể sử dụng khu vực công dân.',
+    google_missing_email: 'Tài khoản Google không cung cấp email hợp lệ.',
+};
+
 export default function LoginPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [form, setForm] = useState(initialForm);
     const [errors, setErrors] = useState({});
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState(() => {
+        const error = new URLSearchParams(location.search).get('auth_error');
+
+        return googleErrorMessages[error] ?? '';
+    });
     const [flash, setFlash] = useState(location.state?.flash ?? '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (getRememberedCitizen()) {
-            navigate('/profile', { replace: true });
+            navigate('/', { replace: true });
         }
     }, [navigate]);
 
@@ -111,6 +121,22 @@ export default function LoginPage() {
                     <button className="btn-primary w-full rounded-full py-3 text-base" disabled={isSubmitting}>
                         {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
                     </button>
+
+                    <div className="flex items-center gap-3 text-xs font-semibold uppercase text-gray-400">
+                        <span className="h-px flex-1 bg-border" />
+                        Hoặc
+                        <span className="h-px flex-1 bg-border" />
+                    </div>
+
+                    <a
+                        className="btn-secondary flex w-full items-center justify-center gap-3 rounded-full py-3 text-base"
+                        href="/api/v1/auth/google/redirect"
+                    >
+                        <span className="flex size-6 items-center justify-center rounded-full bg-white text-sm font-bold text-primary">
+                            G
+                        </span>
+                        Đăng nhập với Google
+                    </a>
                 </div>
             </form>
 

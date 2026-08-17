@@ -15,10 +15,11 @@ Tài liệu UI Guidelines này sẽ không đi sâu vào việc giải thích ki
 Dựa trên thiết kế Figma hiện tại, dưới đây là phân tích chi tiết từng Feature:
 
 ### F01 – Authentication, User Profile & Authorization
-*   **Gồm các màn hình:** Đăng nhập, Đăng ký, Quên mật khẩu, Thông tin tài khoản.
+*   **Gồm các màn hình:** Đăng nhập, Đăng ký, đăng nhập Google, bổ sung thông tin Google, Quên mật khẩu, Thông tin tài khoản.
 *   **Đã có trên Figma:** (Chưa thiết kế)
 *   **Đã triển khai trong codebase:**
     *   `Citizen - Login / Register`
+    *   `Citizen - Google Completion` (Bổ sung thông tin cho email Google mới)
     *   `Citizen - Profile` (Quản lý thông tin cá nhân)
     *   `Admin - Login` (Dành cho cán bộ)
 *   **Cần bổ sung sau F01:** `Forgot Password` khi có feature khôi phục mật khẩu riêng.

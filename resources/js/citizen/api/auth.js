@@ -26,6 +26,20 @@ export async function logoutCitizen() {
     return data;
 }
 
+export async function getPendingGoogleCitizen() {
+    const { data } = await apiClient.get('/auth/google/pending');
+
+    return data;
+}
+
+export async function completeGoogleCitizenRegistration(payload) {
+    await initializeCsrfProtection();
+
+    const { data } = await apiClient.post('/auth/google/complete', payload);
+
+    return data;
+}
+
 export function rememberCitizenSession(user) {
     localStorage.setItem(citizenSessionKey, JSON.stringify(user));
 }
