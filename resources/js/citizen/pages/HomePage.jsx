@@ -1,34 +1,106 @@
 import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-import apiClient from '../api/client';
+import { forgetCitizenSession, getRememberedCitizen, logoutCitizen } from '../api/auth';
 
 export default function HomePage() {
-    const [apiStatus, setApiStatus] = useState('Checking API connection...');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [citizen, setCitizen] = useState(() => getRememberedCitizen());
+    const [flash, setFlash] = useState(location.state?.flash ?? '');
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     useEffect(() => {
-        apiClient
-            .get('/health')
-            .then(({ data }) => setApiStatus(data.message))
-            .catch(() => setApiStatus('API is unavailable'));
-    }, []);
+        if (!flash) {
+            return undefined;
+        }
+
+        const timeout = window.setTimeout(() => {
+            setFlash('');
+            window.history.replaceState({}, document.title);
+        }, 4000);
+
+        return () => window.clearTimeout(timeout);
+    }, [flash]);
+
+    async function handleLogout() {
+        setIsLoggingOut(true);
+        setFlash('');
+
+        try {
+            await logoutCitizen();
+        } finally {
+            forgetCitizenSession();
+            setCitizen(null);
+            setIsLoggingOut(false);
+            navigate('/login', {
+                replace: true,
+                state: {
+                    flash: 'Đăng xuất thành công.',
+                },
+            });
+        }
+    }
 
     return (
-        <main className="min-h-screen bg-slate-50 px-6 py-16 text-slate-900">
-            <section className="mx-auto max-w-4xl rounded-2xl bg-white p-10 shadow-sm ring-1 ring-slate-200">
-                <p className="text-sm font-semibold uppercase tracking-widest text-sky-700">
-                    Citizen site
-                </p>
-                <h1 className="mt-3 text-4xl font-bold tracking-tight">
-                    Public Service Management System
+        <main className="min-h-screen bg-surface px-4 py-6 text-gray-900 sm:px-6 lg:px-8">
+            <section className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col">
+                <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <Link className="text-sm font-semibold uppercase text-primary" to="/">
+                        Cổng công dân
+                    </Link>
+
+                    {citizen ? (
+                        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                            <div className="text-left sm:text-right">
+                                <p className="text-sm font-semibold text-gray-950">{citizen.name}</p>
+                                <p className="text-xs text-gray-500">{citizen.email}</p>
+                            </div>
+                            <button
+                                className="btn-secondary rounded-xl px-4 py-2 text-sm"
+                                disabled={isLoggingOut}
+                                onClick={handleLogout}
+                                type="button"
+                            >
+                                {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex flex-wrap gap-3 sm:justify-end">
+                            <Link className="btn-secondary rounded-xl px-4 py-2 text-sm" to="/login">
+                                Đăng nhập
+                            </Link>
+                            <Link className="btn-primary rounded-xl px-4 py-2 text-sm" to="/register">
+                                Đăng ký
+                            </Link>
+                        </div>
+                    )}
+                </header>
+
+                <div className="flex flex-1 flex-col justify-center py-16">
+                {flash && (
+                    <p className="mb-6 w-fit rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-success">
+                        {flash}
+                    </p>
+                )}
+
+                <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-gray-950 sm:text-6xl">
+                    Hệ thống Quản lý Dịch vụ Công
                 </h1>
-                <p className="mt-4 max-w-2xl text-lg text-slate-600">
-                    This React application is the citizen-facing interface and communicates with
-                    the versioned Laravel REST API.
+                <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+                    Dịch vụ công trực tuyến cho công dân.
                 </p>
 
-                <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800">
-                    <span className="size-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                    {apiStatus}
+                {!citizen && (
+                    <div className="mt-8 flex flex-wrap gap-4">
+                        <Link className="btn-primary rounded-xl px-6 py-4 text-base" to="/login">
+                            Đăng nhập
+                        </Link>
+                        <Link className="btn-secondary rounded-xl px-6 py-4 text-base" to="/register">
+                            Đăng ký
+                        </Link>
+                    </div>
+                )}
                 </div>
             </section>
         </main>

@@ -92,6 +92,18 @@ class CitizenLoginTest extends TestCase
         ]);
     }
 
+    public function test_login_validation_returns_vietnamese_field_messages(): void
+    {
+        $response = $this->postJson('/api/v1/auth/login', [], $this->spaHeaders());
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Dữ liệu không hợp lệ.')
+            ->assertJsonPath('errors.email.0', 'Vui lòng nhập email.')
+            ->assertJsonPath('errors.password.0', 'Vui lòng nhập mật khẩu.');
+    }
+
     public function test_non_citizen_cannot_use_citizen_login_flow(): void
     {
         User::factory()->withRole(UserRole::Staff)->create([
