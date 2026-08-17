@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ServiceTypeResource;
+use App\Models\ServiceCategory;
 use App\Models\ServiceType;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -44,5 +46,15 @@ class ServiceCatalogController extends Controller
         $service->load('category');
 
         return new ServiceTypeResource($service);
+    }
+
+    /**
+     * Display a listing of categories for the catalog sidebar.
+     */
+    public function categories(): JsonResponse
+    {
+        $categories = ServiceCategory::select('id', 'name', 'code', 'description')->get();
+
+        return response()->json(['data' => $categories]);
     }
 }

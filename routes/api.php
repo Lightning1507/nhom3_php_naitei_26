@@ -12,6 +12,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
     // Public Service Catalog
     Route::get('/services', [ServiceCatalogController::class, 'index'])->name('services.index');
+    Route::get('/services/categories', [ServiceCatalogController::class, 'categories'])->name('services.categories');
     Route::get('/services/{service}', [ServiceCatalogController::class, 'show'])->name('services.show');
 
     Route::middleware('auth:sanctum')->group(function (): void {

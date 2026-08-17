@@ -30,7 +30,7 @@
   },
   "lint-staged": {
     "resources/**/*.{js,jsx,ts,tsx,css,scss}": [
-      "sunlint --fix"
+      "sunlint"
     ],
     "**/*.php": [
       "vendor/bin/pint"
