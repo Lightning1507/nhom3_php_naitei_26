@@ -81,24 +81,24 @@
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Add leader eligibility, automatic membership, duplicate membership, Manager scope and current-leader removal tests in tests/Feature/Admin/Departments/DepartmentMembershipTest.php
-- [ ] T023 [P] [US2] Add bounded manager/member candidate search, role/status filtering, exclusion and anti-enumeration tests in tests/Feature/Admin/Departments/DepartmentCandidateTest.php
-- [ ] T024 [P] [US2] Extend leader/add/remove audit and rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
+- [X] T022 [P] [US2] Add leader eligibility, automatic membership, duplicate membership, Manager scope and current-leader removal tests in tests/Feature/Admin/Departments/DepartmentMembershipTest.php
+- [X] T023 [P] [US2] Add bounded manager/member candidate search, role/status filtering, exclusion and anti-enumeration tests in tests/Feature/Admin/Departments/DepartmentCandidateTest.php
+- [X] T024 [P] [US2] Extend leader/add/remove audit and rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
 
 ### Implementation for User Story 2
 
-- [ ] T025 [P] [US2] Implement nullable active-Manager leader and version validation in app/Http/Requests/Admin/Departments/ChangeDepartmentLeaderRequest.php
-- [ ] T026 [P] [US2] Implement add/remove member ID, eligibility and version validation in app/Http/Requests/Admin/Departments/StoreDepartmentMemberRequest.php and app/Http/Requests/Admin/Departments/DestroyDepartmentMemberRequest.php
-- [ ] T027 [P] [US2] Implement locked leader change/unset, automatic non-duplicating membership, version increment and audit transaction in app/Actions/Department/ChangeDepartmentLeader.php
-- [ ] T028 [P] [US2] Implement scoped active Staff/Manager membership insertion, database duplicate mapping, version increment and audit in app/Actions/Department/AddDepartmentMember.php
-- [ ] T029 [P] [US2] Implement scoped member removal with current-leader guard, version increment, preserved User/history and audit in app/Actions/Department/RemoveDepartmentMember.php
-- [ ] T030 [P] [US2] Implement the leader update endpoint with policy authorization and PRG feedback in app/Http/Controllers/Admin/Departments/DepartmentLeaderController.php
-- [ ] T031 [P] [US2] Implement add/remove member endpoints with scoped membership resolution and PRG feedback in app/Http/Controllers/Admin/Departments/DepartmentMemberController.php
-- [ ] T032 [US2] Implement authorized, minimum-two-character, maximum-20-result manager/member candidate responses in app/Http/Controllers/Admin/Departments/DepartmentCandidateController.php
-- [ ] T033 [US2] Extend Department creation to accept an optional valid leader and atomically attach leader membership in app/Http/Requests/Admin/Departments/StoreDepartmentRequest.php and app/Actions/Department/CreateDepartment.php
-- [ ] T034 [US2] Add leader combobox, leader warning, member table and add/remove confirmations to resources/views/admin/departments/partials/form.blade.php and resources/views/admin/departments/show.blade.php
-- [ ] T035 [US2] Implement accessible native-dialog and bounded candidate-combobox progressive behavior in resources/js/admin/app.js
-- [ ] T036 [US2] Register leader, member and manager/member candidate routes with correct ordering and method verbs in routes/web.php
+- [X] T025 [P] [US2] Implement nullable active-Manager leader and version validation in app/Http/Requests/Admin/Departments/ChangeDepartmentLeaderRequest.php
+- [X] T026 [P] [US2] Implement add/remove member ID, eligibility and version validation in app/Http/Requests/Admin/Departments/StoreDepartmentMemberRequest.php and app/Http/Requests/Admin/Departments/DestroyDepartmentMemberRequest.php
+- [X] T027 [P] [US2] Implement locked leader change/unset, automatic non-duplicating membership, version increment and audit transaction in app/Actions/Department/ChangeDepartmentLeader.php
+- [X] T028 [P] [US2] Implement scoped active Staff/Manager membership insertion, database duplicate mapping, version increment and audit in app/Actions/Department/AddDepartmentMember.php
+- [X] T029 [P] [US2] Implement scoped member removal with current-leader guard, version increment, preserved User/history and audit in app/Actions/Department/RemoveDepartmentMember.php
+- [X] T030 [P] [US2] Implement the leader update endpoint with policy authorization and PRG feedback in app/Http/Controllers/Admin/Departments/DepartmentLeaderController.php
+- [X] T031 [P] [US2] Implement add/remove member endpoints with scoped membership resolution and PRG feedback in app/Http/Controllers/Admin/Departments/DepartmentMemberController.php
+- [X] T032 [US2] Implement authorized, minimum-two-character, maximum-20-result manager/member candidate responses in app/Http/Controllers/Admin/Departments/DepartmentCandidateController.php
+- [X] T033 [US2] Extend Department creation to accept an optional valid leader and atomically attach leader membership in app/Http/Requests/Admin/Departments/StoreDepartmentRequest.php and app/Actions/Department/CreateDepartment.php
+- [X] T034 [US2] Add leader combobox, leader warning, member table and add/remove confirmations to resources/views/admin/departments/partials/form.blade.php and resources/views/admin/departments/show.blade.php
+- [X] T035 [US2] Implement accessible native-dialog and bounded candidate-combobox progressive behavior in resources/js/admin/app.js
+- [X] T036 [US2] Register leader, member and manager/member candidate routes with correct ordering and method verbs in routes/web.php
 
 **Checkpoint**: US2 is independently verifiable with a Department fixture; leader/member invariants and scoped Manager operations are enforced server-side.
 
