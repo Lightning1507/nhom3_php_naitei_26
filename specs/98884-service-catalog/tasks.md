@@ -35,13 +35,13 @@
 
 ### Implementation for User Story 2 & 3
 
-- [ ] T011 [P] [US2] Create Admin ServiceCategoryController (`app/Http/Controllers/Admin/ServiceCategoryController.php`)
+- [X] T011 [P] [US2] Create Admin ServiceCategoryController (`app/Http/Controllers/Admin/ServiceCategoryController.php`)
 - [ ] T012 [P] [US2] Create Admin ServiceTypeController (`app/Http/Controllers/Admin/ServiceTypeController.php`)
-- [ ] T013 [P] [US2] Create Form Requests for validation (`StoreServiceCategoryRequest`, `UpdateServiceCategoryRequest`, `StoreServiceTypeRequest`, `UpdateServiceTypeRequest`)
-- [ ] T014 [P] [US2] Register Admin routes for Categories and ServiceTypes in `routes/web.php`
-- [ ] T015 [US2] Implement Controller CRUD logic for Categories
+- [X] T013 [P] [US2] Create Form Requests for validation (`StoreServiceCategoryRequest`, `UpdateServiceCategoryRequest`, `StoreServiceTypeRequest`, `UpdateServiceTypeRequest`)
+- [X] T014 [P] [US2] Register Admin routes for Categories and ServiceTypes in `routes/web.php`
+- [X] T015 [US2] Implement Controller CRUD logic for Categories
 - [ ] T016 [US2] Implement Controller CRUD logic for ServiceTypes (incorporating JSON required_documents, active/inactive toggle and soft deletes)
-- [ ] T017 [P] [US2] Create Blade views for Category CRUD (`resources/views/admin/service_categories/index.blade.php`, `create.blade.php`, `edit.blade.php`)
+- [X] T017 [P] [US2] Create Blade views for Category CRUD (`resources/views/admin/service_categories/index.blade.php`, `create.blade.php`, `edit.blade.php`)
 - [ ] T018 [P] [US2] Create Blade views for ServiceType CRUD (`resources/views/admin/service_types/index.blade.php`, `create.blade.php`, `edit.blade.php`)
 - [ ] T019 [US2] Add automated Feature tests for Admin Category/ServiceType Management (`tests/Feature/Admin/ServiceCatalogManagementTest.php`)
 
