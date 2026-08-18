@@ -4,10 +4,16 @@ use App\Http\Controllers\Api\V1\ApplicationController;
 use App\Http\Controllers\Api\V1\Auth\CitizenAuthController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\ServiceCatalogController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('/health', HealthController::class)->name('health');
+
+    // Public Service Catalog
+    Route::get('/services', [ServiceCatalogController::class, 'index'])->name('services.index');
+    Route::get('/services/categories', [ServiceCatalogController::class, 'categories'])->name('services.categories');
+    Route::get('/services/{service}', [ServiceCatalogController::class, 'show'])->name('services.show');
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
