@@ -1,8 +1,8 @@
 # Implementation Plan: F03 - Department & Staff Management
 
-**Branch**: `98884-department-staff-management` | **Date**: 2026-08-17 | **Spec**: [spec.md](./spec.md)
+**Branch**: `98885-department-staff-management` | **Date**: 2026-08-17 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `specs/98884-department-staff-management/spec.md`
+**Input**: Feature specification from `specs/98885-department-staff-management/spec.md`
 
 ## Summary
 
@@ -45,7 +45,7 @@ Triển khai khu vực quản lý cơ cấu tổ chức nội bộ bằng Larave
 ### Documentation (this feature)
 
 ```text
-specs/98884-department-staff-management/
+specs/98885-department-staff-management/
 |-- plan.md
 |-- research.md
 |-- data-model.md

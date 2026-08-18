@@ -17,7 +17,7 @@
                 <a class="admin-btn admin-btn-primary" href="{{ url()->current() }}">
                     Tải lại dữ liệu
                 </a>
-                <a class="admin-btn admin-btn-secondary" href="{{ url('/admin/departments') }}">
+                <a class="admin-btn admin-btn-secondary" href="{{ route('admin.departments.index') }}">
                     Về danh sách phòng ban
                 </a>
             </div>

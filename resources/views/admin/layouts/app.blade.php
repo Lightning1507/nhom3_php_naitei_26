@@ -27,7 +27,7 @@
 
                 @can('viewAny', \App\Models\Department::class)
                     <a
-                        href="{{ url('/admin/departments') }}"
+                        href="{{ route('admin.departments.index') }}"
                         @class([
                             'whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
                             'bg-white/20 text-white' => request()->routeIs('admin.departments.*'),

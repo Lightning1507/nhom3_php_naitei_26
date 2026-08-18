@@ -1,6 +1,6 @@
 # Tasks: F03 - Department & Staff Management
 
-**Input**: Design documents from `specs/98884-department-staff-management/`
+**Input**: Design documents from `specs/98885-department-staff-management/`
 
 **Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/admin-departments.md](./contracts/admin-departments.md), [quickstart.md](./quickstart.md), [design-context.md](./design-context.md)
 
@@ -54,20 +54,20 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Add guest, Citizen, Staff, Manager and Super Admin create/update route-boundary tests in tests/Feature/Admin/Departments/DepartmentAuthorizationTest.php
-- [ ] T012 [P] [US1] Add Department create/read/update, canonical code, invalid fields, concurrent duplicate and stale-version tests in tests/Feature/Admin/Departments/DepartmentManagementTest.php
-- [ ] T013 [P] [US1] Add `department.created` and `department.updated` actor/snapshot/rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
+- [X] T011 [P] [US1] Add guest, Citizen, Staff, Manager and Super Admin create/update route-boundary tests in tests/Feature/Admin/Departments/DepartmentAuthorizationTest.php
+- [X] T012 [P] [US1] Add Department create/read/update, canonical code, invalid fields, concurrent duplicate and stale-version tests in tests/Feature/Admin/Departments/DepartmentManagementTest.php
+- [X] T013 [P] [US1] Add `department.created` and `department.updated` actor/snapshot/rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Implement name/code/address normalization, validation and archived-code uniqueness for create in app/Http/Requests/Admin/Departments/StoreDepartmentRequest.php
-- [ ] T015 [P] [US1] Implement update validation, self-ignore uniqueness and required version token in app/Http/Requests/Admin/Departments/UpdateDepartmentRequest.php
-- [ ] T016 [P] [US1] Implement transactional Department creation, unique-constraint error mapping and create audit in app/Actions/Department/CreateDepartment.php
-- [ ] T017 [P] [US1] Implement locked version comparison, identity update, version increment, duplicate error mapping and update audit in app/Actions/Department/UpdateDepartment.php
-- [ ] T018 [US1] Implement the basic active Department list, create/store, show, edit/update and policy authorization flow in app/Http/Controllers/Admin/Departments/DepartmentController.php
-- [ ] T019 [P] [US1] Create the shared Department identity form and dedicated create/edit pages with field errors and version token in resources/views/admin/departments/partials/form.blade.php, resources/views/admin/departments/create.blade.php and resources/views/admin/departments/edit.blade.php
-- [ ] T020 [P] [US1] Create the initial active Department list/detail pages with missing-leader and conflict states in resources/views/admin/departments/index.blade.php and resources/views/admin/departments/show.blade.php
-- [ ] T021 [US1] Register named Admin Department list/create/store/show/edit/update routes under the existing `auth` and `internal` group in routes/web.php
+- [X] T014 [P] [US1] Implement name/code/address normalization, validation and archived-code uniqueness for create in app/Http/Requests/Admin/Departments/StoreDepartmentRequest.php
+- [X] T015 [P] [US1] Implement update validation, self-ignore uniqueness and required version token in app/Http/Requests/Admin/Departments/UpdateDepartmentRequest.php
+- [X] T016 [P] [US1] Implement transactional Department creation, unique-constraint error mapping and create audit in app/Actions/Department/CreateDepartment.php
+- [X] T017 [P] [US1] Implement locked version comparison, identity update, version increment, duplicate error mapping and update audit in app/Actions/Department/UpdateDepartment.php
+- [X] T018 [US1] Implement the basic active Department list, create/store, show, edit/update and policy authorization flow in app/Http/Controllers/Admin/Departments/DepartmentController.php
+- [X] T019 [P] [US1] Create the shared Department identity form and dedicated create/edit pages with field errors and version token in resources/views/admin/departments/partials/form.blade.php, resources/views/admin/departments/create.blade.php and resources/views/admin/departments/edit.blade.php
+- [X] T020 [P] [US1] Create the initial active Department list/detail pages with missing-leader and conflict states in resources/views/admin/departments/index.blade.php and resources/views/admin/departments/show.blade.php
+- [X] T021 [US1] Register named Admin Department list/create/store/show/edit/update routes under the existing `auth` and `internal` group in routes/web.php
 
 **Checkpoint**: US1 is independently functional and is the suggested MVP: Super Admin can safely create, inspect and edit Department identity data.
 
@@ -181,7 +181,7 @@
 
 - [ ] T060 [P] Document F03 implementation status, schema enhancement and Admin-only dependencies in docs/technology-stack.md
 - [ ] T061 [P] Update F03 screen mapping and implemented Admin Blade/Alpine components without claiming User Management scope in docs/ui-guidelines.md
-- [ ] T062 Execute and record all end-to-end, responsive 1089px/375px, keyboard/dialog and scope-boundary checks from specs/98884-department-staff-management/quickstart.md
+- [ ] T062 Execute and record all end-to-end, responsive 1089px/375px, keyboard/dialog and scope-boundary checks from specs/98885-department-staff-management/quickstart.md
 - [ ] T063 Run the targeted F03 suite with `php artisan test --testsuite=Feature --filter=Department` using phpunit.xml
 - [ ] T064 Run the separate SC-004 PostgreSQL performance group and record fixture size, query count and timing against tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php
 - [ ] T065 Run the full backend regression suite with `php artisan test` using phpunit.xml
