@@ -1,6 +1,6 @@
 # Feature Specification: F03 - Department & Staff Management
 
-**Feature Branch**: `[98884-department-staff-management]`
+**Feature Branch**: `[98885-department-staff-management]`
 
 **Created**: 2026-08-17
 

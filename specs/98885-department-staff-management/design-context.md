@@ -28,7 +28,7 @@ Nguồn Figma đã khảo sát:
 
 Các nguồn nội bộ liên quan:
 
-- `specs/98884-department-staff-management/spec.md`
+- `specs/98885-department-staff-management/spec.md`
 - `docs/business-analysis.md`
 - `docs/ui-guidelines.md`
 - `resources/css/app.css`
