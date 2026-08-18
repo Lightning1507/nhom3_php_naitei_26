@@ -67,6 +67,71 @@
         @enderror
     </div>
 
+    @unless ($editing)
+        <div
+            x-data="candidateCombobox({
+                url: @js(route('admin.departments.manager-candidates')),
+                initial: @js($selectedLeader ? [
+                    'id' => $selectedLeader->id,
+                    'name' => $selectedLeader->name,
+                    'email' => $selectedLeader->email,
+                    'role' => $selectedLeader->role->value,
+                ] : null),
+            })"
+            @click.outside="close()"
+        >
+            <label class="admin-label" for="department-leader-search">Lãnh đạo</label>
+            <input type="hidden" name="leader_id" :value="selected?.id ?? ''">
+            <div class="relative">
+                <input
+                    id="department-leader-search"
+                    class="admin-input"
+                    type="search"
+                    x-model="query"
+                    @input.debounce.300ms="handleInput()"
+                    @keydown.arrow-down.prevent="move(1)"
+                    @keydown.arrow-up.prevent="move(-1)"
+                    @keydown.enter.prevent="chooseActive()"
+                    @keydown.escape="close()"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-controls="department-leader-options"
+                    :aria-expanded="open.toString()"
+                    autocomplete="off"
+                    placeholder="Nhập ít nhất 2 ký tự để tìm Manager"
+                >
+                <div
+                    id="department-leader-options"
+                    x-show="open"
+                    x-cloak
+                    class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-border bg-white p-1 shadow-lg"
+                    role="listbox"
+                >
+                    <p x-show="loading" class="px-3 py-2 text-sm text-gray-500">Đang tìm kiếm...</p>
+                    <p x-show="error" x-text="error" class="px-3 py-2 text-sm text-danger"></p>
+                    <p x-show="!loading && !error && items.length === 0" class="px-3 py-2 text-sm text-gray-500">Không có Manager phù hợp.</p>
+                    <template x-for="(item, index) in items" :key="item.id">
+                        <button
+                            type="button"
+                            class="block w-full rounded-lg px-3 py-2 text-left hover:bg-blue-50"
+                            :class="activeIndex === index ? 'bg-blue-50' : ''"
+                            role="option"
+                            :aria-selected="selected?.id === item.id"
+                            @mousedown.prevent="select(item)"
+                        >
+                            <span class="block text-sm font-semibold text-gray-950" x-text="item.name"></span>
+                            <span class="block text-xs text-gray-500" x-text="item.email"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+            <p class="mt-1.5 text-xs text-gray-500">Có thể để trống và thiết lập lãnh đạo sau.</p>
+            @error('leader_id')
+                <p class="admin-field-error">{{ $message }}</p>
+            @enderror
+        </div>
+    @endunless
+
     <div class="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
         <x-admin.button variant="secondary" :href="$cancelUrl">Hủy</x-admin.button>
         <x-admin.button type="submit">{{ $submitLabel }}</x-admin.button>

@@ -99,6 +99,120 @@ class DepartmentAuditTest extends TestCase
         $this->assertDatabaseMissing('activity_logs', ['action' => 'department.updated']);
     }
 
+    public function test_leader_add_and_remove_events_store_actor_member_and_version_metadata(): void
+    {
+        $actor = $this->superAdmin();
+        $leader = User::factory()->manager()->create();
+        $staff = User::factory()->staff()->create();
+        $department = Department::factory()->create();
+
+        $this->actingAs($actor)->patch(route('admin.departments.leader.update', $department), [
+            'leader_id' => $leader->id,
+            'version' => 0,
+        ])->assertRedirect();
+        $this->actingAs($actor)->post(route('admin.departments.members.store', $department), [
+            'user_id' => $staff->id,
+            'version' => 1,
+        ])->assertRedirect();
+        $this->actingAs($actor)->delete(route('admin.departments.members.destroy', [$department, $staff]), [
+            'version' => 2,
+        ])->assertRedirect();
+
+        $leaderEvent = ActivityLog::query()->where('action', 'department.leader_changed')->firstOrFail();
+        $addedEvent = ActivityLog::query()->where('action', 'department.member_added')->firstOrFail();
+        $removedEvent = ActivityLog::query()->where('action', 'department.member_removed')->firstOrFail();
+
+        $this->assertSame($actor->id, $leaderEvent->actor_id);
+        $this->assertSame($leader->id, data_get($leaderEvent->metadata, 'new_leader.id'));
+        $this->assertTrue(data_get($leaderEvent->metadata, 'auto_membership'));
+        $this->assertSame($staff->id, data_get($addedEvent->metadata, 'member.id'));
+        $this->assertSame(2, data_get($addedEvent->metadata, 'after.lock_version'));
+        $this->assertSame($staff->id, data_get($removedEvent->metadata, 'member.id'));
+        $this->assertSame(3, data_get($removedEvent->metadata, 'after.lock_version'));
+    }
+
+    public function test_membership_mutation_rolls_back_when_audit_insert_fails(): void
+    {
+        $actor = $this->superAdmin();
+        $staff = User::factory()->staff()->create();
+        $department = Department::factory()->create();
+
+        ActivityLog::creating(static function (): void {
+            throw new RuntimeException('Forced audit failure.');
+        });
+
+        try {
+            $this->actingAs($actor)->post(route('admin.departments.members.store', $department), [
+                'user_id' => $staff->id,
+                'version' => 0,
+            ]);
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Forced audit failure.', $exception->getMessage());
+        } finally {
+            ActivityLog::flushEventListeners();
+        }
+
+        $department->refresh();
+        $this->assertFalse($department->users()->whereKey($staff->id)->exists());
+        $this->assertSame(0, $department->lock_version);
+        $this->assertDatabaseMissing('activity_logs', ['action' => 'department.member_added']);
+    }
+
+    public function test_leader_change_rolls_back_when_audit_insert_fails(): void
+    {
+        $actor = $this->superAdmin();
+        $leader = User::factory()->manager()->create();
+        $department = Department::factory()->create();
+
+        ActivityLog::creating(static function (): void {
+            throw new RuntimeException('Forced audit failure.');
+        });
+
+        try {
+            $this->actingAs($actor)->patch(route('admin.departments.leader.update', $department), [
+                'leader_id' => $leader->id,
+                'version' => 0,
+            ]);
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Forced audit failure.', $exception->getMessage());
+        } finally {
+            ActivityLog::flushEventListeners();
+        }
+
+        $department->refresh();
+        $this->assertNull($department->leader_id);
+        $this->assertSame(0, $department->lock_version);
+        $this->assertFalse($department->users()->whereKey($leader->id)->exists());
+        $this->assertDatabaseMissing('activity_logs', ['action' => 'department.leader_changed']);
+    }
+
+    public function test_member_removal_rolls_back_when_audit_insert_fails(): void
+    {
+        $actor = $this->superAdmin();
+        $staff = User::factory()->staff()->create();
+        $department = Department::factory()->create();
+        $department->users()->attach($staff);
+
+        ActivityLog::creating(static function (): void {
+            throw new RuntimeException('Forced audit failure.');
+        });
+
+        try {
+            $this->actingAs($actor)->delete(route('admin.departments.members.destroy', [$department, $staff]), [
+                'version' => 0,
+            ]);
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Forced audit failure.', $exception->getMessage());
+        } finally {
+            ActivityLog::flushEventListeners();
+        }
+
+        $department->refresh();
+        $this->assertSame(0, $department->lock_version);
+        $this->assertTrue($department->users()->whereKey($staff->id)->exists());
+        $this->assertDatabaseMissing('activity_logs', ['action' => 'department.member_removed']);
+    }
+
     private function superAdmin(): User
     {
         return User::factory()->withRole(UserRole::SuperAdmin)->create();

@@ -29,6 +29,10 @@
 }
 
 @layer components {
+    [x-cloak] {
+        display: none !important;
+    }
+
     /* Button Variants */
     .btn-primary {
         @apply inline-flex items-center justify-center font-inter font-bold text-lg px-9 py-5 rounded-2xl gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-white hover:bg-primary-hover focus:ring-primary shadow-sm;

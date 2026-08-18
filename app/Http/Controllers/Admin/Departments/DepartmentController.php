@@ -37,7 +37,11 @@ class DepartmentController extends Controller
     {
         $this->authorize('create', Department::class);
 
-        return view('admin.departments.create');
+        $selectedLeader = old('leader_id')
+            ? User::query()->eligibleDepartmentLeaders()->find(old('leader_id'))
+            : null;
+
+        return view('admin.departments.create', compact('selectedLeader'));
     }
 
     public function store(

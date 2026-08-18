@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin\Departments;
 
+use App\Enums\UserRole;
 use App\Models\Department;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,6 +31,16 @@ class StoreDepartmentRequest extends FormRequest
                 Rule::unique('departments', 'code'),
             ],
             'address' => ['nullable', 'string', 'max:1000'],
+            'leader_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')->where(
+                    fn (Builder $query): Builder => $query
+                        ->where('role', UserRole::Manager->value)
+                        ->where('is_active', true)
+                        ->whereNull('deleted_at'),
+                ),
+            ],
         ];
     }
 
@@ -46,6 +58,8 @@ class StoreDepartmentRequest extends FormRequest
             'code.regex' => 'Mã chỉ được gồm chữ cái, số và dấu gạch nối hoặc gạch dưới.',
             'code.unique' => 'Mã phòng ban đã tồn tại, kể cả trong dữ liệu đã lưu trữ.',
             'address.max' => 'Địa chỉ không được vượt quá 1.000 ký tự.',
+            'leader_id.integer' => 'Lãnh đạo được chọn không hợp lệ.',
+            'leader_id.exists' => 'Chỉ Manager đang hoạt động mới có thể làm lãnh đạo phòng ban.',
         ];
     }
 

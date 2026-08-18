@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\Admin\Auth\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\Departments\DepartmentCandidateController;
 use App\Http\Controllers\Admin\Departments\DepartmentController;
 use App\Http\Controllers\Admin\ServiceCategories\ServiceCategoryController;
+use App\Http\Controllers\Admin\Departments\DepartmentLeaderController;
+use App\Http\Controllers\Admin\Departments\DepartmentMemberController;
 use App\Http\Controllers\Api\V1\Auth\GoogleCitizenAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +32,17 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware(['auth', 'internal'])->group(function (): void {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
         Route::get('/', DashboardController::class)->name('dashboard');
+        Route::get('/departments/manager-candidates', [DepartmentCandidateController::class, 'managerCandidates'])
+            ->name('departments.manager-candidates');
+        Route::patch('/departments/{department}/leader', [DepartmentLeaderController::class, 'update'])
+            ->name('departments.leader.update');
+        Route::get('/departments/{department}/member-candidates', [DepartmentCandidateController::class, 'memberCandidates'])
+            ->name('departments.member-candidates');
+        Route::post('/departments/{department}/members', [DepartmentMemberController::class, 'store'])
+            ->name('departments.members.store');
+        Route::delete('/departments/{department}/members/{member}', [DepartmentMemberController::class, 'destroy'])
+            ->scopeBindings()
+            ->name('departments.members.destroy');
         Route::resource('departments', DepartmentController::class)
             ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::resource('service-categories', ServiceCategoryController::class)
