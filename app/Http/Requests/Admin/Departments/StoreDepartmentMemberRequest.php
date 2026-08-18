@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\Department;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class StoreDepartmentMemberRequest extends FormRequest
@@ -13,9 +14,15 @@ class StoreDepartmentMemberRequest extends FormRequest
     public function authorize(): bool
     {
         $department = $this->route('department');
+        $actor = $this->user();
 
-        return $department instanceof Department
-            && ($this->user()?->can('addMember', $department) ?? false);
+        if (! $department instanceof Department || ! $actor) {
+            return false;
+        }
+
+        Gate::forUser($actor)->authorize('addMember', $department);
+
+        return true;
     }
 
     /** @return array<string, mixed> */

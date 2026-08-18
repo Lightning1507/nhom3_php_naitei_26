@@ -179,16 +179,16 @@
 
 **Purpose**: Validate the integrated feature, update living documentation and enforce all quality/scope gates.
 
-- [ ] T060 [P] Document F03 implementation status, schema enhancement and Admin-only dependencies in docs/technology-stack.md
-- [ ] T061 [P] Update F03 screen mapping and implemented Admin Blade/Alpine components without claiming User Management scope in docs/ui-guidelines.md
-- [ ] T062 Execute and record all end-to-end, responsive 1089px/375px, keyboard/dialog and scope-boundary checks from specs/98885-department-staff-management/quickstart.md
-- [ ] T063 Run the targeted F03 suite with `php artisan test --testsuite=Feature --filter=Department` using phpunit.xml
-- [ ] T064 Run the separate SC-004 PostgreSQL performance group and record fixture size, query count and timing against tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php
-- [ ] T065 Run the full backend regression suite with `php artisan test` using phpunit.xml
-- [ ] T066 Run backend formatting validation with `composer run lint` using composer.json and fix all touched PHP files
-- [ ] T067 Run frontend/security lint validation with `npm run lint` using package.json and fix all touched Blade/JS/CSS files
-- [ ] T068 Run the production asset build with `npm run build` using vite.config.js
-- [ ] T069 Review routes/web.php, app/Policies/DepartmentPolicy.php and resources/views/admin/departments/ for forbidden account management, Service mutation or Application workflow scope before PR handoff
+- [X] T060 [P] Document F03 implementation status, schema enhancement and Admin-only dependencies in docs/technology-stack.md
+- [X] T061 [P] Update F03 screen mapping and implemented Admin Blade/Alpine components without claiming User Management scope in docs/ui-guidelines.md
+- [X] T062 Execute and record all end-to-end, responsive 1089px/375px, keyboard/dialog and scope-boundary checks from specs/98885-department-staff-management/quickstart.md
+- [X] T063 Run the targeted F03 suite with `php artisan test --testsuite=Feature --filter=Department` using phpunit.xml
+- [X] T064 Run the separate SC-004 PostgreSQL performance group and record fixture size, query count and timing against tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php
+- [X] T065 Run the full backend regression suite with `php artisan test` using phpunit.xml
+- [X] T066 Run backend formatting validation with `composer run lint` using composer.json and fix all touched PHP files
+- [X] T067 Run frontend/security lint validation with `npm run lint` using package.json and fix all touched Blade/JS/CSS files
+- [X] T068 Run the production asset build with `npm run build` using vite.config.js
+- [X] T069 Review routes/web.php, app/Policies/DepartmentPolicy.php and resources/views/admin/departments/ for forbidden account management, Service mutation or Application workflow scope before PR handoff
 
 **Checkpoint**: All selected stories, regression tests, linters, build, quickstart checks and scope review pass.
 

@@ -34,12 +34,24 @@ Dựa trên thiết kế Figma hiện tại, dưới đây là phân tích chi t
     *   `Admin - Service Management` (CRUD dịch vụ công)
 
 ### F03 – Department & Staff Management
-*   **Gồm các màn hình:** Quản lý phòng ban, Quản lý nhân viên (phân quyền).
+*   **Phạm vi:** Quản lý cơ cấu Department và quan hệ Staff/Manager; không phải màn hình quản lý tài khoản.
 *   **Đã có trên Figma:**
     *   `Super Admin` (Thực chất màn hình này đang hiển thị giao diện **User Management**: bao gồm danh sách Staff/Manager, thống kê số lượng User, các bộ lọc và nút Add User).
-*   **Cần bổ sung:**
-    *   `Admin - Department Management` (Có thể dùng chung phong cách với User Management)
-    *   Modal/Form thêm mới/chỉnh sửa Staff và Department.
+*   **Đã triển khai trong codebase:**
+    *   `Admin - Department List`: bốn summary card, tìm kiếm name/code/address, lọc Manager/status, bảng responsive và pagination.
+    *   `Admin - Create/Edit Department`: dedicated Blade pages với field error, optional leader và conflict version.
+    *   `Admin - Department Detail`: identity, leader, member và linked Service ở chế độ read-only.
+    *   Native dialog cho đổi leader, thêm/gỡ/điều chuyển Staff và lưu trữ Department.
+    *   Trạng thái active/archived, missing leader, inactive member, empty/no-result, loading/error và success feedback.
+*   **Thành phần UI:**
+    *   Blade components `x-admin.button`, `x-admin.badge`, `x-admin.dialog` và các class compact `admin-*`.
+    *   Alpine `candidateCombobox`, `departmentFilters` và dialog enhancement; server-rendered HTML vẫn hoạt động như nguồn chính.
+    *   Summary cards dùng bố cục 4/2/1 cột; bảng cho phép cuộn ngang trên mobile; filter tự wrap ở viewport nhỏ.
+*   **Phân quyền hiển thị:**
+    *   Super Admin thấy toàn bộ lifecycle action theo policy.
+    *   Manager chỉ thấy Department mình lãnh đạo và thao tác Staff được phép.
+    *   Department đã lưu trữ chỉ còn giao diện tra cứu, không hiển thị mutation action.
+*   **Ngoài phạm vi F03:** tạo/sửa tài khoản, role/password/status, User Management tổng quát, Service CRUD và Application workflow. Mẫu User Management trong Figma chỉ được dùng làm visual language, không được coi là chức năng F03 đã triển khai.
 
 ### F04 – Application Submission & Document Management
 *   **Gồm các màn hình:** Các bước nộp hồ sơ, Tải lên tài liệu.

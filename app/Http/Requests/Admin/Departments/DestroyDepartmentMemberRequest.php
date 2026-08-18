@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin\Departments;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class DestroyDepartmentMemberRequest extends FormRequest
 {
@@ -14,11 +15,11 @@ class DestroyDepartmentMemberRequest extends FormRequest
         $member = $this->route('member');
         $actor = $this->user();
 
-        if (! $department instanceof Department
-            || ! $member instanceof User
-            || ! $actor?->can('removeMember', $department)) {
+        if (! $department instanceof Department || ! $member instanceof User || ! $actor) {
             return false;
         }
+
+        Gate::forUser($actor)->authorize('removeMember', $department);
 
         return $actor->isSuperAdmin() || $member->isStaff();
     }
