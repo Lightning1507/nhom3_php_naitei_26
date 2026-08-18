@@ -131,16 +131,21 @@ export default function HomePage() {
                         Dịch vụ công trực tuyến cho công dân.
                     </p>
 
-                    {!citizen && !isCheckingSession && (
-                        <div className="mt-8 flex flex-wrap gap-4">
-                            <Link className="btn-primary rounded-xl px-6 py-4 text-base" to="/login">
-                                Đăng nhập
-                            </Link>
-                            <Link className="btn-secondary rounded-xl px-6 py-4 text-base" to="/register">
-                                Đăng ký
-                            </Link>
-                        </div>
-                    )}
+                    <div className="mt-8 flex flex-wrap gap-4">
+                        <Link className="btn-primary rounded-xl px-6 py-4 text-base shadow-sm" to="/services">
+                            Danh mục Dịch vụ
+                        </Link>
+                        {!citizen && !isCheckingSession && (
+                            <>
+                                <Link className="btn-secondary rounded-xl px-6 py-4 text-base" to="/login">
+                                    Đăng nhập
+                                </Link>
+                                <Link className="btn-secondary rounded-xl px-6 py-4 text-base" to="/register">
+                                    Đăng ký
+                                </Link>
+                            </>
+                        )}
+                    </div>
                 </div>
             </section>
         </main>

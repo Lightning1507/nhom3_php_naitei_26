@@ -20,9 +20,9 @@
 - [X] T005 [P] [US1] Implement `show` endpoint for service details
 - [X] T006 [P] [US1] Register API routes in `routes/api.php` under the `v1` prefix
 - [ ] T007 [US1] Add automated Feature tests for Citizen API (`tests/Feature/Api/V1/ServiceCatalogTest.php`)
-- [ ] T008 [P] [US1] Create React component for Catalog list (`resources/js/citizen/pages/ServiceCatalog.jsx`)
-- [ ] T009 [P] [US1] Create React component for Service details (`resources/js/citizen/pages/ServiceDetail.jsx`)
-- [ ] T010 [US1] Integrate React components with the API endpoints
+- [X] T008 [P] [US1] Create React component for Catalog list (`resources/js/citizen/pages/ServiceCatalog.jsx`)
+- [X] T009 [P] [US1] Create React component for Service details (`resources/js/citizen/pages/ServiceDetail.jsx`)
+- [X] T010 [US1] Integrate React components with the API endpoints
 
 **Checkpoint**: User Story 1 should be fully functional and testable independently via the SPA and API.
 
