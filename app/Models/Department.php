@@ -58,7 +58,10 @@ class Department extends Model
 
     public function scopeWithStructureCounts(Builder $query): Builder
     {
-        return $query->withCount(['members', 'serviceTypes']);
+        return $query->withCount([
+            'members',
+            'serviceTypes' => fn (Builder $serviceQuery): Builder => $serviceQuery->withTrashed(),
+        ]);
     }
 
     public function isActive(): bool

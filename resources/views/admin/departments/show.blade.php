@@ -46,8 +46,11 @@
                         <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Lãnh đạo</dt>
                         <dd class="mt-1 text-sm text-gray-900">
                             @if ($department->leader)
-                                {{ $department->leader->name }}
+                                <span class="font-semibold">{{ $department->leader->name }}</span>
                                 <span class="block text-xs text-gray-500">{{ $department->leader->email }}</span>
+                                <x-admin.badge class="mt-2" :variant="$department->hasEligibleLeader() ? 'success' : 'warning'">
+                                    {{ $department->hasEligibleLeader() ? 'Manager đang hoạt động' : 'Không còn đủ điều kiện' }}
+                                </x-admin.badge>
                             @else
                                 <x-admin.badge variant="warning">Chưa có lãnh đạo</x-admin.badge>
                             @endif
@@ -96,9 +99,15 @@
                                         <td>
                                             <p class="whitespace-nowrap font-semibold text-gray-950">{{ $member->name }}</p>
                                             <p class="whitespace-nowrap text-xs text-gray-500">{{ $member->email }}</p>
-                                            @if (! $member->canAccessProtectedResources())
-                                                <x-admin.badge class="mt-1" variant="warning">Không hoạt động</x-admin.badge>
-                                            @endif
+                                            <x-admin.badge class="mt-1" :variant="$member->canAccessProtectedResources() ? 'success' : 'warning'">
+                                                @if ($member->trashed())
+                                                    Đã lưu trữ
+                                                @elseif (! $member->is_active)
+                                                    Không hoạt động
+                                                @else
+                                                    Đang hoạt động
+                                                @endif
+                                            </x-admin.badge>
                                         </td>
                                         <td>
                                             <x-admin.badge :variant="$member->isManager() ? 'manager' : 'staff'">
@@ -282,8 +291,11 @@
     <section class="admin-card mt-5" aria-labelledby="department-services-title">
         <div class="admin-card-body">
             <div>
-                <h2 id="department-services-title" class="text-lg font-bold text-gray-950">Dịch vụ liên kết</h2>
-                <p class="mt-1 text-sm text-gray-500">Thông tin chỉ để tra cứu; F03 không cung cấp thao tác sửa dịch vụ.</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <h2 id="department-services-title" class="text-lg font-bold text-gray-950">Dịch vụ liên kết</h2>
+                    <x-admin.badge variant="info">Chỉ đọc</x-admin.badge>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">Thông tin phục vụ tra cứu cơ cấu; không có thao tác thay đổi dịch vụ trong tính năng này.</p>
             </div>
 
             @if ($department->serviceTypes->isEmpty())
@@ -305,8 +317,14 @@
                                     <td class="font-mono font-semibold">{{ $serviceType->code }}</td>
                                     <td>{{ $serviceType->name }}</td>
                                     <td>
-                                        <x-admin.badge :variant="$serviceType->is_active ? 'success' : 'neutral'">
-                                            {{ $serviceType->is_active ? 'Hoạt động' : 'Không hoạt động' }}
+                                        <x-admin.badge :variant="$serviceType->trashed() ? 'neutral' : ($serviceType->is_active ? 'success' : 'warning')">
+                                            @if ($serviceType->trashed())
+                                                Đã lưu trữ
+                                            @elseif ($serviceType->is_active)
+                                                Hoạt động
+                                            @else
+                                                Không hoạt động
+                                            @endif
                                         </x-admin.badge>
                                     </td>
                                 </tr>

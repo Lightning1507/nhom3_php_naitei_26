@@ -112,17 +112,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Add scoped search, escaped wildcard, manager/status filter, stable pagination, query preservation, count and Service read-only tests in tests/Feature/Admin/Departments/DepartmentQueryTest.php
-- [ ] T038 [P] [US3] Extend collection/detail 403/404 masking and permission-driven action rendering tests in tests/Feature/Admin/Departments/DepartmentAuthorizationTest.php
-- [ ] T039 [P] [US3] Add a PostgreSQL-only SC-004 performance group with 1,000 Department and 10,000 membership fixtures, query-count guard and separate timing report in tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php and phpunit.xml
+- [X] T037 [P] [US3] Add scoped search, escaped wildcard, manager/status filter, stable pagination, query preservation, count and Service read-only tests in tests/Feature/Admin/Departments/DepartmentQueryTest.php
+- [X] T038 [P] [US3] Extend collection/detail 403/404 masking and permission-driven action rendering tests in tests/Feature/Admin/Departments/DepartmentAuthorizationTest.php
+- [X] T039 [P] [US3] Add a PostgreSQL-only SC-004 performance group with 1,000 Department and 10,000 membership fixtures, query-count guard and separate timing report in tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php and phpunit.xml
 
 ### Implementation for User Story 3
 
-- [ ] T040 [P] [US3] Implement validated `search`, `manager_id`, `status` and `page` query inputs in app/Http/Requests/Admin/Departments/ListDepartmentsRequest.php
-- [ ] T041 [US3] Implement actor-scoped stats, escaped case-insensitive search, filters, eager leader/count queries, stable `paginate(15)` and historical detail loading in app/Http/Controllers/Admin/Departments/DepartmentController.php
-- [ ] T042 [P] [US3] Complete summary cards, responsive filter toolbar, table columns/actions, pagination and empty/no-result states in resources/views/admin/departments/index.blade.php
-- [ ] T043 [P] [US3] Complete leader/member status presentation and linked Service Type read-only section without Service mutation controls in resources/views/admin/departments/show.blade.php
-- [ ] T044 [US3] Add accessible loading/error/filter-reset behavior and mobile overflow handling for Department queries in resources/views/admin/departments/index.blade.php and resources/js/admin/app.js
+- [X] T040 [P] [US3] Implement validated `search`, `manager_id`, `status` and `page` query inputs in app/Http/Requests/Admin/Departments/ListDepartmentsRequest.php
+- [X] T041 [US3] Implement actor-scoped stats, escaped case-insensitive search, filters, eager leader/count queries, stable `paginate(15)` and historical detail loading in app/Http/Controllers/Admin/Departments/DepartmentController.php
+- [X] T042 [P] [US3] Complete summary cards, responsive filter toolbar, table columns/actions, pagination and empty/no-result states in resources/views/admin/departments/index.blade.php
+- [X] T043 [P] [US3] Complete leader/member status presentation and linked Service Type read-only section without Service mutation controls in resources/views/admin/departments/show.blade.php
+- [X] T044 [US3] Add accessible loading/error/filter-reset behavior and mobile overflow handling for Department queries in resources/views/admin/departments/index.blade.php and resources/js/admin/app.js
 
 **Checkpoint**: US3 list and detail queries are scoped, paginated, read-only where required and independently testable at normal and benchmark scale.
 

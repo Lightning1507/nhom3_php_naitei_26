@@ -97,6 +97,20 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
     },
 }));
 
+Alpine.data('departmentFilters', () => ({
+    loading: false,
+
+    beginLoading() {
+        this.loading = true;
+    },
+
+    init() {
+        window.addEventListener('pageshow', () => {
+            this.loading = false;
+        }, { once: true });
+    },
+}));
+
 Alpine.start();
 
 const dialogTriggers = new WeakMap();
