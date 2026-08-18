@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\ApplicationController;
+use App\Http\Controllers\Api\V1\ApplicationDocumentController;
 use App\Http\Controllers\Api\V1\Auth\CitizenAuthController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\ProfileController;
@@ -19,6 +20,15 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
         Route::post('/applications', [ApplicationController::class, 'store'])->name('applications.store');
         Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
+
+        Route::post('/applications/{application}/documents', [ApplicationDocumentController::class, 'store'])
+            ->name('applications.documents.store');
+        Route::get('/applications/{application}/documents/{document}', [ApplicationDocumentController::class, 'download'])
+            ->name('applications.documents.download')
+            ->scopeBindings();
+        Route::delete('/applications/{application}/documents/{document}', [ApplicationDocumentController::class, 'destroy'])
+            ->name('applications.documents.destroy')
+            ->scopeBindings();
     });
 
     Route::prefix('auth')->name('auth.')->group(function (): void {

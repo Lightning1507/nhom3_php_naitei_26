@@ -21,4 +21,9 @@ class ApplicationPolicy
 
         return $user->id === $application->citizen_id;
     }
+
+    public function uploadDocument(User $user, Application $application): bool
+    {
+        return $user->canAccessProtectedResources() && $user->id === $application->citizen_id;
+    }
 }
