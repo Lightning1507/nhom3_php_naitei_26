@@ -41,7 +41,7 @@
                 <tbody>
                     @foreach ($categories as $category)
                         <tr>
-                            <td class="whitespace-nowrap font-mono font-semibold text-primary">{{ $category->code }}</td>
+                            <td class="whitespace-nowrap font-mono font-semibold text-primary">{{ strtoupper($category->code) }}</td>
                             <td>
                                 <p class="font-semibold text-gray-950">{{ $category->name }}</p>
                                 @if($category->description)
@@ -51,6 +51,7 @@
                             <td>{{ $category->service_types_count ?? 0 }}</td>
                             <td>
                                 <div class="flex justify-end gap-2">
+                                    <x-admin.button variant="ghost" :href="route('admin.service-categories.show', $category)">Chi tiết</x-admin.button>
                                     @can('update', $category)
                                         <x-admin.button variant="secondary" :href="route('admin.service-categories.edit', $category)">Sửa</x-admin.button>
                                     @endcan
