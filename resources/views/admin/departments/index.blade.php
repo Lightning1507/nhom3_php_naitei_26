@@ -106,7 +106,7 @@
                             <th scope="col">Thành viên</th>
                             <th scope="col">Dịch vụ</th>
                             <th scope="col">Trạng thái</th>
-                            <th scope="col"><span class="sr-only">Thao tác</span></th>
+                            <th scope="col" aria-label="Thao tác"></th>
                         </tr>
                     </thead>
                     <tbody>

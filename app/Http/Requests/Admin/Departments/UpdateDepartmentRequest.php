@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Departments;
 
 use App\Models\Department;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class UpdateDepartmentRequest extends FormRequest
@@ -11,9 +12,15 @@ class UpdateDepartmentRequest extends FormRequest
     public function authorize(): bool
     {
         $department = $this->route('department');
+        $actor = $this->user();
 
-        return $department instanceof Department
-            && ($this->user()?->can('update', $department) ?? false);
+        if (! $department instanceof Department || ! $actor) {
+            return false;
+        }
+
+        Gate::forUser($actor)->authorize('update', $department);
+
+        return true;
     }
 
     /**

@@ -8,9 +8,10 @@
 </head>
 <body class="min-h-screen bg-admin-page font-inter text-slate-900">
     <header class="bg-primary text-white shadow-sm">
-        <div class="mx-auto flex min-h-16 max-w-7xl items-center gap-5 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto flex min-h-16 max-w-7xl items-center gap-1 px-2 sm:gap-5 sm:px-6 lg:px-8">
             <a href="{{ route('admin.dashboard') }}" class="shrink-0 text-sm font-bold tracking-tight text-white">
-                {{ config('app.name') }}
+                <span class="sm:hidden">PSMS</span>
+                <span class="hidden sm:inline">{{ config('app.name') }}</span>
             </a>
 
             <nav class="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" aria-label="Điều hướng quản trị">
@@ -39,13 +40,13 @@
                 @endcan
             </nav>
 
-            <div class="flex shrink-0 items-center gap-3">
+            <div class="flex shrink-0 items-center gap-1 sm:gap-3">
                 <span class="hidden max-w-40 truncate text-sm font-medium text-white/80 md:inline">
                     {{ auth()->user()?->name }}
                 </span>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
-                    <button class="rounded-lg px-3 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/70" type="submit">
+                    <button class="rounded-lg px-1 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/70 sm:px-3" type="submit">
                         Đăng xuất
                     </button>
                 </form>

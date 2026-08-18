@@ -103,6 +103,30 @@ API Controller và Admin Controller không nên chứa business logic phức t�
 Logic dùng chung được đặt trong Actions hoặc Services để hai giao diện có thể tái
 sử dụng mà không viết lặp.
 
+### F03 - Department & Staff Management
+
+F03 đã được triển khai hoàn toàn trong khu vực Admin Blade SSR dưới `/admin/departments`.
+Tính năng không thêm package hoặc runtime dependency mới và sử dụng các thành phần sẵn có:
+
+- `auth` và `internal` middleware cho session boundary của người dùng nội bộ.
+- `DepartmentPolicy` cho quyền Super Admin và phạm vi Department do Manager lãnh đạo.
+- Form Request cho validation, canonical Department code và optimistic `lock_version`.
+- Focused Actions cùng transaction và row-level lock cho create, update, archive,
+  leader, membership và Staff transfer.
+- Eloquent soft delete để lưu trữ Department mà không làm mất leader, membership,
+  Service association hoặc Application assignment history.
+- `activity_logs` cho bảy sự kiện thay đổi cơ cấu Department với actor và snapshot.
+- Blade components, Tailwind CSS và Alpine.js cho dialog, candidate combobox,
+  loading/error state; Admin không trở thành SPA.
+
+Migration tăng cường F03 canonical hóa code, thêm database check constraint,
+`departments.lock_version`, index `departments.leader_id` và index
+`department_user.user_id`. Unique code và unique membership pivot vẫn là chốt cuối
+chống race condition ở tầng database.
+
+F03 chỉ đọc dữ liệu tài khoản do F01 quản lý và chỉ hiển thị Service liên kết. Nó
+không cung cấp account/role/password management, Service CRUD hoặc Application workflow.
+
 ## 4. Quy ước REST API
 
 - Base path: `/api/v1`.
@@ -161,6 +185,10 @@ tests/Unit/             Unit tests cho logic độc lập
 PHPUnit và Laravel Feature Tests là công cụ kiểm thử hiện tại. Pest chỉ được ghi
 nhận là lựa chọn mở rộng và không được xem là dependency của dự án cho đến khi
 được cài đặt chính thức.
+
+F03 có Feature Tests riêng tại `tests/Feature/Admin/Departments`. Benchmark SC-004
+được tách thành PHPUnit suite `DepartmentPerformance`, dùng PostgreSQL với fixture
+1.000 Department và 10.000 membership để theo dõi thời gian cùng số lượng query.
 
 ## 7. Nguyên tắc cập nhật tài liệu
 

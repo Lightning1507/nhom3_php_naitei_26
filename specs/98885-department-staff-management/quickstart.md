@@ -153,3 +153,40 @@ npm run build
 ```
 
 F03 chỉ được coi là hoàn tất implementation khi tests, lint và build đều pass, đồng thời không có route/UI ngoài phạm vi account management, Service CRUD hoặc Application workflow.
+
+## Implementation Validation Record (2026-08-18)
+
+Validation được thực hiện trên PostgreSQL 17 cô lập tại local, dùng schema mới hoàn toàn và dữ liệu từ `DatabaseSeeder`. Không sử dụng hoặc thay đổi dữ liệu development/production.
+
+- Scenarios 1–9: PASS qua các feature test Department về CRUD, validation/stale version, leader/member, role scope, transfer, archive, query và audit.
+- Scenario 10 desktop: PASS tại viewport 1089px; action Super Admin hiển thị đúng, dialog nhận focus, Escape đóng dialog và focus trở về trigger.
+- Scenario 10 mobile: PASS tại viewport 375px; header không tràn ngang, cards/filter wrap đúng, bảng rộng cuộn trong `.admin-table-wrap` thay vì làm tràn trang.
+- Keyboard candidate flow: PASS; Space mở dialog thêm member, Arrow Down/Enter chọn candidate, Space hủy dialog và focus trở về trigger; không submit mutation trong browser QA.
+- Manager scope: PASS; thấy đúng ba Department do Manager seed lãnh đạo và không có create/edit/archive controls.
+
+Kết quả command:
+
+```text
+php artisan test --testsuite=Feature --filter=Department
+47 passed (335 assertions), 9.16s
+
+php artisan test --testsuite=DepartmentPerformance
+1 passed (6 assertions)
+Fixture: 1,000 departments / 10,000 memberships
+List: 157.73ms, 8 queries
+Detail: 47.82ms, 3 queries
+
+php artisan test
+111 passed (636 assertions), 13.37s
+
+composer run lint
+PASS
+
+npm run lint
+PASS with 0 errors; 5 pre-existing Citizen warnings outside F03
+
+npm run build
+PASS; 105 modules transformed
+```
+
+Scope audit: 14 route dưới `/admin/departments` chỉ bao gồm Department CRUD/soft archive, candidate lookup, leader, member và Staff transfer. Không có account management, password/role mutation, Service mutation hoặc Application workflow trong route, policy hay view F03.
