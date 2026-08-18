@@ -50,7 +50,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->scopeBindings()
             ->name('departments.members.destroy');
         Route::resource('departments', DepartmentController::class)
-            ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+            ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     });
 });
 

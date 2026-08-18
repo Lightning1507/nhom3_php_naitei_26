@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin\Departments;
 
+use App\Actions\Department\ArchiveDepartment;
 use App\Actions\Department\CreateDepartment;
 use App\Actions\Department\UpdateDepartment;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Departments\ArchiveDepartmentRequest;
 use App\Http\Requests\Admin\Departments\ListDepartmentsRequest;
 use App\Http\Requests\Admin\Departments\StoreDepartmentRequest;
 use App\Http\Requests\Admin\Departments\UpdateDepartmentRequest;
@@ -126,6 +128,25 @@ class DepartmentController extends Controller
         return redirect()
             ->route('admin.departments.show', $updatedDepartment)
             ->with('success', 'Đã cập nhật thông tin phòng ban.');
+    }
+
+    public function destroy(
+        ArchiveDepartmentRequest $request,
+        Department $department,
+        ArchiveDepartment $archiveDepartment,
+    ): RedirectResponse {
+        /** @var User $actor */
+        $actor = $request->user();
+        $archiveDepartment->handle(
+            $department,
+            (int) $request->validated('version'),
+            $actor,
+            $request,
+        );
+
+        return redirect()
+            ->route('admin.departments.index')
+            ->with('success', 'Đã lưu trữ phòng ban. Thành viên, dịch vụ và lịch sử nghiệp vụ vẫn được giữ nguyên.');
     }
 
     /** @return array{total: int, active: int, missing_leader: int, staff_memberships: int} */
