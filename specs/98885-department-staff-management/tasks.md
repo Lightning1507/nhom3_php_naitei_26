@@ -136,17 +136,17 @@
 
 ### Tests for User Story 4
 
-- [ ] T045 [P] [US4] Add atomic transfer, deterministic lock order, invalid/duplicate/archived/stale target, Manager dual-scope and history-preservation tests in tests/Feature/Admin/Departments/DepartmentTransferTest.php
-- [ ] T046 [P] [US4] Extend transfer audit metadata and full rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
+- [X] T045 [P] [US4] Add atomic transfer, deterministic lock order, invalid/duplicate/archived/stale target, Manager dual-scope and history-preservation tests in tests/Feature/Admin/Departments/DepartmentTransferTest.php
+- [X] T046 [P] [US4] Extend transfer audit metadata and full rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
 
 ### Implementation for User Story 4
 
-- [ ] T047 [P] [US4] Implement target Department, source/target version and generic unavailable-target validation in app/Http/Requests/Admin/Departments/TransferDepartmentMemberRequest.php
-- [ ] T048 [US4] Implement deterministic source/target row locks, source membership lock, eligibility recheck, attach-before-detach, two-version increment and single audit transaction in app/Actions/Department/TransferDepartmentMember.php
-- [ ] T049 [US4] Implement the policy-authorized transfer endpoint and redirect to target detail in app/Http/Controllers/Admin/Departments/TransferDepartmentMemberController.php
-- [ ] T050 [US4] Add authorized transfer-target candidate lookup that excludes source, archived, duplicate and Manager-out-of-scope targets in app/Http/Controllers/Admin/Departments/DepartmentCandidateController.php
-- [ ] T051 [US4] Add the Staff transfer dialog, source/target/version context and success/error feedback in resources/views/admin/departments/show.blade.php and resources/js/admin/app.js
-- [ ] T052 [US4] Register transfer and transfer-target candidate routes with nested member identifiers in routes/web.php
+- [X] T047 [P] [US4] Implement target Department, source/target version and generic unavailable-target validation in app/Http/Requests/Admin/Departments/TransferDepartmentMemberRequest.php
+- [X] T048 [US4] Implement deterministic source/target row locks, source membership lock, eligibility recheck, attach-before-detach, two-version increment and single audit transaction in app/Actions/Department/TransferDepartmentMember.php
+- [X] T049 [US4] Implement the policy-authorized transfer endpoint and redirect to target detail in app/Http/Controllers/Admin/Departments/TransferDepartmentMemberController.php
+- [X] T050 [US4] Add authorized transfer-target candidate lookup that excludes source, archived, duplicate and Manager-out-of-scope targets in app/Http/Controllers/Admin/Departments/DepartmentCandidateController.php
+- [X] T051 [US4] Add the Staff transfer dialog, source/target/version context and success/error feedback in resources/views/admin/departments/show.blade.php and resources/js/admin/app.js
+- [X] T052 [US4] Register transfer and transfer-target candidate routes with nested member identifiers in routes/web.php
 
 **Checkpoint**: US4 transfer is all-or-nothing, authorization-scoped and leaves User/Application history untouched on success or failure.
 
