@@ -160,16 +160,16 @@
 
 ### Tests for User Story 5
 
-- [ ] T053 [P] [US5] Add soft-archive, active-list/candidate exclusion, archived-detail visibility, code reservation, relation preservation and mutation-denial tests in tests/Feature/Admin/Departments/DepartmentArchiveTest.php
-- [ ] T054 [P] [US5] Extend archive actor/snapshot and failed-archive rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
+- [X] T053 [P] [US5] Add soft-archive, active-list/candidate exclusion, archived-detail visibility, code reservation, relation preservation and mutation-denial tests in tests/Feature/Admin/Departments/DepartmentArchiveTest.php
+- [X] T054 [P] [US5] Extend archive actor/snapshot and failed-archive rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
 
 ### Implementation for User Story 5
 
-- [ ] T055 [P] [US5] Implement archive confirmation and version validation in app/Http/Requests/Admin/Departments/ArchiveDepartmentRequest.php
-- [ ] T056 [US5] Implement locked version-aware soft archive with preserved relationships and same-transaction audit in app/Actions/Department/ArchiveDepartment.php
-- [ ] T057 [US5] Implement the Super-Admin-only destroy-as-archive endpoint and archived read-only loading in app/Http/Controllers/Admin/Departments/DepartmentController.php
-- [ ] T058 [US5] Register the Department DELETE route as archive-only with no restore or force-delete route in routes/web.php
-- [ ] T059 [US5] Add archive confirmation copy, archived badges/filter results and complete read-only action suppression in resources/views/admin/departments/index.blade.php and resources/views/admin/departments/show.blade.php
+- [X] T055 [P] [US5] Implement archive confirmation and version validation in app/Http/Requests/Admin/Departments/ArchiveDepartmentRequest.php
+- [X] T056 [US5] Implement locked version-aware soft archive with preserved relationships and same-transaction audit in app/Actions/Department/ArchiveDepartment.php
+- [X] T057 [US5] Implement the Super-Admin-only destroy-as-archive endpoint and archived read-only loading in app/Http/Controllers/Admin/Departments/DepartmentController.php
+- [X] T058 [US5] Register the Department DELETE route as archive-only with no restore or force-delete route in routes/web.php
+- [X] T059 [US5] Add archive confirmation copy, archived badges/filter results and complete read-only action suppression in resources/views/admin/departments/index.blade.php and resources/views/admin/departments/show.blade.php
 
 **Checkpoint**: US5 preserves all historical data, removes archived Department from active operations and exposes no hard-delete path.
 

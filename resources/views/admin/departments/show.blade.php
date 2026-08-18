@@ -24,8 +24,17 @@
             @can('update', $department)
                 <x-admin.button variant="secondary" :href="route('admin.departments.edit', $department)">Chỉnh sửa</x-admin.button>
             @endcan
+            @can('archive', $department)
+                <x-admin.button variant="danger" data-dialog-open="archive-department">Lưu trữ phòng ban</x-admin.button>
+            @endcan
         </div>
     </div>
+
+    @if ($department->isArchived())
+        <div class="mb-5 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700" role="status">
+            Phòng ban này đã được lưu trữ và chỉ còn ở chế độ tra cứu. Thành viên, lãnh đạo, dịch vụ và lịch sử nghiệp vụ được giữ nguyên; mọi thay đổi cơ cấu đều bị vô hiệu hóa.
+        </div>
+    @endif
 
     @if ($department->leader_id && ! $department->hasEligibleLeader())
         <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
@@ -209,6 +218,32 @@
                         <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
                         <x-admin.button type="submit">Lưu lãnh đạo</x-admin.button>
                     </div>
+                </div>
+            </form>
+        </x-admin.dialog>
+    @endcan
+
+    @can('archive', $department)
+        <x-admin.dialog
+            id="archive-department"
+            title="Lưu trữ phòng ban"
+            description="Phòng ban sẽ bị loại khỏi danh sách hoạt động và các lựa chọn quan hệ mới. Thành viên, lãnh đạo, dịch vụ và lịch sử nghiệp vụ vẫn được giữ nguyên."
+            data-open-on-error="{{ $errors->hasAny(['confirmation', 'version']) ? 'true' : 'false' }}"
+        >
+            <form method="POST" action="{{ route('admin.departments.destroy', $department) }}" class="space-y-4">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="archive_department_id" value="{{ $department->id }}">
+                <input type="hidden" name="confirmation" value="archive">
+                <input type="hidden" name="version" value="{{ $department->lock_version }}">
+                <p class="text-sm text-gray-700">
+                    Bạn có chắc muốn lưu trữ <strong>{{ $department->name }}</strong>? Đây không phải thao tác xóa vĩnh viễn và không làm mất dữ liệu liên quan.
+                </p>
+                @error('confirmation')<p class="admin-field-error">{{ $message }}</p>@enderror
+                @error('version')<p class="admin-field-error">{{ $message }}</p>@enderror
+                <div class="flex justify-end gap-2 border-t border-border pt-4">
+                    <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
+                    <x-admin.button type="submit" variant="danger">Xác nhận lưu trữ</x-admin.button>
                 </div>
             </form>
         </x-admin.dialog>

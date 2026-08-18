@@ -270,6 +270,51 @@ class DepartmentAuditTest extends TestCase
         $this->assertDatabaseMissing('activity_logs', ['action' => 'department.member_transferred']);
     }
 
+    public function test_archive_event_stores_actor_and_before_after_snapshots(): void
+    {
+        $actor = $this->superAdmin();
+        $department = Department::factory()->create(['code' => 'AUDIT-ARCHIVE']);
+
+        $this->actingAs($actor)->delete(route('admin.departments.destroy', $department), [
+            'confirmation' => 'archive',
+            'version' => 0,
+        ])->assertRedirect(route('admin.departments.index'));
+
+        $event = ActivityLog::query()->where('action', 'department.archived')->firstOrFail();
+        $this->assertSame($actor->id, $event->actor_id);
+        $this->assertSame($department->id, $event->subject_id);
+        $this->assertSame('AUDIT-ARCHIVE', data_get($event->metadata, 'before.code'));
+        $this->assertNull(data_get($event->metadata, 'before.archived_at'));
+        $this->assertSame(0, data_get($event->metadata, 'before.lock_version'));
+        $this->assertNotNull(data_get($event->metadata, 'after.archived_at'));
+        $this->assertSame(1, data_get($event->metadata, 'after.lock_version'));
+    }
+
+    public function test_archive_rolls_back_when_audit_insert_fails(): void
+    {
+        $department = Department::factory()->create(['lock_version' => 3]);
+
+        ActivityLog::creating(static function (): void {
+            throw new RuntimeException('Forced audit failure.');
+        });
+
+        try {
+            $this->actingAs($this->superAdmin())->delete(route('admin.departments.destroy', $department), [
+                'confirmation' => 'archive',
+                'version' => 3,
+            ]);
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Forced audit failure.', $exception->getMessage());
+        } finally {
+            ActivityLog::flushEventListeners();
+        }
+
+        $department->refresh();
+        $this->assertFalse($department->trashed());
+        $this->assertSame(3, $department->lock_version);
+        $this->assertDatabaseMissing('activity_logs', ['action' => 'department.archived']);
+    }
+
     private function superAdmin(): User
     {
         return User::factory()->withRole(UserRole::SuperAdmin)->create();

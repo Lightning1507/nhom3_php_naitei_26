@@ -6,8 +6,8 @@ use App\Http\Controllers\Admin\Departments\DepartmentCandidateController;
 use App\Http\Controllers\Admin\Departments\DepartmentController;
 use App\Http\Controllers\Admin\Departments\DepartmentLeaderController;
 use App\Http\Controllers\Admin\Departments\DepartmentMemberController;
-use App\Http\Controllers\Admin\ServiceCategories\ServiceCategoryController;
 use App\Http\Controllers\Admin\Departments\TransferDepartmentMemberController;
+use App\Http\Controllers\Admin\ServiceCategories\ServiceCategoryController;
 use App\Http\Controllers\Api\V1\Auth\GoogleCitizenAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,7 +51,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->scopeBindings()
             ->name('departments.members.destroy');
         Route::resource('departments', DepartmentController::class)
-            ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+            ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
         Route::resource('service-categories', ServiceCategoryController::class)
             ->except(['show']);
     });

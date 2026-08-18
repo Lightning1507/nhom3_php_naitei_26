@@ -142,7 +142,35 @@
                                         @can('update', $department)
                                             <x-admin.button variant="secondary" :href="route('admin.departments.edit', $department)">Chỉnh sửa</x-admin.button>
                                         @endcan
+                                        @can('archive', $department)
+                                            <x-admin.button variant="danger" data-dialog-open="archive-department-{{ $department->id }}">Lưu trữ</x-admin.button>
+                                        @endcan
                                     </div>
+                                    @can('archive', $department)
+                                        <x-admin.dialog
+                                            id="archive-department-{{ $department->id }}"
+                                            title="Lưu trữ phòng ban"
+                                            description="Phòng ban sẽ bị loại khỏi danh sách hoạt động và các lựa chọn quan hệ mới. Thành viên, lãnh đạo, dịch vụ và lịch sử nghiệp vụ vẫn được giữ nguyên."
+                                            data-open-on-error="{{ $errors->hasAny(['confirmation', 'version']) && (string) old('archive_department_id') === (string) $department->id ? 'true' : 'false' }}"
+                                        >
+                                            <form method="POST" action="{{ route('admin.departments.destroy', $department) }}" class="space-y-4">
+                                                @csrf
+                                                @method('DELETE')
+                                                <input type="hidden" name="archive_department_id" value="{{ $department->id }}">
+                                                <input type="hidden" name="confirmation" value="archive">
+                                                <input type="hidden" name="version" value="{{ $department->lock_version }}">
+                                                <p class="text-sm text-gray-700">
+                                                    Bạn có chắc muốn lưu trữ <strong>{{ $department->name }}</strong>? Đây không phải thao tác xóa vĩnh viễn.
+                                                </p>
+                                                @error('confirmation')<p class="admin-field-error">{{ $message }}</p>@enderror
+                                                @error('version')<p class="admin-field-error">{{ $message }}</p>@enderror
+                                                <div class="flex justify-end gap-2 border-t border-border pt-4">
+                                                    <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
+                                                    <x-admin.button type="submit" variant="danger">Xác nhận lưu trữ</x-admin.button>
+                                                </div>
+                                            </form>
+                                        </x-admin.dialog>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach
