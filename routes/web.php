@@ -52,8 +52,9 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->scopeBindings()
             ->name('departments.members.destroy');
         Route::resource('departments', DepartmentController::class)
-            ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
-        Route::resource('service-categories', ServiceCategoryController::class);
+            ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+        Route::resource('service-categories', ServiceCategoryController::class)
+            ->except(['show']);
         Route::resource('service-types', ServiceTypeController::class);
     });
 });
