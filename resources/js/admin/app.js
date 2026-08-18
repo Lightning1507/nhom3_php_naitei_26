@@ -8,7 +8,9 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
     query: initial?.name ?? '',
     selected: initial,
     items: [],
+    hasMore: false,
     loading: false,
+    submitting: false,
     error: '',
     open: false,
     activeIndex: -1,
@@ -26,6 +28,7 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
 
         if (term.length < 2) {
             this.items = [];
+            this.hasMore = false;
             this.open = false;
             this.loading = false;
             return;
@@ -46,11 +49,13 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
 
             if (!response.ok) {
                 this.items = [];
+                this.hasMore = false;
                 this.error = payload.message || 'Không thể tải danh sách phù hợp.';
                 return;
             }
 
             this.items = payload.data ?? [];
+            this.hasMore = Boolean(payload.meta?.has_more);
             this.activeIndex = this.items.length > 0 ? 0 : -1;
         } catch (error) {
             if (error.name !== 'AbortError') {
@@ -59,6 +64,7 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
                     message: error.message,
                 });
                 this.items = [];
+                this.hasMore = false;
                 this.error = 'Không thể tải kết quả. Vui lòng thử lại.';
             }
         } finally {
@@ -76,7 +82,12 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
         this.selected = null;
         this.query = '';
         this.items = [];
+        this.hasMore = false;
         this.close();
+    },
+
+    beginSubmit() {
+        this.submitting = true;
     },
 
     move(offset) {
@@ -94,6 +105,20 @@ Alpine.data('candidateCombobox', ({ url, initial = null }) => ({
     close() {
         this.open = false;
         this.activeIndex = -1;
+    },
+}));
+
+Alpine.data('departmentFilters', () => ({
+    loading: false,
+
+    beginLoading() {
+        this.loading = true;
+    },
+
+    init() {
+        window.addEventListener('pageshow', () => {
+            this.loading = false;
+        }, { once: true });
     },
 }));
 

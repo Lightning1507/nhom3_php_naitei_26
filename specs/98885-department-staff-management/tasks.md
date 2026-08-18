@@ -112,17 +112,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Add scoped search, escaped wildcard, manager/status filter, stable pagination, query preservation, count and Service read-only tests in tests/Feature/Admin/Departments/DepartmentQueryTest.php
-- [ ] T038 [P] [US3] Extend collection/detail 403/404 masking and permission-driven action rendering tests in tests/Feature/Admin/Departments/DepartmentAuthorizationTest.php
-- [ ] T039 [P] [US3] Add a PostgreSQL-only SC-004 performance group with 1,000 Department and 10,000 membership fixtures, query-count guard and separate timing report in tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php and phpunit.xml
+- [X] T037 [P] [US3] Add scoped search, escaped wildcard, manager/status filter, stable pagination, query preservation, count and Service read-only tests in tests/Feature/Admin/Departments/DepartmentQueryTest.php
+- [X] T038 [P] [US3] Extend collection/detail 403/404 masking and permission-driven action rendering tests in tests/Feature/Admin/Departments/DepartmentAuthorizationTest.php
+- [X] T039 [P] [US3] Add a PostgreSQL-only SC-004 performance group with 1,000 Department and 10,000 membership fixtures, query-count guard and separate timing report in tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php and phpunit.xml
 
 ### Implementation for User Story 3
 
-- [ ] T040 [P] [US3] Implement validated `search`, `manager_id`, `status` and `page` query inputs in app/Http/Requests/Admin/Departments/ListDepartmentsRequest.php
-- [ ] T041 [US3] Implement actor-scoped stats, escaped case-insensitive search, filters, eager leader/count queries, stable `paginate(15)` and historical detail loading in app/Http/Controllers/Admin/Departments/DepartmentController.php
-- [ ] T042 [P] [US3] Complete summary cards, responsive filter toolbar, table columns/actions, pagination and empty/no-result states in resources/views/admin/departments/index.blade.php
-- [ ] T043 [P] [US3] Complete leader/member status presentation and linked Service Type read-only section without Service mutation controls in resources/views/admin/departments/show.blade.php
-- [ ] T044 [US3] Add accessible loading/error/filter-reset behavior and mobile overflow handling for Department queries in resources/views/admin/departments/index.blade.php and resources/js/admin/app.js
+- [X] T040 [P] [US3] Implement validated `search`, `manager_id`, `status` and `page` query inputs in app/Http/Requests/Admin/Departments/ListDepartmentsRequest.php
+- [X] T041 [US3] Implement actor-scoped stats, escaped case-insensitive search, filters, eager leader/count queries, stable `paginate(15)` and historical detail loading in app/Http/Controllers/Admin/Departments/DepartmentController.php
+- [X] T042 [P] [US3] Complete summary cards, responsive filter toolbar, table columns/actions, pagination and empty/no-result states in resources/views/admin/departments/index.blade.php
+- [X] T043 [P] [US3] Complete leader/member status presentation and linked Service Type read-only section without Service mutation controls in resources/views/admin/departments/show.blade.php
+- [X] T044 [US3] Add accessible loading/error/filter-reset behavior and mobile overflow handling for Department queries in resources/views/admin/departments/index.blade.php and resources/js/admin/app.js
 
 **Checkpoint**: US3 list and detail queries are scoped, paginated, read-only where required and independently testable at normal and benchmark scale.
 
@@ -136,17 +136,17 @@
 
 ### Tests for User Story 4
 
-- [ ] T045 [P] [US4] Add atomic transfer, deterministic lock order, invalid/duplicate/archived/stale target, Manager dual-scope and history-preservation tests in tests/Feature/Admin/Departments/DepartmentTransferTest.php
-- [ ] T046 [P] [US4] Extend transfer audit metadata and full rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
+- [X] T045 [P] [US4] Add atomic transfer, deterministic lock order, invalid/duplicate/archived/stale target, Manager dual-scope and history-preservation tests in tests/Feature/Admin/Departments/DepartmentTransferTest.php
+- [X] T046 [P] [US4] Extend transfer audit metadata and full rollback assertions in tests/Feature/Admin/Departments/DepartmentAuditTest.php
 
 ### Implementation for User Story 4
 
-- [ ] T047 [P] [US4] Implement target Department, source/target version and generic unavailable-target validation in app/Http/Requests/Admin/Departments/TransferDepartmentMemberRequest.php
-- [ ] T048 [US4] Implement deterministic source/target row locks, source membership lock, eligibility recheck, attach-before-detach, two-version increment and single audit transaction in app/Actions/Department/TransferDepartmentMember.php
-- [ ] T049 [US4] Implement the policy-authorized transfer endpoint and redirect to target detail in app/Http/Controllers/Admin/Departments/TransferDepartmentMemberController.php
-- [ ] T050 [US4] Add authorized transfer-target candidate lookup that excludes source, archived, duplicate and Manager-out-of-scope targets in app/Http/Controllers/Admin/Departments/DepartmentCandidateController.php
-- [ ] T051 [US4] Add the Staff transfer dialog, source/target/version context and success/error feedback in resources/views/admin/departments/show.blade.php and resources/js/admin/app.js
-- [ ] T052 [US4] Register transfer and transfer-target candidate routes with nested member identifiers in routes/web.php
+- [X] T047 [P] [US4] Implement target Department, source/target version and generic unavailable-target validation in app/Http/Requests/Admin/Departments/TransferDepartmentMemberRequest.php
+- [X] T048 [US4] Implement deterministic source/target row locks, source membership lock, eligibility recheck, attach-before-detach, two-version increment and single audit transaction in app/Actions/Department/TransferDepartmentMember.php
+- [X] T049 [US4] Implement the policy-authorized transfer endpoint and redirect to target detail in app/Http/Controllers/Admin/Departments/TransferDepartmentMemberController.php
+- [X] T050 [US4] Add authorized transfer-target candidate lookup that excludes source, archived, duplicate and Manager-out-of-scope targets in app/Http/Controllers/Admin/Departments/DepartmentCandidateController.php
+- [X] T051 [US4] Add the Staff transfer dialog, source/target/version context and success/error feedback in resources/views/admin/departments/show.blade.php and resources/js/admin/app.js
+- [X] T052 [US4] Register transfer and transfer-target candidate routes with nested member identifiers in routes/web.php
 
 **Checkpoint**: US4 transfer is all-or-nothing, authorization-scoped and leaves User/Application history untouched on success or failure.
 
