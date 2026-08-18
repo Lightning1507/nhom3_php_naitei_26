@@ -17,9 +17,14 @@
             <p class="mt-1 font-mono text-sm font-semibold text-primary">{{ $department->code }}</p>
         </div>
 
-        @can('update', $department)
-            <x-admin.button variant="secondary" :href="route('admin.departments.edit', $department)">Chỉnh sửa</x-admin.button>
-        @endcan
+        <div class="flex flex-wrap gap-2">
+            @can('changeLeader', $department)
+                <x-admin.button variant="secondary" data-dialog-open="change-department-leader">Đổi lãnh đạo</x-admin.button>
+            @endcan
+            @can('update', $department)
+                <x-admin.button variant="secondary" :href="route('admin.departments.edit', $department)">Chỉnh sửa</x-admin.button>
+            @endcan
+        </div>
     </div>
 
     @if ($department->leader_id && ! $department->hasEligibleLeader())
@@ -62,31 +67,217 @@
 
         <section class="admin-card" aria-labelledby="department-members-title">
             <div class="admin-card-body">
-                <h2 id="department-members-title" class="text-lg font-bold text-gray-950">Thành viên</h2>
-                <p class="mt-1 text-sm text-gray-500">{{ $department->members->count() }} quan hệ hiện tại</p>
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h2 id="department-members-title" class="text-lg font-bold text-gray-950">Thành viên</h2>
+                        <p class="mt-1 text-sm text-gray-500">{{ $department->members->count() }} quan hệ hiện tại</p>
+                    </div>
+                    @can('addMember', $department)
+                        <x-admin.button variant="secondary" data-dialog-open="add-department-member">Thêm</x-admin.button>
+                    @endcan
+                </div>
 
                 @if ($department->members->isEmpty())
                     <p class="mt-4 rounded-xl bg-gray-50 px-3 py-4 text-sm text-gray-600">Chưa có thành viên.</p>
                 @else
-                    <ul class="mt-4 divide-y divide-border">
-                        @foreach ($department->members as $member)
-                            <li class="py-3 first:pt-0 last:pb-0">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="min-w-0">
-                                        <p class="truncate text-sm font-semibold text-gray-950">{{ $member->name }}</p>
-                                        <p class="truncate text-xs text-gray-500">{{ $member->email }}</p>
-                                    </div>
-                                    <x-admin.badge :variant="$member->isManager() ? 'manager' : 'staff'">
-                                        {{ $member->isManager() ? 'Manager' : 'Staff' }}
-                                    </x-admin.badge>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
+                    <div class="admin-table-wrap mt-4">
+                        <table class="admin-table">
+                            <caption class="sr-only">Danh sách thành viên phòng ban</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Thành viên</th>
+                                    <th scope="col">Vai trò</th>
+                                    <th scope="col"><span class="sr-only">Thao tác</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($department->members as $member)
+                                    <tr>
+                                        <td>
+                                            <p class="whitespace-nowrap font-semibold text-gray-950">{{ $member->name }}</p>
+                                            <p class="whitespace-nowrap text-xs text-gray-500">{{ $member->email }}</p>
+                                            @if (! $member->canAccessProtectedResources())
+                                                <x-admin.badge class="mt-1" variant="warning">Không hoạt động</x-admin.badge>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <x-admin.badge :variant="$member->isManager() ? 'manager' : 'staff'">
+                                                {{ $member->isManager() ? 'Manager' : 'Staff' }}
+                                            </x-admin.badge>
+                                        </td>
+                                        <td class="text-right">
+                                            @if ($department->leader_id === $member->id)
+                                                <span class="whitespace-nowrap text-xs font-semibold text-gray-500">Lãnh đạo</span>
+                                            @else
+                                                @can('removeMember', $department)
+                                                    @if (auth()->user()->isSuperAdmin() || $member->isStaff())
+                                                        <button type="button" class="text-xs font-semibold text-danger hover:underline" data-dialog-open="remove-member-{{ $member->id }}">
+                                                            Gỡ
+                                                        </button>
+                                                    @endif
+                                                @endcan
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
         </section>
     </div>
+
+    @can('changeLeader', $department)
+        <x-admin.dialog
+            id="change-department-leader"
+            title="Thay đổi lãnh đạo"
+            description="Chỉ Manager đang hoạt động mới có thể được chọn. Lãnh đạo mới sẽ tự động trở thành thành viên."
+            data-open-on-error="{{ $errors->has('leader_id') ? 'true' : 'false' }}"
+        >
+            <form
+                method="POST"
+                action="{{ route('admin.departments.leader.update', $department) }}"
+                class="space-y-4"
+                x-data="candidateCombobox({
+                    url: @js(route('admin.departments.manager-candidates')),
+                    initial: @js($department->leader ? [
+                        'id' => $department->leader->id,
+                        'name' => $department->leader->name,
+                        'email' => $department->leader->email,
+                        'role' => $department->leader->role->value,
+                    ] : null),
+                })"
+                @click.outside="close()"
+            >
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="version" value="{{ $department->lock_version }}">
+                <input type="hidden" name="leader_id" :value="selected?.id ?? ''">
+
+                <div>
+                    <label class="admin-label" for="leader-candidate-search">Manager lãnh đạo</label>
+                    <input
+                        id="leader-candidate-search"
+                        class="admin-input"
+                        type="search"
+                        x-model="query"
+                        @input.debounce.300ms="handleInput()"
+                        @keydown.arrow-down.prevent="move(1)"
+                        @keydown.arrow-up.prevent="move(-1)"
+                        @keydown.enter.prevent="chooseActive()"
+                        @keydown.escape="close()"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-controls="leader-candidate-options"
+                        :aria-expanded="open.toString()"
+                        autocomplete="off"
+                        placeholder="Nhập ít nhất 2 ký tự"
+                    >
+                    <div id="leader-candidate-options" x-show="open" x-cloak class="mt-1 max-h-56 overflow-y-auto rounded-xl border border-border p-1" role="listbox">
+                        <p x-show="loading" class="px-3 py-2 text-sm text-gray-500">Đang tìm kiếm...</p>
+                        <p x-show="error" x-text="error" class="px-3 py-2 text-sm text-danger"></p>
+                        <template x-for="(item, index) in items" :key="item.id">
+                            <button type="button" class="block w-full rounded-lg px-3 py-2 text-left hover:bg-blue-50" :class="activeIndex === index ? 'bg-blue-50' : ''" role="option" @mousedown.prevent="select(item)">
+                                <span class="block text-sm font-semibold" x-text="item.name"></span>
+                                <span class="block text-xs text-gray-500" x-text="item.email"></span>
+                            </button>
+                        </template>
+                    </div>
+                    @error('leader_id')<p class="admin-field-error">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="flex flex-wrap justify-between gap-3 border-t border-border pt-4">
+                    <button type="button" class="text-sm font-semibold text-danger hover:underline" @click="clear()">Bỏ chỉ định lãnh đạo</button>
+                    <div class="flex gap-2">
+                        <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
+                        <x-admin.button type="submit">Lưu lãnh đạo</x-admin.button>
+                    </div>
+                </div>
+            </form>
+        </x-admin.dialog>
+    @endcan
+
+    @can('addMember', $department)
+        <x-admin.dialog
+            id="add-department-member"
+            title="Thêm thành viên"
+            description="Tìm tài khoản nội bộ phù hợp. Manager chỉ có thể thêm Staff."
+            data-open-on-error="{{ $errors->has('user_id') ? 'true' : 'false' }}"
+        >
+            <form
+                method="POST"
+                action="{{ route('admin.departments.members.store', $department) }}"
+                class="space-y-4"
+                x-data="candidateCombobox({ url: @js(route('admin.departments.member-candidates', $department)) })"
+                @click.outside="close()"
+            >
+                @csrf
+                <input type="hidden" name="version" value="{{ $department->lock_version }}">
+                <input type="hidden" name="user_id" :value="selected?.id ?? ''">
+                <div>
+                    <label class="admin-label" for="member-candidate-search">Staff hoặc Manager</label>
+                    <input
+                        id="member-candidate-search"
+                        class="admin-input"
+                        type="search"
+                        x-model="query"
+                        @input.debounce.300ms="handleInput()"
+                        @keydown.arrow-down.prevent="move(1)"
+                        @keydown.arrow-up.prevent="move(-1)"
+                        @keydown.enter.prevent="chooseActive()"
+                        @keydown.escape="close()"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-controls="member-candidate-options"
+                        :aria-expanded="open.toString()"
+                        autocomplete="off"
+                        placeholder="Nhập tên hoặc email"
+                    >
+                    <div id="member-candidate-options" x-show="open" x-cloak class="mt-1 max-h-56 overflow-y-auto rounded-xl border border-border p-1" role="listbox">
+                        <p x-show="loading" class="px-3 py-2 text-sm text-gray-500">Đang tìm kiếm...</p>
+                        <p x-show="error" x-text="error" class="px-3 py-2 text-sm text-danger"></p>
+                        <template x-for="(item, index) in items" :key="item.id">
+                            <button type="button" class="block w-full rounded-lg px-3 py-2 text-left hover:bg-blue-50" :class="activeIndex === index ? 'bg-blue-50' : ''" role="option" @mousedown.prevent="select(item)">
+                                <span class="block text-sm font-semibold" x-text="item.name"></span>
+                                <span class="block text-xs text-gray-500" x-text="`${item.email} · ${item.role}`"></span>
+                            </button>
+                        </template>
+                    </div>
+                    @error('user_id')<p class="admin-field-error">{{ $message }}</p>@enderror
+                </div>
+                <div class="flex justify-end gap-2 border-t border-border pt-4">
+                    <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
+                    <x-admin.button type="submit" x-bind:disabled="!selected">Thêm thành viên</x-admin.button>
+                </div>
+            </form>
+        </x-admin.dialog>
+    @endcan
+
+    @foreach ($department->members as $member)
+        @if ($department->leader_id !== $member->id && (auth()->user()->isSuperAdmin() || $member->isStaff()))
+            @can('removeMember', $department)
+                <x-admin.dialog
+                    id="remove-member-{{ $member->id }}"
+                    title="Gỡ thành viên"
+                    description="Thao tác này chỉ gỡ quan hệ với phòng ban; tài khoản và lịch sử nghiệp vụ vẫn được giữ nguyên."
+                    data-open-on-error="{{ $errors->has('member') ? 'true' : 'false' }}"
+                >
+                    <form method="POST" action="{{ route('admin.departments.members.destroy', [$department, $member]) }}" class="space-y-4">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="version" value="{{ $department->lock_version }}">
+                        <p class="text-sm text-gray-700">Bạn có chắc muốn gỡ <strong>{{ $member->name }}</strong> khỏi {{ $department->name }}?</p>
+                        @error('member')<p class="admin-field-error">{{ $message }}</p>@enderror
+                        <div class="flex justify-end gap-2 border-t border-border pt-4">
+                            <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
+                            <x-admin.button type="submit" variant="danger">Gỡ thành viên</x-admin.button>
+                        </div>
+                    </form>
+                </x-admin.dialog>
+            @endcan
+        @endif
+    @endforeach
 
     <section class="admin-card mt-5" aria-labelledby="department-services-title">
         <div class="admin-card-body">
