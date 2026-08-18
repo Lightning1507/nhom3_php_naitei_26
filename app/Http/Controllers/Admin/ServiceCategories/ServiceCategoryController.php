@@ -38,6 +38,15 @@ class ServiceCategoryController extends Controller
         return view('admin.service-categories.create');
     }
 
+    public function show(ServiceCategory $serviceCategory): View
+    {
+        $this->authorize('view', $serviceCategory);
+
+        $serviceCategory->load('serviceTypes');
+
+        return view('admin.service-categories.show', compact('serviceCategory'));
+    }
+
     public function store(
         StoreServiceCategoryRequest $request,
         CreateServiceCategory $createServiceCategory,
