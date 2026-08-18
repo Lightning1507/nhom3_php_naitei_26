@@ -37,6 +37,21 @@
                         Phòng ban
                     </a>
                 @endcan
+
+
+
+                @can('viewAny', \App\Models\ServiceCategory::class)
+                    <a
+                        href="{{ route('admin.service-categories.index') }}"
+                        @class([
+                            'whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
+                            'bg-white/20 text-white' => request()->routeIs('admin.service-categories.*'),
+                            'text-white/65 hover:bg-white/10 hover:text-white' => ! request()->routeIs('admin.service-categories.*'),
+                        ])
+                    >
+                        Danh mục dịch vụ
+                    </a>
+                @endcan
             </nav>
 
             <div class="flex shrink-0 items-center gap-3">
