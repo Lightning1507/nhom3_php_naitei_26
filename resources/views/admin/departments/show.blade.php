@@ -46,8 +46,11 @@
                         <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Lãnh đạo</dt>
                         <dd class="mt-1 text-sm text-gray-900">
                             @if ($department->leader)
-                                {{ $department->leader->name }}
+                                <span class="font-semibold">{{ $department->leader->name }}</span>
                                 <span class="block text-xs text-gray-500">{{ $department->leader->email }}</span>
+                                <x-admin.badge class="mt-2" :variant="$department->hasEligibleLeader() ? 'success' : 'warning'">
+                                    {{ $department->hasEligibleLeader() ? 'Manager đang hoạt động' : 'Không còn đủ điều kiện' }}
+                                </x-admin.badge>
                             @else
                                 <x-admin.badge variant="warning">Chưa có lãnh đạo</x-admin.badge>
                             @endif
@@ -96,9 +99,15 @@
                                         <td>
                                             <p class="whitespace-nowrap font-semibold text-gray-950">{{ $member->name }}</p>
                                             <p class="whitespace-nowrap text-xs text-gray-500">{{ $member->email }}</p>
-                                            @if (! $member->canAccessProtectedResources())
-                                                <x-admin.badge class="mt-1" variant="warning">Không hoạt động</x-admin.badge>
-                                            @endif
+                                            <x-admin.badge class="mt-1" :variant="$member->canAccessProtectedResources() ? 'success' : 'warning'">
+                                                @if ($member->trashed())
+                                                    Đã lưu trữ
+                                                @elseif (! $member->is_active)
+                                                    Không hoạt động
+                                                @else
+                                                    Đang hoạt động
+                                                @endif
+                                            </x-admin.badge>
                                         </td>
                                         <td>
                                             <x-admin.badge :variant="$member->isManager() ? 'manager' : 'staff'">
@@ -111,9 +120,16 @@
                                             @else
                                                 @can('removeMember', $department)
                                                     @if (auth()->user()->isSuperAdmin() || $member->isStaff())
-                                                        <button type="button" class="text-xs font-semibold text-danger hover:underline" data-dialog-open="remove-member-{{ $member->id }}">
-                                                            Gỡ
-                                                        </button>
+                                                        <div class="flex justify-end gap-3">
+                                                            @if ($member->isStaff() && $member->canAccessProtectedResources())
+                                                                <button type="button" class="text-xs font-semibold text-primary hover:underline" data-dialog-open="transfer-member-{{ $member->id }}">
+                                                                    Điều chuyển
+                                                                </button>
+                                                            @endif
+                                                            <button type="button" class="text-xs font-semibold text-danger hover:underline" data-dialog-open="remove-member-{{ $member->id }}">
+                                                                Gỡ
+                                                            </button>
+                                                        </div>
                                                     @endif
                                                 @endcan
                                             @endif
@@ -257,6 +273,88 @@
     @foreach ($department->members as $member)
         @if ($department->leader_id !== $member->id && (auth()->user()->isSuperAdmin() || $member->isStaff()))
             @can('removeMember', $department)
+                @if ($member->isStaff() && $member->canAccessProtectedResources())
+                    <x-admin.dialog
+                        id="transfer-member-{{ $member->id }}"
+                        title="Điều chuyển Staff"
+                        description="Staff sẽ được thêm vào phòng ban đích và gỡ khỏi phòng ban nguồn trong cùng một thao tác nguyên tử. Tài khoản và lịch sử nghiệp vụ không bị thay đổi."
+                        data-open-on-error="{{ $errors->hasAny(['target_department_id', 'source_version', 'target_version', 'member']) && (string) old('transfer_member_id') === (string) $member->id ? 'true' : 'false' }}"
+                    >
+                        <form
+                            method="POST"
+                            action="{{ route('admin.departments.members.transfer', [$department, $member]) }}"
+                            class="space-y-4"
+                            x-data="candidateCombobox({ url: @js(route('admin.departments.members.transfer-targets', [$department, $member])) })"
+                            @click.outside="close()"
+                            @submit="beginSubmit()"
+                        >
+                            @csrf
+                            <input type="hidden" name="transfer_member_id" value="{{ $member->id }}">
+                            <input type="hidden" name="source_version" value="{{ $department->lock_version }}">
+                            <input type="hidden" name="target_department_id" :value="selected?.id ?? ''">
+                            <input type="hidden" name="target_version" :value="selected?.version ?? ''">
+
+                            <dl class="grid gap-3 rounded-xl bg-gray-50 p-3 text-sm sm:grid-cols-2">
+                                <div>
+                                    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Staff</dt>
+                                    <dd class="mt-1 font-semibold text-gray-950">{{ $member->name }}</dd>
+                                    <dd class="text-xs text-gray-500">{{ $member->email }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Phòng ban nguồn</dt>
+                                    <dd class="mt-1 font-semibold text-gray-950">{{ $department->name }}</dd>
+                                    <dd class="font-mono text-xs text-gray-500">{{ $department->code }}</dd>
+                                </div>
+                            </dl>
+
+                            <div>
+                                <label class="admin-label" for="transfer-target-search-{{ $member->id }}">Phòng ban đích</label>
+                                <input
+                                    id="transfer-target-search-{{ $member->id }}"
+                                    class="admin-input"
+                                    type="search"
+                                    x-model="query"
+                                    @input.debounce.300ms="handleInput()"
+                                    @keydown.arrow-down.prevent="move(1)"
+                                    @keydown.arrow-up.prevent="move(-1)"
+                                    @keydown.enter.prevent="chooseActive()"
+                                    @keydown.escape="close()"
+                                    role="combobox"
+                                    aria-autocomplete="list"
+                                    aria-controls="transfer-target-options-{{ $member->id }}"
+                                    :aria-expanded="open.toString()"
+                                    autocomplete="off"
+                                    placeholder="Nhập tên hoặc mã phòng ban"
+                                >
+                                <div id="transfer-target-options-{{ $member->id }}" x-show="open" x-cloak class="mt-1 max-h-56 overflow-y-auto rounded-xl border border-border p-1" role="listbox">
+                                    <p x-show="loading" class="px-3 py-2 text-sm text-gray-500">Đang tìm kiếm...</p>
+                                    <p x-show="error" x-text="error" class="px-3 py-2 text-sm text-danger"></p>
+                                    <p x-show="!loading && !error && query.trim().length >= 2 && items.length === 0" class="px-3 py-2 text-sm text-gray-500">Không có phòng ban đích phù hợp.</p>
+                                    <template x-for="(item, index) in items" :key="item.id">
+                                        <button type="button" class="block w-full rounded-lg px-3 py-2 text-left hover:bg-blue-50" :class="activeIndex === index ? 'bg-blue-50' : ''" role="option" @mousedown.prevent="select(item)">
+                                            <span class="block text-sm font-semibold" x-text="item.name"></span>
+                                            <span class="block font-mono text-xs text-gray-500" x-text="item.code"></span>
+                                        </button>
+                                    </template>
+                                    <p x-show="hasMore" class="px-3 py-2 text-xs text-gray-500">Còn kết quả khác. Hãy nhập từ khóa cụ thể hơn.</p>
+                                </div>
+                                @error('target_department_id')<p class="admin-field-error">{{ $message }}</p>@enderror
+                                @error('target_version')<p class="admin-field-error">{{ $message }}</p>@enderror
+                                @error('source_version')<p class="admin-field-error">{{ $message }}</p>@enderror
+                                @error('member')<p class="admin-field-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="flex justify-end gap-2 border-t border-border pt-4">
+                                <x-admin.button type="button" variant="secondary" data-dialog-close>Hủy</x-admin.button>
+                                <x-admin.button type="submit" x-bind:disabled="!selected || loading || submitting">
+                                    <span x-show="!submitting">Xác nhận điều chuyển</span>
+                                    <span x-show="submitting" x-cloak>Đang điều chuyển...</span>
+                                </x-admin.button>
+                            </div>
+                        </form>
+                    </x-admin.dialog>
+                @endif
+
                 <x-admin.dialog
                     id="remove-member-{{ $member->id }}"
                     title="Gỡ thành viên"
@@ -282,8 +380,11 @@
     <section class="admin-card mt-5" aria-labelledby="department-services-title">
         <div class="admin-card-body">
             <div>
-                <h2 id="department-services-title" class="text-lg font-bold text-gray-950">Dịch vụ liên kết</h2>
-                <p class="mt-1 text-sm text-gray-500">Thông tin chỉ để tra cứu; F03 không cung cấp thao tác sửa dịch vụ.</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <h2 id="department-services-title" class="text-lg font-bold text-gray-950">Dịch vụ liên kết</h2>
+                    <x-admin.badge variant="info">Chỉ đọc</x-admin.badge>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">Thông tin phục vụ tra cứu cơ cấu; không có thao tác thay đổi dịch vụ trong tính năng này.</p>
             </div>
 
             @if ($department->serviceTypes->isEmpty())
@@ -305,8 +406,14 @@
                                     <td class="font-mono font-semibold">{{ $serviceType->code }}</td>
                                     <td>{{ $serviceType->name }}</td>
                                     <td>
-                                        <x-admin.badge :variant="$serviceType->is_active ? 'success' : 'neutral'">
-                                            {{ $serviceType->is_active ? 'Hoạt động' : 'Không hoạt động' }}
+                                        <x-admin.badge :variant="$serviceType->trashed() ? 'neutral' : ($serviceType->is_active ? 'success' : 'warning')">
+                                            @if ($serviceType->trashed())
+                                                Đã lưu trữ
+                                            @elseif ($serviceType->is_active)
+                                                Hoạt động
+                                            @else
+                                                Không hoạt động
+                                            @endif
                                         </x-admin.badge>
                                     </td>
                                 </tr>

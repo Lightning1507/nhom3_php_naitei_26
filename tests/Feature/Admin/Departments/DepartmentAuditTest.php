@@ -213,6 +213,63 @@ class DepartmentAuditTest extends TestCase
         $this->assertDatabaseMissing('activity_logs', ['action' => 'department.member_removed']);
     }
 
+    public function test_transfer_event_stores_actor_member_and_both_department_snapshots(): void
+    {
+        $actor = $this->superAdmin();
+        $staff = User::factory()->staff()->create();
+        $source = Department::factory()->create(['code' => 'AUDIT-SOURCE']);
+        $target = Department::factory()->create(['code' => 'AUDIT-TARGET']);
+        $source->users()->attach($staff);
+
+        $this->actingAs($actor)->post(route('admin.departments.members.transfer', [$source, $staff]), [
+            'target_department_id' => $target->id,
+            'source_version' => 0,
+            'target_version' => 0,
+        ])->assertRedirect();
+
+        $event = ActivityLog::query()->where('action', 'department.member_transferred')->firstOrFail();
+        $this->assertSame($actor->id, $event->actor_id);
+        $this->assertSame($source->id, $event->subject_id);
+        $this->assertSame($staff->id, data_get($event->metadata, 'member.id'));
+        $this->assertSame('AUDIT-SOURCE', data_get($event->metadata, 'source.before.code'));
+        $this->assertSame(0, data_get($event->metadata, 'source.before.lock_version'));
+        $this->assertSame(1, data_get($event->metadata, 'source.after.lock_version'));
+        $this->assertSame('AUDIT-TARGET', data_get($event->metadata, 'target.before.code'));
+        $this->assertSame(0, data_get($event->metadata, 'target.before.lock_version'));
+        $this->assertSame(1, data_get($event->metadata, 'target.after.lock_version'));
+    }
+
+    public function test_transfer_fully_rolls_back_when_audit_insert_fails(): void
+    {
+        $actor = $this->superAdmin();
+        $staff = User::factory()->staff()->create();
+        $source = Department::factory()->create();
+        $target = Department::factory()->create();
+        $source->users()->attach($staff);
+
+        ActivityLog::creating(static function (): void {
+            throw new RuntimeException('Forced audit failure.');
+        });
+
+        try {
+            $this->actingAs($actor)->post(route('admin.departments.members.transfer', [$source, $staff]), [
+                'target_department_id' => $target->id,
+                'source_version' => 0,
+                'target_version' => 0,
+            ]);
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Forced audit failure.', $exception->getMessage());
+        } finally {
+            ActivityLog::flushEventListeners();
+        }
+
+        $this->assertTrue($source->users()->whereKey($staff->id)->exists());
+        $this->assertFalse($target->users()->whereKey($staff->id)->exists());
+        $this->assertSame(0, $source->fresh()->lock_version);
+        $this->assertSame(0, $target->fresh()->lock_version);
+        $this->assertDatabaseMissing('activity_logs', ['action' => 'department.member_transferred']);
+    }
+
     private function superAdmin(): User
     {
         return User::factory()->withRole(UserRole::SuperAdmin)->create();

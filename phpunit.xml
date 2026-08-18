@@ -10,6 +10,10 @@
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <exclude>tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php</exclude>
+        </testsuite>
+        <testsuite name="DepartmentPerformance">
+            <file>tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php</file>
         </testsuite>
     </testsuites>
     <source>

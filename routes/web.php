@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Departments\DepartmentController;
 use App\Http\Controllers\Admin\Departments\DepartmentLeaderController;
 use App\Http\Controllers\Admin\Departments\DepartmentMemberController;
 use App\Http\Controllers\Admin\ServiceCategories\ServiceCategoryController;
+use App\Http\Controllers\Admin\Departments\TransferDepartmentMemberController;
 use App\Http\Controllers\Api\V1\Auth\GoogleCitizenAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,12 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->name('departments.member-candidates');
         Route::post('/departments/{department}/members', [DepartmentMemberController::class, 'store'])
             ->name('departments.members.store');
+        Route::get('/departments/{department}/members/{member}/transfer-targets', [DepartmentCandidateController::class, 'transferTargets'])
+            ->scopeBindings()
+            ->name('departments.members.transfer-targets');
+        Route::post('/departments/{department}/members/{member}/transfer', TransferDepartmentMemberController::class)
+            ->scopeBindings()
+            ->name('departments.members.transfer');
         Route::delete('/departments/{department}/members/{member}', [DepartmentMemberController::class, 'destroy'])
             ->scopeBindings()
             ->name('departments.members.destroy');

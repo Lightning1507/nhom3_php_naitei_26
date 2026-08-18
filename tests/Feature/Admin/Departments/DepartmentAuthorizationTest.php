@@ -97,6 +97,51 @@ class DepartmentAuthorizationTest extends TestCase
         ]);
     }
 
+    public function test_collection_and_detail_actions_are_rendered_from_policy_permissions(): void
+    {
+        $superAdmin = User::factory()->withRole(UserRole::SuperAdmin)->create();
+        $manager = User::factory()->manager()->create();
+        $ledDepartment = Department::factory()->ledBy($manager)->create();
+        $outsideDepartment = Department::factory()->create();
+
+        $this->actingAs($superAdmin)
+            ->get(route('admin.departments.index'))
+            ->assertOk()
+            ->assertSee('Tạo phòng ban')
+            ->assertSee('Chỉnh sửa');
+
+        $this->actingAs($manager)
+            ->get(route('admin.departments.index'))
+            ->assertOk()
+            ->assertSee($ledDepartment->name)
+            ->assertDontSee($outsideDepartment->name)
+            ->assertDontSee('Tạo phòng ban')
+            ->assertDontSee('Chỉnh sửa');
+
+        $this->actingAs($manager)
+            ->get(route('admin.departments.show', $ledDepartment))
+            ->assertOk()
+            ->assertSee('Thêm thành viên')
+            ->assertDontSee('Đổi lãnh đạo')
+            ->assertDontSee('Chỉnh sửa');
+
+        $this->actingAs($manager)
+            ->get(route('admin.departments.show', $outsideDepartment))
+            ->assertNotFound();
+    }
+
+    public function test_staff_collection_is_forbidden_and_resource_ids_are_masked(): void
+    {
+        $staff = User::factory()->staff()->create();
+        $department = Department::factory()->create();
+
+        $this->actingAs($staff)->get(route('admin.departments.index'))->assertForbidden();
+        $this->actingAs($staff)->get(route('admin.departments.show', $department))->assertNotFound();
+        $this->actingAs($staff)
+            ->get(route('admin.departments.member-candidates', [$department, 'search' => 'staff']))
+            ->assertNotFound();
+    }
+
     /**
      * @return array<string, mixed>
      */
