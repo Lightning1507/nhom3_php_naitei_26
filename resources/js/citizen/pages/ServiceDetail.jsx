@@ -123,16 +123,23 @@ export default function ServiceDetail() {
                                 })()}
                             </div>
                             
-                            <div className="mt-12 flex justify-end border-t-[1.5px] border-gray-100 pt-8">
-                                <button 
-                                    disabled={!service.is_active}
-                                    className={`btn-primary rounded-xl px-8 py-3.5 text-[16px] font-semibold transition flex items-center gap-2 ${service.is_active ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                                >
-                                    Submit Application Online
-                                    {service.is_active && (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                                    )}
-                                </button>
+<div className="mt-12 flex justify-end border-t-[1.5px] border-gray-100 pt-8">
+                                {service.is_active ? (
+                                    <Link
+                                        to={`/services/${service.id}/apply`}
+                                        className="btn-primary rounded-xl px-8 py-3.5 text-[16px] font-semibold transition flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md"
+                                    >
+                                        Submit Application Online
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                    </Link>
+                                ) : (
+                                    <button
+                                        disabled
+                                        className="btn-primary rounded-xl px-8 py-3.5 text-[16px] font-semibold transition flex items-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed"
+                                    >
+                                        Submit Application Online
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}

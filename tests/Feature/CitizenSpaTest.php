@@ -25,6 +25,24 @@ class CitizenSpaTest extends TestCase
             ->assertViewIs('citizen.app');
     }
 
+    public function test_citizen_apply_route_renders_the_same_spa(): void
+    {
+        $response = $this->get('/services/1/apply');
+
+        $response
+            ->assertOk()
+            ->assertViewIs('citizen.app');
+    }
+
+    public function test_citizen_application_detail_route_renders_the_same_spa(): void
+    {
+        $response = $this->get('/applications/1');
+
+        $response
+            ->assertOk()
+            ->assertViewIs('citizen.app');
+    }
+
     public function test_citizen_auth_routes_render_the_same_spa(): void
     {
         foreach (['/login', '/register', '/profile'] as $path) {
