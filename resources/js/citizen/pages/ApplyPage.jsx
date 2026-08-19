@@ -276,7 +276,7 @@ export default function ApplyPage() {
                     )}
 
                     {currentStep === 0 && (
-                        <section className="max-w-2xl">
+                        <section className="mx-auto max-w-2xl">
                             <div className="grid gap-x-6 gap-y-5">
                                 {fields.map((field) => (
                                     <FieldInput
@@ -309,7 +309,7 @@ export default function ApplyPage() {
                     )}
 
                     {currentStep === 1 && (
-                        <section className="max-w-2xl">
+                        <section className="mx-auto max-w-2xl">
                             {requirements.length > 0 ? (
                                 <div className="space-y-6">
                                     {requirements.map((requirement) => (
@@ -356,7 +356,7 @@ export default function ApplyPage() {
                     )}
 
                     {currentStep === 2 && (
-                        <section className="max-w-2xl">
+                        <section className="mx-auto max-w-2xl">
                             <div className="rounded-2xl border-[1.5px] border-gray-100 bg-gray-50 p-6">
                                 <h3 className="mb-4 text-[17px] font-bold text-gray-900">Thông tin đã nhập</h3>
                                 <dl className="space-y-3">

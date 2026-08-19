@@ -102,26 +102,30 @@ export default function DocumentUploader({ requirement, files = [], onAdd, onRem
 
             {files.length > 0 && (
                 <ul className="mt-4 space-y-2.5">
-                    {files.map((file, index) => (
-                        <li key={`${file.name}-${file.lastModified}`} className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
-                            <div className="flex min-w-0 items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F0FE] text-primary">
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    {files.map((item, index) => {
+                        const file = item.file ?? item;
+
+                        return (
+                            <li key={`${file.name}-${file.lastModified}`} className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                                <div className="flex min-w-0 items-center gap-3">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F0FE] text-primary">
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-gray-900">{file.name}</p>
+                                        <p className="text-xs text-gray-500">{formatBytes(file.size)}</p>
+                                    </div>
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="truncate text-sm font-semibold text-gray-900">{file.name}</p>
-                                    <p className="text-xs text-gray-500">{formatBytes(file.size)}</p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold text-danger transition hover:bg-red-50"
-                                onClick={() => onRemove(file, index)}
-                            >
-                                Xóa
-                            </button>
-                        </li>
-                    ))}
+                                <button
+                                    type="button"
+                                    className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold text-danger transition hover:bg-red-50"
+                                    onClick={() => onRemove(file, index)}
+                                >
+                                    Xóa
+                                </button>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>
