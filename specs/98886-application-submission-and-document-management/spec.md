@@ -78,6 +78,58 @@ Citizen cần xem lại hoặc tải xuống một tài liệu đã đính kèm 
 
 ---
 
+### User Story 6 - Admin cấu hình tài liệu yêu cầu theo từng service (Priority: P1)
+
+Admin khi tạo/sửa một dịch vụ công khai danh sách các **requirement tài liệu minh chứng**: nhãn hiển thị (`label`), bắt buộc hay không (`required`), và loại file chấp nhận (`type`). Hệ thống tự sinh mã máy đọc (`code`) duy nhất cho từng requirement. Khi citizen nộp hồ sơ, form sẽ render đúng từng slot tương ứng.
+
+**Why this priority**: Đây là nguồn dữ liệu quyết định tính "động theo service" của form nộp tài liệu; nếu admin không khai được loại/bắt buộc/type thì citizen và staff không thể xác định tài liệu cần nộp.
+
+**Independent Test**: Admin tạo service với 2 requirement (1 bắt buộc type `pdf`, 1 tùy chọn type `image`), xác nhận service trả về `document_requirements` shape chuẩn `{code, label, required, type}` qua API; thử `type` không hợp lệ và xác nhận bị từ chối.
+
+**Acceptance Scenarios**:
+
+1. **Given** admin tạo/sửa service với danh sách `document_requirements`, **When** mỗi requirement có `name`/`label`, `is_required`/`required` và `type` hợp lệ, **Then** hệ thống lưu shape chuẩn `{code, label, required, type}` với `code` tự sinh duy nhất trong service.
+2. **Given** admin nhập `type` không thuộc `{pdf, image, mixed}`, **When** gửi lên, **Then** hệ thống từ chối (422) và không lưu.
+3. **Given** hai requirement có `name` giống nhau (sinh `code` trùng), **When** lưu service, **Then** `code` được đảm bảo unique (thêm hậu tố) để không đụng nhau khi gắn tài liệu.
+4. **Given** service cũ đã có `document_requirements` shape cũ (`{name, is_required}`), **When** hệ thống chạy backfill, **Then** dữ liệu được chuẩn hoá sang shape mới với `type` mặc định `mixed` và `code` sinh lại, không mất requirement nào.
+
+---
+
+### User Story 7 - Citizen nộp tài liệu theo từng requirement (Priority: P1)
+
+Citizen ở bước nộp hồ sơ thấy **một slot upload cho mỗi requirement** của service; mỗi file được gắn `requirement_code` tương ứng. Loại file chấp nhận của slot do `type` của requirement quyết định (pdf/image/mixed), không còn là một vùng upload tự do.
+
+**Why this priority**: Ràng buộc file với requirement giúp staff (khi xem chi tiết) biết mỗi file chứng minh cho yêu cầu nào; là tiền đề cho luồng xử lý và yêu cầu bổ sung sau này.
+
+**Independent Test**: Mở Apply của service có requirement `pdf` bắt buộc, upload file ảnh vào slot đó và xác nhận bị từ chối; upload PDF vào slot `pdf` và xác nhận thành công kèm `requirement_code` được lưu.
+
+**Acceptance Scenarios**:
+
+1. **Given** service có danh sách `document_requirements`, **When** citizen vào bước tài liệu, **Then** thấy từng slot với label, dấu `*` nếu bắt buộc và hint loại file (PDF / Ảnh / PDF hoặc Ảnh).
+2. **Given** citizen upload file vào một slot, **When** file nộp lên API, **Then** yêu cầu phải kèm `requirement_code` thuộc service (nếu thiếu/sai → 422) và tài liệu được lưu với đúng `requirement_code`.
+3. **Given** citizen upload file không khớp `type` của slot (`pdf` slot nhưng file ảnh), **When** gửi lên, **Then** hệ thống từ chối (422) với thông báo rõ ràng.
+4. **Given** service **không** có requirement nào, **When** citizen upload, **Then** vẫn cho upload tự do không cần `requirement_code` (giữ luồng hiện tại).
+
+---
+
+### User Story 8 - Cảnh báo thiếu tài liệu bắt buộc (soft) và lock theo trạng thái (Priority: P1)
+
+Citizen **vẫn được nộp** hồ sơ dù thiếu tài liệu bắt buộc; hệ thống ghi nhận danh sách thiếu (`missing_required_documents`) và hiển thị **cảnh báo đỏ** ở giao diện. Tài liệu bị **khoá theo trạng thái nghiệp vụ**: không upload khi hồ sơ đang xử lý/đã xong; không xóa khi đã được staff nhận. Staff xem chi tiết hồ sơ sẽ thấy tài liệu thiếu và yêu cầu nộp bổ sung (luồng này nằm ở feature xử lý hồ sơ sau).
+
+**Why this priority**: Đảm bảo tính toàn vẹn hồ sơ khi staff bắt đầu xử lý (không bị mất/sửa tài liệu), đồng thời không chặn cứng công dân khỏi việc nộp khi chưa đủ giấy tờ — staff xử lý sau bằng cơ chế yêu cầu bổ sung.
+
+**Independent Test**: Nộp hồ sơ thiếu 1 tài liệu bắt buộc và xác nhận vẫn tạo hồ sơ (201) kèm `missing_required_documents`; chuyển hồ sơ sang `processing` rồi thử upload/xóa và xác nhận bị từ chối (403).
+
+**Acceptance Scenarios**:
+
+1. **Given** hồ sơ đang ở `received` và thiếu một requirement bắt buộc, **When** citizen nộp, **Then** hồ sơ vẫn được tạo (201) và response kèm `missing_required_documents` liệt kê đúng `code`/`label`.
+2. **Given** hồ sơ đang thiếu tài liệu bắt buộc, **When** xem chi tiết, **Then** giao diện hiện cảnh báo đỏ "Thiếu tài liệu bắt buộc: <label>" và trạng thái vẫn cho phép bổ sung khi `received`.
+3. **Given** hồ sơ ở `processing`/`approved`/`rejected`, **When** citizen cố upload tài liệu, **Then** hệ thống từ chối (403) và không thay đổi dữ liệu.
+4. **Given** hồ sơ ở `supplement_required`, **When** citizen upload, **Then** chỉ cho upload loại bổ sung (`document_kind=supplement`), không được sửa/xóa tài liệu nộp trước đó.
+5. **Given** hồ sơ `received` nhưng đã được gán `assigned_staff_id`, **When** citizen cố xóa tài liệu, **Then** hệ thống từ chối (403) để staff không bị mất tài liệu khi đang xem.
+
+---
+
 ### User Story 5 - Citizen xóa tài liệu khi hồ sơ chưa được nộp xong (Priority: P2)
 
 Citizen upload nhầm hoặc muốn thay tài liệu trước khi nộp; cần xóa tài liệu đó để không nộp kèm thông tin sai. Việc xóa chỉ được phép khi hồ sơ chưa được xử lý.
@@ -124,14 +176,21 @@ Citizen upload nhầm hoặc muốn thay tài liệu trước khi nộp; cần x
 - **FR-013**: System MUST ghi lại dấu vết xóa mềm sao cho có thể phục vụ kiểm toán (bản ghi được giữ, chỉ ẩn khỏi truy cập thường).
 - **FR-014**: System MUST trả về lỗi 404/403 rõ ràng khi yêu cầu tài liệu không tồn tại, đã xóa, không thuộc hồ sơ trong URL hoặc không thuộc quyền.
 - **FR-015**: System MUST trả về lỗi rõ ràng thay vì lỗi hệ thống chung khi file nhị phân của tài liệu đã bị mất trên disk.
+- **FR-016**: System MUST lưu `document_requirements` của service theo shape chuẩn `{code, label, required, type}` với `type ∈ {pdf, image, mixed}` và `code` duy nhất trong service.
+- **FR-017**: System MUST bắt buộc `requirement_code` thuộc service khi upload tài liệu vào hồ sơ của service có ≥ 1 requirement; service không có requirement thì upload không cần `requirement_code`.
+- **FR-018**: System MUST dùng `type` của requirement để xác định loại file chấp nhận của slot đó (`pdf` → chỉ PDF; `image` → chỉ JPEG/JPG/PNG; `mixed` → cả hai), kết hợp giới hạn dung lượng 10 MB.
+- **FR-019**: System MUST cho phép nộp hồ sơ dù thiếu tài liệu bắt buộc (soft), đồng thời trả `missing_required_documents` trong response và hiển thị cảnh báo đỏ ở giao diện citizen.
+- **FR-020**: System MUST chặn upload tài liệu khi hồ sơ ở trạng thái `processing`, `approved` hoặc `rejected` (403); chỉ cho upload khi `received` hoặc `supplement_required`.
+- **FR-021**: System MUST chặn xóa tài liệu khi hồ sơ đã được gán `assigned_staff_id`, kể cả khi trạng thái còn `received` (403), để bảo toàn tài liệu đang được staff xem xét.
 
 ### Key Entities *(include if feature involves data)*
 
 - **Application**: Hồ sơ dịch vụ công do citizen tạo; gồm mã hồ sơ duy nhất `HS-YYYYMMDD-xxxxx`, citizen sở hữu, dịch vụ đăng ký, trạng thái xử lý, dữ liệu biểu mẫu và các mốc thời gian. Là đơn vị sở hữu các tài liệu; quyền truy cập xác định theo chủ sở hữu và trạng thái xử lý.
 - **ApplicationStatusHistory**: Bản ghi lịch sử chuyển trạng thái của hồ sơ, gồm trạng thái trước/sau, người thực hiện và thời điểm.
-- **ApplicationDocument**: Bản ghi metadata của tài liệu đính kèm một hồ sơ. Gồm liên kết hồ sơ, người upload, tên gốc, loại nội dung, dung lượng, đường dẫn lưu trữ, loại tài liệu (`submission`) và hỗ trợ xóa mềm. Thuộc về một Application.
-- **ServiceType**: Dịch vụ công trong catalog mà citizen đăng ký; xác định `form_schema` để kiểm tra `form_data` và chỉ chấp nhận khi dịch vụ đang hoạt động.
+- **ApplicationDocument**: Bản ghi metadata của tài liệu đính kèm một hồ sơ. Gồm liên kết hồ sơ, người upload, tên gốc, loại nội dung, dung lượng, đường dẫn lưu trữ, loại tài liệu (`submission`) và hỗ trợ xóa mềm. Thuộc về một Application. Từ Increment 2 có thêm `requirement_code` (nullable) liên kết tài liệu với một requirement của service; `document_kind` có thể là `submission` hoặc `supplement` tùy trạng thái hồ sơ.
+- **ServiceType**: Dịch vụ công trong catalog mà citizen đăng ký; xác định `form_schema` để kiểm tra `form_data` và `document_requirements` (shape chuẩn `{code, label, required, type}`) để render slot upload và xác định tài liệu thiếu; chỉ chấp nhận khi dịch vụ đang hoạt động.
 - **ApplicationCodeSequence**: Bảng đếm số thứ tự mã hồ sơ theo ngày, đảm bảo mã không trùng khi nộp đồng thời.
+- **ServiceSchema (helper)**: Bộ chuẩn hoá dùng chung (backend + resource) để dung nạp shape cũ `{name, is_required}`/`{name, label, required}` về shape chuẩn của `form_schema` và `document_requirements`, tránh duplicate logic giữa admin và citizen.
 
 ## Success Criteria *(mandatory)*
 
@@ -144,15 +203,20 @@ Citizen upload nhầm hoặc muốn thay tài liệu trước khi nộp; cần x
 - **SC-005**: 100% file không đúng định dạng hoặc vượt dung lượng bị từ chối với thông báo rõ ràng và không tạo bản ghi tài liệu.
 - **SC-006**: 100% tài liệu đã upload nằm ở vùng lưu trữ riêng tư, không thể mở trực tiếp bằng URL công khai.
 - **SC-007**: 100% yêu cầu tải xuống từ citizen không sở hữu hồ sơ hoặc người chưa đăng nhập bị từ chối với mã 403/401; chủ hồ sơ và Staff, Manager, Super Admin luôn tải được tài liệu.
-- **SC-008**: 100% tài liệu của hồ sơ ở trạng thái `received` có thể được xóa mềm bởi chủ hồ sơ và không còn tải xuống được; tài liệu của hồ sơ đã chuyển sang xử lý không thể bị xóa.
+- **SC-008**: 100% tài liệu của hồ sơ ở trạng thái `received` có thể được xóa mềm bởi chủ hồ sơ và không còn tải xuống được; tài liệu của hồ sơ đã chuyển sang xử lý hoặc đã gán staff không thể bị xóa.
 - **SC-009**: Bộ kiểm thử tự động cho luồng nộp hồ sơ và upload/download/xóa tài liệu đạt 100% thông qua (kèm các ca từ chối và phân quyền).
+- **SC-010**: 100% service có `document_requirements` shape chuẩn `{code, label, required, type}`; admin khai `type` không hợp lệ luôn bị từ chối (422).
+- **SC-011**: 100% tài liệu upload vào hồ sơ có service có requirement đều được lưu kèm `requirement_code` hợp lệ thuộc service; file không khớp `type` của slot luôn bị từ chối.
+- **SC-012**: 100% hồ sơ nộp thiếu tài liệu bắt buộc vẫn được tạo (soft) và response/giao diện hiển thị đúng `missing_required_documents`; 100% upload khi `processing`/`approved`/`rejected` và xóa khi đã gán staff bị từ chối (403).
 
 ## Assumptions
 
 - Giới hạn dung lượng tối đa mỗi tài liệu mặc định là 10 MB.
 - Định dạng ảnh được chấp nhận là JPEG/JPG và PNG; định dạng tài liệu là PDF. Các loại khác bị từ chối.
 - Quy tắc kiểm định loại file dựa trên loại nội dung thực tế của file, không chỉ đuôi mở rộng.
-- "Chưa được nộp xong" được hiểu là hồ sơ đang ở trạng thái `received` (mới tiếp nhận, chưa chuyển sang `processing`); khi hồ sơ đã chuyển sang `processing` trở lên thì không còn được xóa tài liệu.
+- "Chưa được nộp xong" được hiểu là hồ sơ đang ở trạng thái `received` (mới tiếp nhận, chưa chuyển sang `processing`); khi hồ sơ đã chuyển sang `processing` trở lên hoặc đã gán `assigned_staff_id` thì không còn được xóa tài liệu.
 - Staff, Manager và Super Admin được phép tải xuống tài liệu của hồ sơ trong phạm vi feature này; không giới hạn theo quyền xử lý cụ thể từng hồ sơ (việc gán xử lý hồ sơ nằm ngoài phạm vi).
 - Upload được thực hiện qua API của khu vực Citizen; không có giới hạn số lượng tài liệu trên mỗi hồ sơ trong phạm vi feature này.
 - Phụ thuộc: catalog dịch vụ (ServiceType) và cơ chế xác thực citizen (Sanctum) đã có sẵn từ F01/F02.
+- `type` của requirement quyết định loại file chấp nhận (`pdf`/`image`/`mixed`); giới hạn dung lượng vẫn là 10 MB cho mọi loại (Increment 2).
+- Việc yêu cầu nộp bổ sung (chuyển `supplement_required`) và xử lý hồ sơ của staff nằm ngoài phạm vi; Increment 2 chỉ chuẩn bị hạ tầng cho phép upload loại `supplement` khi trạng thái đó được thiết lập.

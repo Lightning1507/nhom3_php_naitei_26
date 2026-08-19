@@ -204,3 +204,189 @@ php artisan migrate --env=testing
 - Sau khi mỗi PR merge: `git switch master && git pull --ff-only upstream master && git push origin master`
   rồi mới tạo nhánh task kế.
 - Redmine: `In Progress -> PR -> Resolved -> (merge) -> Closed`, % Done + spent time hàng ngày.
+
+---
+
+# Increment 2 — 2026-08-19: Dynamic per-service document requirements, per-requirement upload & business locking
+
+**Branch**: `task/99001-citizen-spa-application-form` (làm trong task #99001) | **Spec**: [spec.md](./spec.md)
+
+## Context
+
+Hiện tại `document_requirements` của service chỉ là danh sách mô tả hiển thị; upload tài liệu là
+vùng tự do **không ràng buộc file với requirement nào**, `application_documents` không có cột
+`requirement_code`, và admin chỉ khai `{name, is_required}` (thiếu `type`, thiếu `code/label`).
+Ngoài ra lock tài liệu mới chỉ ở `delete` (chặn khi status ≠ `received`); upload chưa bị chặn theo
+status → citizen có thể upload tài liệu kể cả khi hồ sơ đang được xử lý.
+
+Increment này làm **tài liệu bám theo từng requirement của service** (admin khai requirement:
+tên, bắt buộc hay không, type pdf/image/mixed), citizen nộp **theo từng slot requirement**,
+thêm **lock nghiệp vụ** upload/delete theo trạng thái, và **soft validation** (thiếu tài liệu bắt
+buộc → cảnh báo đỏ nhưng vẫn cho nộp; staff xem chi tiết sẽ yêu cầu bổ sung ở feature sau).
+
+## Quyết định đã chốt (xác nhận với user)
+
+- **Soft validation**: thiếu tài liệu bắt buộc → **log đỏ báo thiếu**, **KHÔNG chặn nộp**. Hệ thống
+  trả `missing_required_documents` trong response; staff sau này xem chi tiết sẽ thấy thiếu gì và
+  yêu cầu nộp bổ sung (chuyển `supplement_required`).
+- **`type` của requirement**: enum `pdf | image | mixed`:
+  - `pdf` → chỉ chấp nhận `application/pdf`.
+  - `image` → chỉ chấp nhận `image/jpeg`, `image/png`.
+  - `mixed` → cả pdf + ảnh (tương đương quy tắc hiện tại).
+- **Phạm vi**: làm trọn trong task #99001 — backend + migration + admin editor + citizen SPA + lock.
+- **NGOÀI phạm vi**: UI Admin xử lý hồ sơ (index/detail hồ sơ, nút "Yêu cầu bổ sung", approve/
+  reject, assign staff) → feature xử lý hồ sơ sau. Increment này chỉ **chuẩn bị hạ tầng**: policy cho
+  phép upload bổ sung khi `supplement_required`, `document_kind=supplement` đã có trong enum.
+
+## Thay đổi data model
+
+1. **Migration mới** `add_requirement_code_to_application_documents_table`:
+   - `requirement_code` string nullable, có index.
+   - Dữ liệu cũ: `NULL` (legacy, vẫn xem/tải được; không gán requirement).
+2. **Chuẩn hoá `document_requirements`** (JSON trên `service_types`):
+   - Shape chuẩn: `{ "code": string, "label": string, "required": bool, "type": "pdf|image|mixed" }`.
+   - Backfill dữ liệu (command/script chạy 1 lần, có idempotent): với mỗi service, normalize từng
+     requirement:
+     - `label` = `label` nếu có, ngược lại `name` (shape admin cũ).
+     - `required` = `required` nếu có, ngược lại `is_required`.
+     - `code` = `code` nếu có, ngược lại `Str::slug(label)`; bảo đảm unique trong service
+       (nếu trùng → thêm hậu tố `-2`, `-3`).
+     - `type` = `type` nếu có, ngược lại `mixed`.
+3. **Helper dùng chung** `app/Support/ServiceSchema.php` (hoặc `app/Services/`):
+   - `normalizeDocumentRequirements(array|json): array<{code,label,required,type}>`
+   - `normalizeFormSchema(array|json): array<{name,label,type,required}>` (dung nạp `{name,type,
+     is_required}` lẫn `{name,label,required}`; bỏ qua trường type `file`).
+   - Dùng ở cả Action backend lẫn expose ra resource (không duplicate logic).
+
+## Thay đổi API contract (`/api/v1`)
+
+- `POST /api/v1/applications/{application}/documents`:
+  - Thêm field `requirement_code` (string, optional).
+  - **Bắt buộc** khi service của hồ sơ có ≥ 1 requirement; phải nằm trong tập code của service
+    (không → 422). Khi service không có requirement → cho phép upload tự do (không cần code).
+  - `document_kind` được đặt theo status hiện tại: `received` → `submission`;
+    `supplement_required` → `supplement` (Action tự quyết, client không gửi).
+  - Response item tài liệu thêm `requirement_code` + `requirement_label`.
+- `POST /api/v1/applications` (store): không chặn thiếu tài liệu; response `data` kèm
+  `missing_required_documents: [{code, label}]` (tính từ documents hiện có, mặc định rỗng lúc tạo).
+- `GET /api/v1/applications/{id}` (show): `documents[]` mỗi item có `requirement_code`/
+  `requirement_label`; response kèm `missing_required_documents`.
+- `DELETE .../documents/{document}`: giữ nguyên, thêm điều kiện `assigned_staff_id IS NULL`.
+
+## Lock nghiệp vụ (Policy — server-side, S005)
+
+- `ApplicationPolicy::uploadDocument` (app/Policies/ApplicationPolicy.php):
+  - Owner-only (giữ).
+  - Thêm: `status ∈ {received, supplement_required}`. Các status khác → **403** (không upload khi
+    đang xử lý/đã xong).
+  - Khi `supplement_required`: chỉ cho upload (kind=supplement), không được thay đổi tài liệu cũ.
+- `ApplicationDocumentPolicy::delete` (app/Policies/ApplicationDocumentPolicy.php):
+  - Owner + `status === received` (giữ).
+  - Thêm hardening: `assigned_staff_id === null` (khi staff đã nhận hồ sơ → khoá xóa dù status
+    chưa kịp đổi) → **403**.
+- `ApplicationDocumentPolicy::download`: giữ nguyên (owner + Staff/Manager/Super Admin).
+
+## Phân rã công việc (trong task #99001)
+
+### Phase A — Backend data & contract
+
+1. Migration `requirement_code` trên `application_documents` (+ index).
+2. Command backfill chuẩn hoá `document_requirements` các service hiện có (idempotent).
+3. `app/Support/ServiceSchema.php` (normalize doc req + form schema).
+4. `app/Http/Requests/Api/V1/StoreApplicationDocumentRequest.php`: rule `requirement_code`
+   (`nullable|string`; khi service có requirement → `required`; `in:` tập code của service).
+5. `app/Actions/Application/StoreApplicationDocumentAction.php`: nhận `requirement_code`, đặt
+   `document_kind` theo status; validate requirement thuộc service (server-side, không tin client).
+6. `app/Http/Resources/Api/V1/ApplicationDocumentResource.php`: + `requirement_code`,
+   `requirement_label` (lazy resolve từ service của application).
+7. `app/Http/Resources/Api/V1/ApplicationResource.php`: + `missing_required_documents` (tính từ
+   service.document_requirements vs documents hiện có, chỉ khi status `received`/`supplement_required`).
+8. `app/Http/Requests/Api/V1/StoreApplicationRequest.php`: không đổi luật chặn; `CreateApplicationAction`
+   trả thêm `missing_required_documents` vào response (soft).
+
+### Phase B — Lock policies
+
+9. `ApplicationPolicy::uploadDocument`: status lock + (supplement_required → chỉ supplement).
+10. `ApplicationDocumentPolicy::delete`: + `assigned_staff_id === null`.
+
+### Phase C — Admin service-type editor (Blade + Alpine)
+
+11. `StoreServiceTypeRequest`/`UpdateServiceTypeRequest`: `document_requirements.*` thêm
+    `type => in:pdf,image,mixed`; giữ `name` (làm label), `is_required`.
+12. `CreateServiceType`/`UpdateServiceType` Actions: chạy `ServiceSchema::normalize...` trước khi
+    lưu → sinh `code` từ `name`, đổ `type` mặc định `mixed`, lưu shape chuẩn.
+13. `resources/views/admin/service-types/create.blade.php` + `edit.blade.php`: mỗi dòng requirement
+    thêm select `type` (PDF/Ảnh/Cả hai) + preview `code` tự sinh; bỏ option `file` khỏi select
+    type của `form_schema` (file → document requirement).
+
+### Phase D — Citizen SPA per-requirement upload
+
+14. `resources/js/citizen/utils/schema.js`: thêm `normalizeDocumentRequirements` (shape chuẩn,
+    code/label/required/type) + `requirementAccept(requirement)` (danh sách mime theo type).
+15. `resources/js/citizen/components/DocumentUploader.jsx`: chuyển thành **slot theo requirement** —
+    nhận `requirement`, file gắn `requirement_code`; dropzone per-slot; hiển thị
+    label + `*` nếu required + hint type (PDF / Ảnh / PDF hoặc Ảnh); cảnh báo đỏ khi slot required
+    chưa có file; giữ validate mime/size theo `type` của slot.
+16. `resources/js/citizen/pages/ApplyPage.jsx`:
+    - Step 2: render danh sách slot requirement (thay cho 1 dropzone tự do); state `files`
+      thành `[{requirement_code, file}]`; nếu service không có requirement → vẫn hiện 1 dropzone
+      tự do như cũ.
+    - Step 3 (review): khi thiếu slot bắt buộc → **dòng đỏ** "Thiếu N tài liệu bắt buộc: <label>"
+      nhưng **vẫn cho phép nộp** (soft). Submit upload từng file kèm `requirement_code`.
+17. `resources/js/citizen/pages/MyApplicationDetailPage.jsx`:
+    - Documents hiển thị theo nhóm requirement (label) + code.
+    - Banner đỏ "Thiếu tài liệu bắt buộc: ..." khi status `received` và còn thiếu.
+    - Phần "Tải thêm": chỉ render các slot requirement còn thiếu (status `received`); ẩn hoàn toàn
+      khi status ≠ `received` (phần supplement hiển thị khi feature admin sau làm `supplement_required`).
+
+### Phase E — Tests & quality gates
+
+18. Feature tests (xem danh sách dưới).
+19. `npm run build`, `npm run lint`, `composer run lint` (Pint), full suite `php artisan test --env=testing`.
+
+## Danh sách test
+
+`tests/Feature/Api/V1/ApplicationDocumentTest.php` / `ApplicationSubmissionTest.php`:
+
+- Upload có `requirement_code` hợp lệ → 201, doc lưu đúng `requirement_code` + `requirement_label`.
+- Upload thiếu `requirement_code` khi service có requirement → 422.
+- Upload `requirement_code` không thuộc service → 422.
+- Service không có requirement → upload không cần `requirement_code` (giữ luồng cũ).
+- Upload khi status `processing`/`approved`/`rejected` → 403.
+- Upload khi `supplement_required` → 201, `document_kind=supplement`.
+- Delete khi `received` + `assigned_staff_id=null` → 200; khi đã gán staff → 403.
+- `show` trả `missing_required_documents` đúng (thiếu → liệt kê code/label; đủ → []).
+- `store` (nộp thiếu tài liệu bắt buộc) → **201** (soft), response kèm `missing_required_documents`.
+
+`tests/Feature/Admin/ServiceType...`:
+
+- Store/Update service với `document_requirements` có `type` → lưu shape chuẩn, `code` tự sinh,
+  unique trong service.
+- `type` không hợp lệ → 422.
+
+`tests/Feature/CitizenSpaTest.php`:
+
+- Apply + My Applications render (route test) sau khi đổi UI slot.
+
+## Files touched
+
+- Migration mới `database/migrations/2026_08_19_*_add_requirement_code_to_application_documents_table.php`
+- `app/Support/ServiceSchema.php` (mới)
+- `app/Http/Requests/Api/V1/StoreApplicationDocumentRequest.php`
+- `app/Actions/Application/StoreApplicationDocumentAction.php`
+- `app/Http/Resources/Api/V1/ApplicationDocumentResource.php`
+- `app/Http/Resources/Api/V1/ApplicationResource.php`
+- `app/Policies/ApplicationPolicy.php`, `app/Policies/ApplicationDocumentPolicy.php`
+- `app/Http/Requests/Admin/ServiceTypes/StoreServiceTypeRequest.php`, `UpdateServiceTypeRequest.php`
+- `app/Actions/ServiceType/CreateServiceType.php`, `UpdateServiceType.php`
+- `resources/views/admin/service-types/create.blade.php`, `edit.blade.php`
+- `resources/js/citizen/utils/schema.js`, `components/DocumentUploader.jsx`,
+  `pages/ApplyPage.jsx`, `pages/MyApplicationDetailPage.jsx`
+- Tests: `ApplicationDocumentTest`, `ApplicationSubmissionTest`, `CitizenSpaTest`, Admin service-type test
+
+## Ghi chú
+
+- Data migration backfill chạy trên **cả dev DB (Supabase) và test DB** (idempotent, chạy lại an toàn).
+- `document_kind` mặc định vẫn `submission`; `supplement`/`result` dành cho feature xử lý hồ sơ sau.
+- Không tạo UI Admin xử lý hồ sơ trong increment này (đã chốt).
+- Giữ nguyên mọi envelope `{success, message, data}` và resource hiện có để không vỡ contract cũ.

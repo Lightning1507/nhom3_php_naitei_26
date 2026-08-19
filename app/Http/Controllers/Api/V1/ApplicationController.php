@@ -23,6 +23,8 @@ class ApplicationController extends Controller
             $request->validated('form_data', []),
         );
 
+        $application->load(['serviceType', 'documents']);
+
         return ApiResponse::success(
             'Application submitted successfully',
             new ApplicationResource($application),
@@ -54,7 +56,7 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load(['serviceType']);
+        $application->load(['serviceType', 'documents']);
 
         return ApiResponse::success(
             'Application retrieved successfully',

@@ -29,8 +29,10 @@ class StoreServiceTypeRequest extends FormRequest
             'is_active' => ['boolean'],
 
             'document_requirements' => ['nullable', 'array'],
+            'document_requirements.*.code' => ['nullable', 'string', 'max:255'],
             'document_requirements.*.name' => ['required', 'string', 'max:255'],
             'document_requirements.*.is_required' => ['boolean'],
+            'document_requirements.*.type' => ['required', 'string', 'in:pdf,image,mixed'],
 
             'form_schema' => ['nullable', 'array'],
             'form_schema.*.name' => ['required', 'string', 'max:255'],

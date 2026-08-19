@@ -171,6 +171,55 @@
 
 ---
 
+---
+
+## Phase 9: Increment 2 - Dynamic per-service document requirements, per-requirement upload & locking
+
+**Purpose**: Ràng buộc tài liệu với từng requirement của service (`code/label/required/type`),
+thêm `requirement_code` cho `application_documents`, lock upload/delete theo trạng thái nghiệp vụ,
+và soft validation (thiếu tài liệu bắt buộc → cảnh báo đỏ, không chặn nộp). UI admin xử lý hồ sơ
+ngoài phạm vi (chỉ chuẩn bị hạ tầng supplement).
+
+### Phase 9A - Backend data & contract
+
+- [ ] T051 Create migration `add_requirement_code_to_application_documents` (`requirement_code` string nullable + index)
+- [ ] T052 Create idempotent backfill command normalizing `service_types.document_requirements` to `{code,label,required,type}` (code=slug(label), unique via suffix, type=mixed default, accept legacy `{name,is_required}`)
+- [ ] T053 Create `app/Support/ServiceSchema.php` with `normalizeDocumentRequirements` and `normalizeFormSchema` (shared by admin actions + resources; skip `file` type in form_schema)
+- [ ] T054 Update `StoreApplicationDocumentRequest`: `requirement_code` nullable|string; `required` when service has ≥1 requirement; must be `in:` service codes
+- [ ] T055 Update `StoreApplicationDocumentAction`: persist `requirement_code`, set `document_kind` from status (`received`→submission, `supplement_required`→supplement), server-side validate code belongs to service
+- [ ] T056 Update `ApplicationDocumentResource`: expose `requirement_code` + `requirement_label` (from service requirements)
+- [ ] T057 Update `ApplicationResource`: compute + return `missing_required_documents` (`[{code,label}]`) from service requirements vs documents (when `received`/`supplement_required`)
+- [ ] T058 Soft validation: `store` still returns 201 when required documents missing; response includes `missing_required_documents`
+
+### Phase 9B - Lock policies
+
+- [ ] T059 Update `ApplicationPolicy::uploadDocument`: owner + status ∈ {`received`, `supplement_required`}; when `supplement_required` only supplement-kind uploads
+- [ ] T060 Update `ApplicationDocumentPolicy::delete`: owner + status `received` + `assigned_staff_id === null`
+
+### Phase 9C - Admin service-type editor
+
+- [ ] T061 Update `StoreServiceTypeRequest`/`UpdateServiceTypeRequest`: `document_requirements.*.type` in:pdf,image,mixed (keep `name`, `is_required`)
+- [ ] T062 Update `CreateServiceType`/`UpdateServiceType` actions: normalize via `ServiceSchema` → auto `code`, default `type=mixed`, store canonical shape
+- [ ] T063 Update `resources/views/admin/service-types/create.blade.php` + `edit.blade.php`: per-requirement `type` select (PDF/Ảnh/Cả hai) + code preview; remove `file` option from `form_schema` type select
+
+### Phase 9D - Citizen SPA per-requirement upload
+
+- [ ] T064 Update `resources/js/citizen/utils/schema.js`: add `normalizeDocumentRequirements` + `requirementAccept(requirement)` (mime list per type)
+- [ ] T065 Refactor `DocumentUploader.jsx` to per-requirement slots: files bound to `requirement_code`, label/`*`/type hint, red warning when required slot empty, validate mime/size per slot type
+- [ ] T066 Update `ApplyPage.jsx`: Step 2 renders requirement slots (free dropzone fallback when no requirements); Step 3 red "Thiếu N tài liệu bắt buộc" but allow submit; upload each file with `requirement_code`
+- [ ] T067 Update `MyApplicationDetailPage.jsx`: group documents by requirement label/code, red banner "Thiếu tài liệu bắt buộc" when `received`, "Tải thêm" shows only missing requirement slots
+
+### Phase 9E - Tests & quality gates
+
+- [ ] T068 Add upload tests (valid code 201, missing code 422, wrong code 422, no-requirement service free upload, processing/approved/rejected upload 403, supplement_required upload → kind=supplement) in `ApplicationDocumentTest`
+- [ ] T069 Add delete test (received + assigned_staff → 403) in `ApplicationDocumentTest`
+- [ ] T070 Add soft-validation tests (store missing required docs → 201 + `missing_required_documents`; show returns correct list) in `ApplicationSubmissionTest`
+- [ ] T071 Add admin service-type test (store/update with `type`, auto code, invalid type 422) under `tests/Feature/Admin`
+- [ ] T072 Update `CitizenSpaTest` route renders after slot UI change
+- [ ] T073 Run backfill on dev (Supabase) + test DB; run `composer run lint`, `npm run lint`, `npm run build`, full suite `php artisan test --env=testing`
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** blocks all user stories.
