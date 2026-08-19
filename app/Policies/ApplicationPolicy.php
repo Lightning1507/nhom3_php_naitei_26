@@ -10,7 +10,7 @@ class ApplicationPolicy
 {
     public function create(User $user): bool
     {
-        return $user->role === UserRole::Citizen;
+        return $user->role === UserRole::Citizen && $user->canAccessProtectedResources();
     }
 
     public function view(User $user, Application $application): bool
