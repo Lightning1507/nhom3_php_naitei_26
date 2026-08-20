@@ -131,6 +131,24 @@ class ApplicationDocumentTest extends TestCase
         Storage::disk('local')->assertDirectoryEmpty('applications');
     }
 
+    public function test_upload_without_document_file_is_rejected(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen);
+
+        $response = $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
+            ]);
+
+        $response->assertUnprocessable()->assertJsonValidationErrors(['document']);
+
+        $this->assertDatabaseCount('application_documents', 0);
+        Storage::disk('local')->assertDirectoryEmpty('applications');
+    }
+
     public function test_owner_can_download_a_document(): void
     {
         Storage::fake('local');

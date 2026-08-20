@@ -9,6 +9,8 @@ use App\Models\Application;
 use App\Models\ApplicationDocument;
 use App\Models\ServiceType;
 use App\Models\User;
+use App\Services\ApplicationCodeService;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -393,5 +395,46 @@ class ApplicationSubmissionTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(0, 'data.missing_required_documents');
+    }
+
+    public function test_submission_codes_are_distinct_and_monotonic(): void
+    {
+        $service = app(ApplicationCodeService::class);
+        $date = CarbonImmutable::parse('2026-08-15');
+
+        $codes = collect(range(1, 20))
+            ->map(fn (): string => $service->generateForDate($date))
+            ->all();
+
+        $this->assertCount(20, $codes);
+        $this->assertSame(20, collect($codes)->unique()->count());
+        $this->assertSame($codes, collect($codes)->sort()->values()->all());
+        $this->assertSame('HS-20260815-00001', $codes[0]);
+        $this->assertSame('HS-20260815-00020', $codes[19]);
+    }
+
+    public function test_index_does_not_perform_n_plus_one_queries(): void
+    {
+        $citizen = $this->makeCitizen();
+        $service = $this->makeActiveService();
+
+        foreach (range(1, 30) as $i) {
+            Application::query()->create([
+                'application_code' => 'HS-20260815-'.str_pad((string) $i, 5, '0', STR_PAD_LEFT),
+                'citizen_id' => $citizen->id,
+                'service_type_id' => $service->id,
+                'status' => ApplicationStatus::Received,
+                'submitted_at' => now(),
+            ]);
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->actingAs($citizen, 'sanctum')->getJson('/api/v1/applications')->assertOk();
+
+        $queryCount = count(DB::getQueryLog());
+
+        $this->assertLessThanOrEqual(6, $queryCount, "List endpoint executed {$queryCount} queries.");
     }
 }
