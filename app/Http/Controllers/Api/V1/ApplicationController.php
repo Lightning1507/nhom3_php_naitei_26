@@ -56,7 +56,12 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load(['serviceType', 'documents']);
+        $application->load([
+            'serviceType',
+            'documents',
+            'assignedStaff',
+            'statusHistories.changedBy',
+        ]);
 
         return ApiResponse::success(
             'Application retrieved successfully',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,6 +56,65 @@ class Application extends Model
     public function statusHistories(): HasMany
     {
         return $this->hasMany(ApplicationStatusHistory::class);
+    }
+
+    public function activeAssignment(): ?ApplicationAssignment
+    {
+        return $this->assignments
+            ->first(fn (ApplicationAssignment $assignment) => $assignment->ended_at === null);
+    }
+
+    public function isOverdue(): bool
+    {
+        if ($this->completed_at !== null) {
+            return false;
+        }
+
+        $processingTimeDays = (int) ($this->serviceType?->processing_time_days ?? 0);
+
+        return $this->submitted_at !== null
+            && $this->submitted_at->addDays($processingTimeDays)->isPast();
+    }
+
+    public function supplementNote(): ?string
+    {
+        $latest = $this->statusHistories
+            ->filter(fn (ApplicationStatusHistory $history) => $history->to_status === ApplicationStatus::SupplementRequired)
+            ->sortByDesc(fn (ApplicationStatusHistory $history) => $history->created_at?->timestamp ?? 0)
+            ->first();
+
+        return $latest?->note;
+    }
+
+    public function scopeVisibleTo(Builder $query, User $actor): Builder
+    {
+        if ($actor->isSuperAdmin()) {
+            return $query;
+        }
+
+        if ($actor->isManager()) {
+            $departmentIds = $actor->ledDepartments()->pluck('id');
+
+            return $query->whereHas(
+                'serviceType',
+                fn (Builder $serviceQuery) => $serviceQuery->whereIn('responsible_department_id', $departmentIds)
+            );
+        }
+
+        return $query->where('assigned_staff_id', $actor->getKey());
+    }
+
+    public function scopeClaimableBy(Builder $query, User $actor): Builder
+    {
+        $departmentIds = $actor->departments()->pluck('departments.id');
+
+        return $query
+            ->whereNull('assigned_staff_id')
+            ->where('status', ApplicationStatus::Received)
+            ->whereHas(
+                'serviceType',
+                fn (Builder $serviceQuery) => $serviceQuery->whereIn('responsible_department_id', $departmentIds)
+            );
     }
 
     /**
