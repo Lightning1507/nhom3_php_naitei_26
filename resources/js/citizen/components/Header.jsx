@@ -15,7 +15,7 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-2">
                 <Link to="/" className="px-5 py-2.5 text-[16px] font-semibold text-gray-500 hover:bg-gray-100 rounded-xl transition">Home</Link>
                 <Link to="/services" className="px-5 py-2.5 text-[16px] font-semibold text-white bg-blue-600 rounded-xl transition">All Services</Link>
-                <Link to="/track" className="px-5 py-2.5 text-[16px] font-semibold text-gray-500 hover:bg-gray-100 rounded-xl transition">Track Application</Link>
+                <Link to="/applications" className="px-5 py-2.5 text-[16px] font-semibold text-gray-500 hover:bg-gray-100 rounded-xl transition">Track Application</Link>
             </nav>
             <div>
                 <Link to="/login" className="px-7 py-3 text-[17px] font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition">Login</Link>

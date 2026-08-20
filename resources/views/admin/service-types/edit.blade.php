@@ -96,9 +96,17 @@
 
             <!-- Yêu cầu Giấy tờ (Document Requirements) -->
             <div class="mt-6" x-data="{
-                items: {{ json_encode(old('document_requirements', $serviceType->document_requirements ?? [])) }},
-                add() { this.items.push({ name: '', is_required: true }) },
-                remove(index) { this.items.splice(index, 1) }
+                items: ({{ json_encode(old('document_requirements', $serviceType->document_requirements ?? [])) }}).map(r => ({
+                    code: r.code ?? '',
+                    name: r.name ?? r.label ?? '',
+                    is_required: r.is_required ?? r.required ?? false,
+                    type: r.type ?? 'mixed'
+                })),
+                add() { this.items.push({ code: '', name: '', is_required: true, type: 'mixed' }) },
+                remove(index) { this.items.splice(index, 1) },
+                slugify(value) {
+                    return (value || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'giay-to'
+                }
             }">
                 <div class="mb-4 flex items-center justify-between">
                     <div>
@@ -114,7 +122,17 @@
                     <template x-for="(item, index) in items" :key="index">
                         <div class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
                             <div class="flex-1">
+                                <input type="hidden" :value="item.code" :name="`document_requirements[${index}][code]`">
                                 <input type="text" x-model="item.name" :name="`document_requirements[${index}][name]`" class="admin-input w-full" placeholder="Tên giấy tờ (VD: CCCD, Sổ hộ khẩu...)" required>
+                                <p class="mt-1 text-xs text-gray-500" x-text="item.code ? 'Mã: ' + item.code : 'Mã tự sinh: ' + slugify(item.name)"></p>
+                            </div>
+                            <div class="w-40">
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Loại file</label>
+                                <select x-model="item.type" :name="`document_requirements[${index}][type]`" class="admin-select w-full">
+                                    <option value="mixed">PDF hoặc Ảnh</option>
+                                    <option value="pdf">Chỉ PDF</option>
+                                    <option value="image">Chỉ Ảnh</option>
+                                </select>
                             </div>
                             <div class="flex items-center gap-2 pt-2">
                                 <input type="hidden" value="0" :name="`document_requirements[${index}][is_required]`">

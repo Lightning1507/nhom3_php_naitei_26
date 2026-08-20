@@ -3,8 +3,10 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\DocumentKind;
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\ApplicationDocument;
 use App\Models\ServiceType;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -250,5 +252,146 @@ class ApplicationSubmissionTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.application_code', 'HS-20260815-00021')
             ->assertJsonPath('data.service_type.id', $service->id);
+    }
+
+    public function test_submission_honors_admin_form_schema_shape(): void
+    {
+        $citizen = $this->makeCitizen();
+        $service = $this->makeActiveService([
+            'form_schema' => [
+                ['name' => 'full_name', 'type' => 'text', 'is_required' => true],
+                ['name' => 'note', 'type' => 'text', 'is_required' => false],
+                ['name' => 'attachment', 'type' => 'file', 'is_required' => true],
+            ],
+        ]);
+
+        $missing = $this->actingAs($citizen, 'sanctum')->postJson('/api/v1/applications', [
+            'service_type_id' => $service->id,
+            'form_data' => ['note' => 'ghi chú'],
+        ]);
+
+        $missing->assertUnprocessable()->assertJsonValidationErrors(['form_data.full_name']);
+        $this->assertDatabaseCount('applications', 0);
+
+        $ok = $this->actingAs($citizen, 'sanctum')->postJson('/api/v1/applications', [
+            'service_type_id' => $service->id,
+            'form_data' => ['full_name' => 'Nguyen Van F'],
+        ]);
+
+        $ok->assertCreated();
+    }
+
+    public function test_show_includes_the_application_documents(): void
+    {
+        $citizen = $this->makeCitizen();
+        $service = $this->makeActiveService();
+
+        $application = Application::query()->create([
+            'application_code' => 'HS-20260815-00022',
+            'citizen_id' => $citizen->id,
+            'service_type_id' => $service->id,
+            'status' => ApplicationStatus::Received,
+            'submitted_at' => now(),
+        ]);
+
+        ApplicationDocument::query()->create([
+            'application_id' => $application->id,
+            'uploaded_by' => $citizen->id,
+            'document_kind' => DocumentKind::Submission,
+            'original_name' => 'cmnd.pdf',
+            'disk' => 'local',
+            'path' => 'applications/'.$application->id.'/cmnd.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 1024,
+        ]);
+
+        $response = $this->actingAs($citizen, 'sanctum')->getJson("/api/v1/applications/{$application->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.documents.0.original_name', 'cmnd.pdf')
+            ->assertJsonCount(1, 'data.documents');
+    }
+
+    public function test_store_succeeds_with_missing_required_documents_and_reports_them(): void
+    {
+        $citizen = $this->makeCitizen();
+        $service = $this->makeActiveService([
+            'document_requirements' => [
+                ['code' => 'citizen_id_copy', 'label' => 'Bản sao CCCD', 'required' => true, 'type' => 'mixed'],
+                ['code' => 'household_copy', 'label' => 'Sổ hộ khẩu', 'required' => false, 'type' => 'image'],
+            ],
+        ]);
+
+        $response = $this->actingAs($citizen, 'sanctum')->postJson('/api/v1/applications', [
+            'service_type_id' => $service->id,
+            'form_data' => ['full_name' => 'Nguyen Van A'],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(1, 'data.missing_required_documents')
+            ->assertJsonPath('data.missing_required_documents.0.code', 'citizen_id_copy')
+            ->assertJsonPath('data.missing_required_documents.0.label', 'Bản sao CCCD');
+    }
+
+    public function test_show_reports_only_still_missing_required_documents(): void
+    {
+        $citizen = $this->makeCitizen();
+        $service = $this->makeActiveService([
+            'document_requirements' => [
+                ['code' => 'citizen_id_copy', 'label' => 'Bản sao CCCD', 'required' => true, 'type' => 'mixed'],
+                ['code' => 'household_copy', 'label' => 'Sổ hộ khẩu', 'required' => true, 'type' => 'image'],
+            ],
+        ]);
+
+        $application = Application::query()->create([
+            'application_code' => 'HS-20260815-00023',
+            'citizen_id' => $citizen->id,
+            'service_type_id' => $service->id,
+            'status' => ApplicationStatus::Received,
+            'submitted_at' => now(),
+        ]);
+
+        ApplicationDocument::query()->create([
+            'application_id' => $application->id,
+            'uploaded_by' => $citizen->id,
+            'document_kind' => DocumentKind::Submission,
+            'original_name' => 'cccd.pdf',
+            'requirement_code' => 'citizen_id_copy',
+            'disk' => 'local',
+            'path' => 'applications/'.$application->id.'/cccd.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 1024,
+        ]);
+
+        $response = $this->actingAs($citizen, 'sanctum')->getJson("/api/v1/applications/{$application->id}");
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.missing_required_documents')
+            ->assertJsonPath('data.missing_required_documents.0.code', 'household_copy')
+            ->assertJsonPath('data.missing_required_documents.0.label', 'Sổ hộ khẩu');
+    }
+
+    public function test_show_does_not_report_missing_documents_once_processing_starts(): void
+    {
+        $citizen = $this->makeCitizen();
+        $service = $this->makeActiveService([
+            'document_requirements' => [
+                ['code' => 'citizen_id_copy', 'label' => 'Bản sao CCCD', 'required' => true, 'type' => 'mixed'],
+            ],
+        ]);
+
+        $application = Application::query()->create([
+            'application_code' => 'HS-20260815-00024',
+            'citizen_id' => $citizen->id,
+            'service_type_id' => $service->id,
+            'status' => ApplicationStatus::Processing,
+            'submitted_at' => now(),
+        ]);
+
+        $response = $this->actingAs($citizen, 'sanctum')->getJson("/api/v1/applications/{$application->id}");
+
+        $response->assertOk()
+            ->assertJsonCount(0, 'data.missing_required_documents');
     }
 }

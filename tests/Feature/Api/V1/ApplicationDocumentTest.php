@@ -16,6 +16,8 @@ class ApplicationDocumentTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const DEFAULT_REQUIREMENT_CODE = 'citizen_id_copy';
+
     private function makeCitizen(): User
     {
         return User::factory()->withRole(UserRole::Citizen)->create([
@@ -46,6 +48,7 @@ class ApplicationDocumentTest extends TestCase
         $response = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => $file,
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $response->assertCreated()
@@ -59,6 +62,7 @@ class ApplicationDocumentTest extends TestCase
             'uploaded_by' => $citizen->id,
             'document_kind' => 'submission',
             'original_name' => 'cmnd.pdf',
+            'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             'disk' => 'local',
             'mime_type' => 'application/pdf',
             'file_size' => $file->getSize(),
@@ -75,6 +79,7 @@ class ApplicationDocumentTest extends TestCase
         $response = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->image('hopdong.jpg', 200, 100),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $response->assertCreated()
@@ -98,6 +103,7 @@ class ApplicationDocumentTest extends TestCase
         $response = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('malware.exe', 100, 'application/octet-stream'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $response->assertUnprocessable()->assertJsonValidationErrors(['document']);
@@ -116,6 +122,7 @@ class ApplicationDocumentTest extends TestCase
         $response = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('big.pdf', 10241, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $response->assertUnprocessable()->assertJsonValidationErrors(['document']);
@@ -134,6 +141,7 @@ class ApplicationDocumentTest extends TestCase
         $upload = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
@@ -156,6 +164,7 @@ class ApplicationDocumentTest extends TestCase
         $upload = $this->actingAs($owner, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
@@ -186,6 +195,7 @@ class ApplicationDocumentTest extends TestCase
         $upload = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
@@ -203,16 +213,45 @@ class ApplicationDocumentTest extends TestCase
         Storage::fake('local');
 
         $citizen = $this->makeCitizen();
-        $application = $this->makeApplication($citizen, [
-            'status' => ApplicationStatus::Processing,
-        ]);
+        $application = $this->makeApplication($citizen);
 
         $upload = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
+
+        $application->forceFill(['status' => ApplicationStatus::Processing])->save();
+
+        $this->actingAs($citizen, 'sanctum')
+            ->deleteJson("/api/v1/applications/{$application->id}/documents/{$documentId}")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('application_documents', [
+            'id' => $documentId,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_document_cannot_be_deleted_once_assigned_to_staff(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $staff = User::factory()->withRole(UserRole::Staff)->create();
+        $application = $this->makeApplication($citizen);
+
+        $upload = $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
+            ]);
+
+        $documentId = $upload->json('data.id');
+
+        $application->forceFill(['assigned_staff_id' => $staff->id])->save();
 
         $this->actingAs($citizen, 'sanctum')
             ->deleteJson("/api/v1/applications/{$application->id}/documents/{$documentId}")
@@ -235,6 +274,7 @@ class ApplicationDocumentTest extends TestCase
         $this->actingAs($other, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ])
             ->assertForbidden();
 
@@ -251,6 +291,7 @@ class ApplicationDocumentTest extends TestCase
         $upload = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
@@ -274,6 +315,7 @@ class ApplicationDocumentTest extends TestCase
         $upload = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$applicationA->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
@@ -294,6 +336,7 @@ class ApplicationDocumentTest extends TestCase
         $this->actingAs($staff, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ])
             ->assertForbidden();
 
@@ -312,6 +355,7 @@ class ApplicationDocumentTest extends TestCase
         $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ])
             ->assertForbidden();
 
@@ -328,6 +372,7 @@ class ApplicationDocumentTest extends TestCase
         $upload = $this->actingAs($citizen, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
             ]);
 
         $documentId = $upload->json('data.id');
@@ -337,5 +382,191 @@ class ApplicationDocumentTest extends TestCase
         $this->actingAs($citizen, 'sanctum')
             ->get("/api/v1/applications/{$application->id}/documents/{$documentId}")
             ->assertForbidden();
+    }
+
+    public function test_upload_with_valid_requirement_code_is_stored(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $service = ServiceType::factory()->create([
+            'document_requirements' => [
+                ['code' => 'citizen_id_copy', 'label' => 'Bản sao CCCD', 'required' => true, 'type' => 'pdf'],
+            ],
+        ]);
+        $application = $this->makeApplication($citizen, ['service_type_id' => $service->id]);
+
+        $response = $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('cccd.pdf', 100, 'application/pdf'),
+                'requirement_code' => 'citizen_id_copy',
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.requirement_code', 'citizen_id_copy')
+            ->assertJsonPath('data.requirement_label', 'Bản sao CCCD');
+
+        $this->assertDatabaseHas('application_documents', [
+            'application_id' => $application->id,
+            'requirement_code' => 'citizen_id_copy',
+        ]);
+    }
+
+    public function test_upload_without_requirement_code_is_rejected_when_service_has_requirements(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $service = ServiceType::factory()->create([
+            'document_requirements' => [
+                ['code' => 'citizen_id_copy', 'label' => 'Bản sao CCCD', 'required' => true, 'type' => 'mixed'],
+            ],
+        ]);
+        $application = $this->makeApplication($citizen, ['service_type_id' => $service->id]);
+
+        $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('cccd.pdf', 100, 'application/pdf'),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['requirement_code']);
+
+        $this->assertDatabaseCount('application_documents', 0);
+    }
+
+    public function test_upload_with_wrong_requirement_code_is_rejected(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $service = ServiceType::factory()->create([
+            'document_requirements' => [
+                ['code' => 'citizen_id_copy', 'label' => 'Bản sao CCCD', 'required' => true, 'type' => 'mixed'],
+            ],
+        ]);
+        $application = $this->makeApplication($citizen, ['service_type_id' => $service->id]);
+
+        $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('cccd.pdf', 100, 'application/pdf'),
+                'requirement_code' => 'another_document',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['requirement_code']);
+
+        $this->assertDatabaseCount('application_documents', 0);
+    }
+
+    public function test_free_upload_without_requirement_code_when_service_has_no_requirements(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $service = ServiceType::factory()->create(['document_requirements' => []]);
+        $application = $this->makeApplication($citizen, ['service_type_id' => $service->id]);
+
+        $response = $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('tulieu.pdf', 100, 'application/pdf'),
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.requirement_code', null);
+    }
+
+    public function test_upload_is_blocked_once_processing_starts(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen, ['status' => ApplicationStatus::Processing]);
+
+        $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('application_documents', 0);
+    }
+
+    public function test_upload_is_blocked_after_approval(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen, ['status' => ApplicationStatus::Approved]);
+
+        $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('application_documents', 0);
+    }
+
+    public function test_upload_is_blocked_after_rejection(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen, ['status' => ApplicationStatus::Rejected]);
+
+        $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('application_documents', 0);
+    }
+
+    public function test_supplement_upload_is_saved_as_supplement_kind(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen, ['status' => ApplicationStatus::SupplementRequired]);
+
+        $response = $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('bosung.pdf', 100, 'application/pdf'),
+                'requirement_code' => self::DEFAULT_REQUIREMENT_CODE,
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.document_kind', 'supplement');
+
+        $this->assertDatabaseHas('application_documents', [
+            'application_id' => $application->id,
+            'document_kind' => 'supplement',
+        ]);
+    }
+
+    public function test_upload_of_wrong_file_type_for_slot_is_rejected(): void
+    {
+        Storage::fake('local');
+
+        $citizen = $this->makeCitizen();
+        $service = ServiceType::factory()->create([
+            'document_requirements' => [
+                ['code' => 'certificate', 'label' => 'Chứng chỉ', 'required' => true, 'type' => 'pdf'],
+            ],
+        ]);
+        $application = $this->makeApplication($citizen, ['service_type_id' => $service->id]);
+
+        $this->actingAs($citizen, 'sanctum')
+            ->postJson("/api/v1/applications/{$application->id}/documents", [
+                'document' => UploadedFile::fake()->create('anh.jpg', 100, 'image/jpeg'),
+                'requirement_code' => 'certificate',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['document']);
+
+        $this->assertDatabaseCount('application_documents', 0);
     }
 }

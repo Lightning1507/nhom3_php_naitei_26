@@ -26,6 +26,7 @@ class ApplicationDocumentController extends Controller
             $request->user(),
             $application,
             $request->file('document'),
+            $request->input('requirement_code'),
         );
 
         return ApiResponse::success(

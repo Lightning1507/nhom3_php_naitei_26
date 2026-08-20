@@ -29,11 +29,17 @@ class StoreApplicationRequest extends FormRequest
         }
 
         foreach ($serviceType->form_schema ?? [] as $field) {
-            $key = 'form_data.'.$field['name'];
+            $name = $field['name'] ?? null;
+
+            if (! is_string($name) || $name === '' || ($field['type'] ?? '') === 'file') {
+                continue;
+            }
+
+            $key = 'form_data.'.$name;
 
             $fieldRules = [];
 
-            if (! empty($field['required'])) {
+            if (! empty($field['required']) || ! empty($field['is_required'])) {
                 $fieldRules[] = 'required';
             }
 
@@ -86,6 +92,7 @@ class StoreApplicationRequest extends FormRequest
             'number' => 'numeric',
             'date' => 'date',
             'boolean' => 'boolean',
+            'text', 'string' => 'string',
             default => 'string',
         };
     }
