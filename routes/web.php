@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Applications\ApplicationController;
 use App\Http\Controllers\Admin\Auth\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\Departments\DepartmentCandidateController;
@@ -61,6 +62,19 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/users/import', [UserImportController::class, 'index'])->name('users.import');
         Route::post('/users/import/citizens', [UserImportController::class, 'importCitizens'])->name('users.import.citizens');
         Route::post('/users/import/staff', [UserImportController::class, 'importStaff'])->name('users.import.staff');
+        Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
+        Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
+        Route::post('/applications/{application}/assign', [ApplicationController::class, 'assign'])->name('applications.assign');
+        Route::post('/applications/{application}/claim', [ApplicationController::class, 'claim'])->name('applications.claim');
+        Route::post('/applications/{application}/start-processing', [ApplicationController::class, 'startProcessing'])->name('applications.start-processing');
+        Route::post('/applications/{application}/request-supplement', [ApplicationController::class, 'requestSupplement'])->name('applications.request-supplement');
+        Route::post('/applications/{application}/resume', [ApplicationController::class, 'resume'])->name('applications.resume');
+        Route::post('/applications/{application}/approve', [ApplicationController::class, 'approve'])->name('applications.approve');
+        Route::post('/applications/{application}/reject', [ApplicationController::class, 'reject'])->name('applications.reject');
+        Route::post('/applications/{application}/result-documents', [ApplicationController::class, 'storeResultDocument'])->name('applications.result-documents.store');
+        Route::get('/applications/{application}/documents/{document}/download', [ApplicationController::class, 'downloadDocument'])
+            ->scopeBindings()
+            ->name('applications.documents.download');
     });
 });
 
