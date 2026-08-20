@@ -66,6 +66,17 @@
                         Dịch vụ
                     </a>
                 @endcan
+
+                <a
+                    href="{{ route('admin.users.import') }}"
+                    @class([
+                        'whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
+                        'bg-white/20 text-white' => request()->routeIs('admin.users.import*'),
+                        'text-white/65 hover:bg-white/10 hover:text-white' => ! request()->routeIs('admin.users.import*'),
+                    ])
+                >
+                    Import CSV
+                </a>
             </nav>
 
             <div class="flex shrink-0 items-center gap-1 sm:gap-3">
