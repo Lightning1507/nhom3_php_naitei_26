@@ -124,6 +124,7 @@ class ApplicationAuthorizationTest extends TestCase
         $this->actingAs($intruder, 'sanctum')
             ->postJson("/api/v1/applications/{$application->id}/documents", [
                 'document' => UploadedFile::fake()->create('baocao.pdf', 100, 'application/pdf'),
+                'requirement_code' => 'citizen_id_copy',
             ])
             ->assertForbidden();
     }
