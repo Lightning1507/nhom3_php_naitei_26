@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\User;
@@ -24,6 +25,8 @@ class ApplicationPolicy
 
     public function uploadDocument(User $user, Application $application): bool
     {
-        return $user->canAccessProtectedResources() && $user->id === $application->citizen_id;
+        return $user->canAccessProtectedResources()
+            && $user->id === $application->citizen_id
+            && in_array($application->status, [ApplicationStatus::Received, ApplicationStatus::SupplementRequired], true);
     }
 }

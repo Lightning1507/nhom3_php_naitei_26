@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'uploaded_by',
     'document_kind',
     'original_name',
+    'requirement_code',
     'disk',
     'path',
     'mime_type',

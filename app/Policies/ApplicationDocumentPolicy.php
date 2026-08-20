@@ -32,6 +32,7 @@ class ApplicationDocumentPolicy
             return false;
         }
 
-        return $document->application->status === ApplicationStatus::Received;
+        return $document->application->status === ApplicationStatus::Received
+            && $document->application->assigned_staff_id === null;
     }
 }

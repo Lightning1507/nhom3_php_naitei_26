@@ -4,6 +4,7 @@ namespace App\Actions\ServiceType;
 
 use App\Models\ServiceType;
 use App\Models\User;
+use App\Support\ServiceSchema;
 use Illuminate\Http\Request;
 
 class UpdateServiceType
@@ -20,8 +21,8 @@ class UpdateServiceType
             'code' => $data['code'],
             'description' => $data['description'] ?? null,
             'requirements' => $data['requirements'] ?? null,
-            'form_schema' => $data['form_schema'] ?? [],
-            'document_requirements' => $data['document_requirements'] ?? [],
+            'form_schema' => ServiceSchema::normalizeFormSchema($data['form_schema'] ?? []),
+            'document_requirements' => ServiceSchema::normalizeDocumentRequirements($data['document_requirements'] ?? []),
             'processing_time_days' => $data['processing_time_days'],
             'fee' => $data['fee'],
             'is_active' => $data['is_active'] ?? false,

@@ -93,8 +93,9 @@ Bản ghi metadata của một tài liệu đính kèm một hồ sơ.
 | `id` | bigint | Primary key |
 | `application_id` | bigint FK -> `applications.id` | Bắt buộc; `restrictOnDelete`; index |
 | `uploaded_by` | bigint FK -> `users.id` | Bắt buộc; `restrictOnDelete`; index |
-| `document_kind` | string | Bắt buộc; giá trị từ enum `DocumentKind` (`submission`) |
+| `document_kind` | string | Bắt buộc; giá trị từ enum `DocumentKind` (`submission` / `supplement`) |
 | `original_name` | string | Tên file gốc do client gửi |
+| `requirement_code` | string nullable | Mã requirement của service mà tài liệu chứng minh; `null` = tài liệu legacy/không yêu cầu; index |
 | `disk` | string | Disk lưu file; luôn `local` trong feature này |
 | `path` | text | Đường dẫn tương đối trong disk (vd `applications/{id}/...`) |
 | `mime_type` | string nullable | MIME thực tế của file |
@@ -110,14 +111,31 @@ Bản ghi metadata của một tài liệu đính kèm một hồ sơ.
 
 ### Quy tắc nghiệp vụ
 
-- `document_kind` = `submission` cho tài liệu đính kèm hồ sơ (các giá trị `supplement`/`result`
-  dành cho feature sau).
+- `document_kind` = `submission` cho tài liệu đính kèm hồ sơ khi status `received`; `supplement` khi
+  hồ sơ ở `supplement_required` (`result` dành cho feature xử lý hồ sơ sau).
+- `requirement_code` (nếu có) phải thuộc tập `code` trong `document_requirements` của service hồ sơ.
 - Xóa tài liệu là soft delete (`deleted_at` được gán); bản ghi được giữ để phục vụ kiểm toán.
 - `mime_type` và `file_size` phải khớp file thực tế được lưu (ghi từ `UploadedFile` đã validate).
 - Quyền truy cập không nằm trong data model — được xác định bằng Policy theo chủ sở hữu
-  (`applications.citizen_id`) và vai trò người dùng.
+  (`applications.citizen_id`), vai trò người dùng và trạng thái hồ sơ.
 
 ## ServiceType (tham chiếu)
 
 Dịch vụ công trong catalog mà citizen đăng ký. Chỉ chấp nhận khi `is_active` và không soft-delete.
 `form_schema` xác định danh sách trường bắt buộc và kiểu dữ liệu để validate `form_data`.
+`document_requirements` (JSON) xác định danh sách tài liệu minh chứng theo shape chuẩn:
+
+```json
+[
+  { "code": "citizen-id-copy", "label": "Căn cước công dân (bản sao)", "required": true, "type": "mixed" },
+  { "code": "design-drawing", "label": "Bản vẽ thiết kế (PDF)", "required": true, "type": "pdf" }
+]
+```
+
+- `code`: máy đọc, unique trong service (tự sinh từ `label`, thêm hậu tố nếu trùng).
+- `label`: nhãn hiển thị cho citizen/staff.
+- `required`: tài liệu bắt buộc hay không (thiếu → cảnh báo đỏ, không chặn nộp).
+- `type`: loại file chấp nhận — `pdf` (chỉ PDF), `image` (chỉ JPEG/JPG/PNG), `mixed` (cả hai).
+
+Shape cũ (`{name, is_required}`) và shape `{code, label, required}` được `ServiceSchema` chuẩn hoá
+về shape trên khi đọc/ghi.
