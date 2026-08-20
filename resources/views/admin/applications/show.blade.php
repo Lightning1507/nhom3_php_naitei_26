@@ -71,8 +71,8 @@
 
     <div class="grid gap-6 lg:grid-cols-3">
         <section class="admin-card lg:col-span-2" aria-labelledby="application-info-title">
-            <h2 id="application-info-title" class="admin-card-title">Thông tin hồ sơ</h2>
             <div class="admin-card-body space-y-4">
+                <h2 id="application-info-title" class="text-lg font-bold text-gray-950">Thông tin hồ sơ</h2>
                 <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div class="min-w-0">
                         <dt class="text-[13px] font-medium text-gray-500">Người nộp</dt>
@@ -130,13 +130,20 @@
 
         <aside class="space-y-6" aria-label="Thao tác xử lý">
             <section class="admin-card" aria-labelledby="workflow-actions-title">
-                <h2 id="workflow-actions-title" class="admin-card-title">Thao tác</h2>
                 <div class="admin-card-body space-y-3">
+                <h2 id="workflow-actions-title" class="text-lg font-bold text-gray-950">Thao tác</h2>
                     @php
-                        $guidance = match ($application->status->value) {
-                            'received' => $application->assignedStaff?->getKey() === auth()->id()
-                                ? 'Hồ sơ đã được gán cho bạn. Hãy bắt đầu xử lý hoặc chuyển trạng thái tiếp theo.'
-                                : 'Hồ sơ đang chờ phân công hoặc nhận xử lý.',
+                        $status = $application->status->value;
+                        $assignedToMe = $application->assignedStaff?->getKey() === auth()->id();
+                        $unassigned = $application->assignedStaff === null;
+                        $isTerminal = in_array($status, ['approved', 'rejected'], true);
+
+                        $guidance = match ($status) {
+                            'received' => $assignedToMe
+                                ? 'Hồ sơ đã được gán cho bạn. Hãy bắt đầu xử lý để chuyển sang bước tiếp theo.'
+                                : ($unassigned
+                                    ? 'Hồ sơ chưa có người phụ trách. Bạn có thể nhận xử lý nếu thuộc phòng ban phụ trách dịch vụ.'
+                                    : 'Hồ sơ đã được gán cho cán bộ khác. Bạn không thể thao tác hồ sơ này.'),
                             'processing' => 'Bạn đang xử lý hồ sơ. Có thể yêu cầu bổ sung tài liệu, duyệt hoặc từ chối.',
                             'supplement_required' => 'Đang chờ công dân nộp tài liệu bổ sung. Khi đã đủ tài liệu, hãy tiếp tục xử lý.',
                             'approved' => 'Hồ sơ đã được duyệt và hoàn tất.',
@@ -152,51 +159,58 @@
                     @endif
 
                     @can('claim', $application)
-                        <form method="POST" action="{{ route('admin.applications.claim', $application) }}">
-                            @csrf
-                            <x-admin.button type="submit" class="w-full">Nhận hồ sơ</x-admin.button>
-                        </form>
+                        @if ($status === 'received' && $unassigned)
+                            <form method="POST" action="{{ route('admin.applications.claim', $application) }}">
+                                @csrf
+                                <x-admin.button type="submit" class="w-full">Nhận hồ sơ</x-admin.button>
+                            </form>
+                        @endif
                     @endcan
 
                     @can('assign', $application)
-                        <x-admin.button data-dialog-open="assign-application-{{ $application->id }}" class="w-full">Phân công / đổi cán bộ</x-admin.button>
+                        @if (! $isTerminal)
+                            <x-admin.button data-dialog-open="assign-application-{{ $application->id }}" class="w-full">Phân công / đổi cán bộ</x-admin.button>
+                        @endif
                     @endcan
 
                     @can('startProcessing', $application)
-                        <form method="POST" action="{{ route('admin.applications.start-processing', $application) }}">
-                            @csrf
-                            <x-admin.button type="submit" class="w-full">Bắt đầu xử lý</x-admin.button>
-                        </form>
+                        @if ($status === 'received' && $assignedToMe)
+                            <form method="POST" action="{{ route('admin.applications.start-processing', $application) }}">
+                                @csrf
+                                <x-admin.button type="submit" class="w-full">Bắt đầu xử lý</x-admin.button>
+                            </form>
+                        @endif
                     @endcan
 
                     @can('requestSupplement', $application)
-                        <x-admin.button variant="secondary" data-dialog-open="request-supplement-{{ $application->id }}" class="w-full">Yêu cầu bổ sung</x-admin.button>
-                    @endcan
-
-                    @can('resume', $application)
-                        <form method="POST" action="{{ route('admin.applications.resume', $application) }}">
-                            @csrf
-                            <x-admin.button type="submit" class="w-full">Tiếp tục xử lý</x-admin.button>
-                        </form>
+                        @if ($status === 'processing' && $assignedToMe)
+                            <x-admin.button variant="secondary" data-dialog-open="request-supplement-{{ $application->id }}" class="w-full">Yêu cầu bổ sung</x-admin.button>
+                        @endif
                     @endcan
 
                     @can('approve', $application)
-                        <x-admin.button variant="secondary" data-dialog-open="approve-application-{{ $application->id }}" class="w-full">Duyệt hồ sơ</x-admin.button>
+                        @if ($status === 'processing' && $assignedToMe)
+                            <x-admin.button variant="secondary" data-dialog-open="approve-application-{{ $application->id }}" class="w-full">Duyệt hồ sơ</x-admin.button>
+                        @endif
                     @endcan
 
                     @can('reject', $application)
-                        <x-admin.button variant="danger" data-dialog-open="reject-application-{{ $application->id }}" class="w-full">Từ chối hồ sơ</x-admin.button>
+                        @if ($status === 'processing' && $assignedToMe)
+                            <x-admin.button variant="danger" data-dialog-open="reject-application-{{ $application->id }}" class="w-full">Từ chối hồ sơ</x-admin.button>
+                        @endif
                     @endcan
 
                     @can('uploadResultDocument', $application)
-                        <x-admin.button variant="secondary" data-dialog-open="result-document-{{ $application->id }}" class="w-full">Đính kèm tài liệu kết quả</x-admin.button>
+                        @if ($status === 'processing' && $assignedToMe)
+                            <x-admin.button variant="secondary" data-dialog-open="result-document-{{ $application->id }}" class="w-full">Đính kèm tài liệu kết quả</x-admin.button>
+                        @endif
                     @endcan
                 </div>
             </section>
 
             <section class="admin-card" aria-labelledby="documents-title">
-                <h2 id="documents-title" class="admin-card-title">Tài liệu</h2>
                 <div class="admin-card-body space-y-2">
+                <h2 id="documents-title" class="text-lg font-bold text-gray-950">Tài liệu</h2>
                     @forelse ($application->documents as $document)
                         @php
                             $downloadUrl = route('admin.applications.documents.download', [$application, $document]);
@@ -232,8 +246,9 @@
 
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
         <section class="admin-card" aria-labelledby="timeline-title">
-            <h2 id="timeline-title" class="admin-card-title">Lịch sử xử lý</h2>
-            <ol class="admin-card-body space-y-3">
+            <div class="admin-card-body">
+                <h2 id="timeline-title" class="text-lg font-bold text-gray-950">Lịch sử xử lý</h2>
+            <ol class="mt-4 space-y-3">
                 @forelse ($application->statusHistories->sortBy(fn ($h) => [$h->created_at?->timestamp ?? 0, $h->id]) as $history)
                     <li class="flex gap-3">
                         <span class="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
@@ -252,11 +267,13 @@
                     <li class="text-sm text-gray-600">Chưa có lịch sử.</li>
                 @endforelse
             </ol>
+            </div>
         </section>
 
         <section class="admin-card" aria-labelledby="assignments-title">
-            <h2 id="assignments-title" class="admin-card-title">Lịch sử phân công</h2>
-            <ol class="admin-card-body space-y-3">
+            <div class="admin-card-body">
+                <h2 id="assignments-title" class="text-lg font-bold text-gray-950">Lịch sử phân công</h2>
+            <ol class="mt-4 space-y-3">
                 @forelse ($application->assignments as $assignment)
                     <li class="flex gap-3">
                         <span class="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
@@ -282,16 +299,18 @@
                     <li class="text-sm text-gray-600">Chưa có lịch sử phân công.</li>
                 @endforelse
             </ol>
+            </div>
         </section>
     </div>
 
     @can('assign', $application)
-        <x-admin.dialog
-            id="assign-application-{{ $application->id }}"
-            title="Phân công cán bộ xử lý"
-            description="Chọn staff đang hoạt động thuộc phòng ban phụ trách dịch vụ của hồ sơ."
-            data-open-on-error="{{ $errors->has('staff_id') ? 'true' : 'false' }}"
-        >
+        @if (! in_array($application->status->value, ['approved', 'rejected'], true))
+            <x-admin.dialog
+                id="assign-application-{{ $application->id }}"
+                title="Phân công cán bộ xử lý"
+                description="Chọn staff đang hoạt động thuộc phòng ban phụ trách dịch vụ của hồ sơ."
+                data-open-on-error="{{ $errors->has('staff_id') ? 'true' : 'false' }}"
+            >
             <form method="POST" action="{{ route('admin.applications.assign', $application) }}" class="space-y-4">
                 @csrf
                 <div>
@@ -314,15 +333,17 @@
                 </div>
             </form>
         </x-admin.dialog>
+        @endif
     @endcan
 
     @can('requestSupplement', $application)
-        <x-admin.dialog
-            id="request-supplement-{{ $application->id }}"
-            title="Yêu cầu bổ sung tài liệu"
-            description="Hồ sơ sẽ chuyển sang trạng thái chờ bổ sung; công dân sẽ thấy lý do và các tài liệu còn thiếu."
-            data-open-on-error="{{ $errors->has('note') ? 'true' : 'false' }}"
-        >
+        @if ($application->status->value === 'processing')
+            <x-admin.dialog
+                id="request-supplement-{{ $application->id }}"
+                title="Yêu cầu bổ sung tài liệu"
+                description="Hồ sơ sẽ chuyển sang trạng thái chờ bổ sung; công dân sẽ thấy lý do và các tài liệu còn thiếu."
+                data-open-on-error="{{ $errors->has('note') ? 'true' : 'false' }}"
+            >
             <form method="POST" action="{{ route('admin.applications.request-supplement', $application) }}" class="space-y-4">
                 @csrf
                 <div>
@@ -336,15 +357,17 @@
                 </div>
             </form>
         </x-admin.dialog>
+        @endif
     @endcan
 
     @can('approve', $application)
-        <x-admin.dialog
-            id="approve-application-{{ $application->id }}"
-            title="Duyệt hồ sơ"
-            description="Hồ sơ sẽ được duyệt và chuyển sang trạng thái đã hoàn thành."
-            data-open-on-error="{{ $errors->has('result_note') ? 'true' : 'false' }}"
-        >
+        @if ($application->status->value === 'processing')
+            <x-admin.dialog
+                id="approve-application-{{ $application->id }}"
+                title="Duyệt hồ sơ"
+                description="Hồ sơ sẽ được duyệt và chuyển sang trạng thái đã hoàn thành."
+                data-open-on-error="{{ $errors->has('result_note') ? 'true' : 'false' }}"
+            >
             <form method="POST" action="{{ route('admin.applications.approve', $application) }}" class="space-y-4">
                 @csrf
                 <div>
@@ -358,15 +381,17 @@
                 </div>
             </form>
         </x-admin.dialog>
+        @endif
     @endcan
 
     @can('reject', $application)
-        <x-admin.dialog
-            id="reject-application-{{ $application->id }}"
-            title="Từ chối hồ sơ"
-            description="Hồ sơ sẽ bị từ chối kèm lý do bắt buộc; không thể đính kèm tài liệu kết quả."
-            data-open-on-error="{{ $errors->has('rejection_reason') ? 'true' : 'false' }}"
-        >
+        @if ($application->status->value === 'processing')
+            <x-admin.dialog
+                id="reject-application-{{ $application->id }}"
+                title="Từ chối hồ sơ"
+                description="Hồ sơ sẽ bị từ chối kèm lý do bắt buộc; không thể đính kèm tài liệu kết quả."
+                data-open-on-error="{{ $errors->has('rejection_reason') ? 'true' : 'false' }}"
+            >
             <form method="POST" action="{{ route('admin.applications.reject', $application) }}" class="space-y-4">
                 @csrf
                 <div>
@@ -380,15 +405,17 @@
                 </div>
             </form>
         </x-admin.dialog>
+        @endif
     @endcan
 
     @can('uploadResultDocument', $application)
-        <x-admin.dialog
-            id="result-document-{{ $application->id }}"
-            title="Đính kèm tài liệu kết quả"
-            description="Tài liệu kết quả chỉ gắn khi hồ sơ đang xử lý (trước hoặc trong lúc duyệt)."
-            data-open-on-error="{{ $errors->has('document') ? 'true' : 'false' }}"
-        >
+        @if ($application->status->value === 'processing')
+            <x-admin.dialog
+                id="result-document-{{ $application->id }}"
+                title="Đính kèm tài liệu kết quả"
+                description="Tài liệu kết quả chỉ gắn khi hồ sơ đang xử lý (trước hoặc trong lúc duyệt)."
+                data-open-on-error="{{ $errors->has('document') ? 'true' : 'false' }}"
+            >
             <form method="POST" action="{{ route('admin.applications.result-documents.store', $application) }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <div>
@@ -402,6 +429,7 @@
                 </div>
             </form>
         </x-admin.dialog>
+        @endif
     @endcan
 
     @foreach ($application->documents as $document)

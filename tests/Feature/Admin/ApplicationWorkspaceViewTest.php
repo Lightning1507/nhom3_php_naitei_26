@@ -150,4 +150,58 @@ class ApplicationWorkspaceViewTest extends TestCase
             ->assertOk()
             ->assertHeader('Content-Type', 'application/pdf');
     }
+
+    public function test_assigned_received_application_hides_claim_button_and_shows_start_processing(): void
+    {
+        $this->application->update(['assigned_staff_id' => $this->staff->id]);
+
+        $this->actingAs($this->staff)
+            ->get(route('admin.applications.show', $this->application))
+            ->assertOk()
+            ->assertSee('admin/applications/'.$this->application->id.'/start-processing')
+            ->assertDontSee('admin/applications/'.$this->application->id.'/claim')
+            ->assertDontSee('request-supplement-'.$this->application->id)
+            ->assertDontSee('approve-application-'.$this->application->id)
+            ->assertDontSee('reject-application-'.$this->application->id);
+    }
+
+    public function test_processing_application_shows_only_processing_actions(): void
+    {
+        $this->application->update([
+            'assigned_staff_id' => $this->staff->id,
+            'status' => ApplicationStatus::Processing,
+            'processing_started_at' => now(),
+        ]);
+
+        $this->actingAs($this->staff)
+            ->get(route('admin.applications.show', $this->application))
+            ->assertOk()
+            ->assertSee('request-supplement-'.$this->application->id)
+            ->assertSee('approve-application-'.$this->application->id)
+            ->assertSee('reject-application-'.$this->application->id)
+            ->assertSee('result-document-'.$this->application->id)
+            ->assertDontSee('admin/applications/'.$this->application->id.'/claim')
+            ->assertDontSee('admin/applications/'.$this->application->id.'/start-processing')
+            ->assertDontSee('admin/applications/'.$this->application->id.'/resume');
+    }
+
+    public function test_unassigned_received_application_shows_claim_button(): void
+    {
+        $this->application->update(['assigned_staff_id' => null]);
+
+        $this->actingAs($this->staff)
+            ->get(route('admin.applications.show', $this->application))
+            ->assertOk()
+            ->assertSee('admin/applications/'.$this->application->id.'/claim')
+            ->assertDontSee('admin/applications/'.$this->application->id.'/start-processing')
+            ->assertDontSee('request-supplement-'.$this->application->id);
+    }
+
+    public function test_dashboard_links_to_applications_index(): void
+    {
+        $this->actingAs($this->manager)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Quản lý hồ sơ dịch vụ công');
+    }
 }
