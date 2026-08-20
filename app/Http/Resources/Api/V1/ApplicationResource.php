@@ -4,6 +4,7 @@ namespace App\Http\Resources\Api\V1;
 
 use App\Enums\ApplicationStatus;
 use App\Models\ApplicationDocument;
+use App\Models\User;
 use App\Support\ServiceSchema;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,6 +22,14 @@ class ApplicationResource extends JsonResource
             );
         }
 
+        /** @var User|null $actor */
+        $actor = $request->user();
+
+        $isOwnerOrInternal = $actor !== null && (
+            $actor->id === $this->citizen_id
+            || in_array($actor->role->value, ['staff', 'manager', 'super_admin'], true)
+        );
+
         return [
             'id' => $this->id,
             'application_code' => $this->application_code,
@@ -36,6 +45,40 @@ class ApplicationResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'missing_required_documents' => $this->missingRequiredDocuments(),
             'documents' => ApplicationDocumentResource::collection($this->whenLoaded('documents')),
+            'processing_started_at' => $this->when($isOwnerOrInternal, $this->processing_started_at?->toISOString()),
+            'completed_at' => $this->when($isOwnerOrInternal, $this->completed_at?->toISOString()),
+            'result_note' => $this->when(
+                $isOwnerOrInternal && $this->status === ApplicationStatus::Approved,
+                $this->result_note
+            ),
+            'rejection_reason' => $this->when(
+                $isOwnerOrInternal && $this->status === ApplicationStatus::Rejected,
+                $this->rejection_reason
+            ),
+            'assigned_staff' => $this->when(
+                $isOwnerOrInternal,
+                $this->whenLoaded('assignedStaff', fn () => $this->assignedStaff !== null ? [
+                    'id' => $this->assignedStaff->id,
+                    'name' => $this->assignedStaff->name,
+                ] : null)
+            ),
+            'supplement_note' => $this->when(
+                $isOwnerOrInternal,
+                $this->whenLoaded('statusHistories', fn () => $this->supplementNote())
+            ),
+            'timeline' => $this->when(
+                $isOwnerOrInternal,
+                $this->whenLoaded('statusHistories', fn () => $this->statusHistories
+                    ->sortBy(fn ($history) => [$history->created_at?->timestamp ?? 0, $history->getKey()])
+                    ->map(fn ($history) => [
+                        'from_status' => $history->from_status?->value,
+                        'to_status' => $history->to_status->value,
+                        'changed_by_name' => $history->changedBy?->name,
+                        'note' => $history->note,
+                        'created_at' => $history->created_at?->toISOString(),
+                    ])
+                    ->values())
+            ),
         ];
     }
 
