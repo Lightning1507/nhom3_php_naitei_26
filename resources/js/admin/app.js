@@ -134,6 +134,11 @@ document.addEventListener('click', (event) => {
         const dialog = document.getElementById(openTrigger.dataset.dialogOpen);
         if (dialog instanceof HTMLDialogElement && !dialog.open) {
             dialogTriggers.set(dialog, openTrigger);
+            dialog.querySelectorAll('iframe[data-src]').forEach((frame) => {
+                if (frame.getAttribute('src') === null) {
+                    frame.setAttribute('src', frame.dataset.src);
+                }
+            });
             dialog.showModal();
             requestAnimationFrame(() => dialog.querySelector('input:not([type="hidden"]), button')?.focus());
         }
@@ -148,6 +153,7 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('close', (event) => {
     if (!(event.target instanceof HTMLDialogElement)) return;
+    event.target.querySelectorAll('iframe[data-src]').forEach((frame) => frame.removeAttribute('src'));
     dialogTriggers.get(event.target)?.focus();
 }, true);
 

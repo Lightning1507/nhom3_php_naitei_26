@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ApplicationStatus;
+use App\Support\ServiceSchema;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -84,6 +85,37 @@ class Application extends Model
             ->first();
 
         return $latest?->note;
+    }
+
+    /**
+     * @return array<int, array{code: string, label: string}>
+     */
+    public function missingRequiredDocuments(): array
+    {
+        if (! in_array($this->status, [ApplicationStatus::Received, ApplicationStatus::SupplementRequired], true)) {
+            return [];
+        }
+
+        if (! $this->relationLoaded('serviceType') || ! $this->relationLoaded('documents')) {
+            return [];
+        }
+
+        $requirements = ServiceSchema::normalizeDocumentRequirements($this->serviceType->document_requirements);
+
+        $uploadedCodes = $this->documents
+            ->pluck('requirement_code')
+            ->filter()
+            ->flip();
+
+        $missing = [];
+
+        foreach ($requirements as $requirement) {
+            if ($requirement['required'] && ! $uploadedCodes->has($requirement['code'])) {
+                $missing[] = ['code' => $requirement['code'], 'label' => $requirement['label']];
+            }
+        }
+
+        return $missing;
     }
 
     public function scopeVisibleTo(Builder $query, User $actor): Builder

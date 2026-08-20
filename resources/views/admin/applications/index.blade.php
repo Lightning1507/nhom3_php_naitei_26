@@ -27,10 +27,25 @@
     @endisset
 
     @if ($claimable > 0)
-        <div class="mb-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800" role="status">
-            Có <strong>{{ number_format($claimable) }}</strong> hồ sơ chưa có người phụ trách trong phòng ban của bạn,
-            bạn có thể nhận xử lý.
-        </div>
+        <section class="mb-5 admin-card" aria-labelledby="claimable-title">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-5">
+                <h2 id="claimable-title" class="text-base font-bold text-gray-950">Hồ sơ có thể nhận</h2>
+                <x-admin.badge variant="info">{{ number_format($claimable) }} hồ sơ</x-admin.badge>
+            </div>
+            <div class="admin-card-body space-y-2">
+                @forelse ($claimableApplications as $application)
+                    <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-2">
+                        <div class="min-w-0">
+                            <p class="truncate font-mono text-sm font-semibold text-primary">{{ $application->application_code }}</p>
+                            <p class="truncate text-xs text-gray-600">{{ $application->serviceType?->name }} · {{ $application->citizen?->name }}</p>
+                        </div>
+                        <x-admin.button variant="secondary" :href="route('admin.applications.show', $application)">Nhận xử lý</x-admin.button>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-600">Không có hồ sơ nào đang chờ nhận.</p>
+                @endforelse
+            </div>
+        </section>
     @endif
 
     <section class="admin-card" aria-labelledby="application-results-title">
@@ -72,6 +87,10 @@
                 <p class="mx-auto mt-2 max-w-lg text-sm text-gray-600">Hồ sơ trong phạm vi của bạn sẽ xuất hiện tại đây.</p>
             </div>
         @else
+            <div class="border-b border-border px-4 pt-4 sm:px-5">
+                <h2 class="text-base font-bold text-gray-950">Hồ sơ của tôi</h2>
+                <p class="mt-0.5 text-sm text-gray-600">Các hồ sơ đã được gán cho bạn hoặc nằm trong phạm vi quản lý.</p>
+            </div>
             <div class="admin-table-wrap rounded-none border-x-0 border-t-0" tabindex="0" aria-label="Bảng hồ sơ có thể cuộn ngang">
                 <table class="admin-table min-w-[920px]">
                     <caption class="sr-only">Danh sách hồ sơ trong phạm vi được phép</caption>
@@ -90,12 +109,16 @@
                         @foreach ($applications as $application)
                             <tr>
                                 <td class="whitespace-nowrap font-mono font-semibold text-primary">{{ $application->application_code }}</td>
-                                <td>
-                                    <p class="max-w-xs truncate font-medium text-gray-950">{{ $application->serviceType?->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $application->serviceType?->responsibleDepartment?->name }}</p>
+                                <td class="max-w-[260px]">
+                                    <p class="truncate font-medium text-gray-950" title="{{ $application->serviceType?->name }}">{{ $application->serviceType?->name }}</p>
+                                    <p class="truncate text-xs text-gray-500">{{ $application->serviceType?->responsibleDepartment?->name }}</p>
                                 </td>
-                                <td>{{ $application->citizen?->name }}</td>
-                                <td>{{ $application->assignedStaff?->name ?: 'Chưa gán' }}</td>
+                                <td class="max-w-[200px]">
+                                    <p class="truncate" title="{{ $application->citizen?->name }}">{{ $application->citizen?->name }}</p>
+                                </td>
+                                <td class="max-w-[200px]">
+                                    <p class="truncate" title="{{ $application->assignedStaff?->name }}">{{ $application->assignedStaff?->name ?: 'Chưa gán' }}</p>
+                                </td>
                                 <td>
                                     <x-admin.badge :variant="match ($application->status->value) {
                                         'approved' => 'success',

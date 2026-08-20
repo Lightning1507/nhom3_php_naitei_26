@@ -67,6 +67,15 @@ class ApplicationController extends Controller
             ? Application::query()->claimableBy($actor)->count()
             : 0;
 
+        $claimableApplications = $actor->isStaff()
+            ? Application::query()
+                ->with(['serviceType.responsibleDepartment', 'citizen', 'assignedStaff'])
+                ->claimableBy($actor)
+                ->orderByDesc('submitted_at')
+                ->limit(10)
+                ->get()
+            : collect();
+
         $stats = null;
 
         if ($actor->isManager() || $actor->isSuperAdmin()) {
@@ -88,7 +97,7 @@ class ApplicationController extends Controller
             ];
         }
 
-        return view('admin.applications.index', compact('applications', 'claimable', 'stats'));
+        return view('admin.applications.index', compact('applications', 'claimable', 'claimableApplications', 'stats'));
     }
 
     public function show(Application $application): View
@@ -205,16 +214,24 @@ class ApplicationController extends Controller
             ->with('success', 'Đã đính kèm tài liệu kết quả.');
     }
 
-    public function downloadDocument(Application $application, ApplicationDocument $document): StreamedResponse
-    {
+    public function downloadDocument(
+        Request $request,
+        Application $application,
+        ApplicationDocument $document,
+    ): StreamedResponse {
         $this->authorize('view', $application);
         abort_unless($application->documents()->whereKey($document->getKey())->exists(), 404);
 
         $this->authorize('download', $document);
 
-        return Storage::disk($document->disk)->download(
-            $document->path,
-            $document->original_name,
-        );
+        $disk = Storage::disk($document->disk);
+
+        if ($request->boolean('inline')) {
+            return $disk->response($document->path, $document->original_name, [
+                'Content-Type' => $document->mime_type ?: 'application/octet-stream',
+            ]);
+        }
+
+        return $disk->download($document->path, $document->original_name);
     }
 }
