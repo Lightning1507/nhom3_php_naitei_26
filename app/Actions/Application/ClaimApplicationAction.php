@@ -17,9 +17,13 @@ final readonly class ClaimApplicationAction
         return DB::transaction(function () use ($application, $actor): Application {
             $lockedActor = User::query()->lockForUpdate()->find($actor->getKey());
 
-            if ($lockedActor === null || (! $lockedActor->isStaff() && ! $lockedActor->isSuperAdmin()) || ! $lockedActor->canAccessProtectedResources()) {
+            if (
+                $lockedActor === null
+                || (! $lockedActor->isStaff() && ! $lockedActor->isSuperAdmin())
+                || ! $lockedActor->canAccessProtectedResources()
+            ) {
                 throw ValidationException::withMessages([
-                    'application' => 'Chỉ Staff đang hoạt động mới có thể nhận hồ sơ.',
+                    'application' => 'Chỉ Staff đang hoạt động hoặc Super Admin mới có thể nhận hồ sơ.',
                 ]);
             }
 
@@ -35,7 +39,11 @@ final readonly class ClaimApplicationAction
 
             $serviceType = $locked->serviceType;
 
-            if (! $lockedActor->isSuperAdmin() && ($serviceType === null || ! $lockedActor->departments()->whereKey($serviceType->responsible_department_id)->exists())) {
+            if (
+                $serviceType === null
+                || (! $lockedActor->isSuperAdmin()
+                    && ! $lockedActor->departments()->whereKey($serviceType->responsible_department_id)->exists())
+            ) {
                 throw ValidationException::withMessages([
                     'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
                 ]);

@@ -172,19 +172,19 @@ class Application extends Model
 
         return $query->where(function (Builder $searchQuery) use ($pattern): void {
             $searchQuery
-                ->whereRaw("applications.application_code ILIKE ? ESCAPE E'\\\\'", [$pattern])
+                ->whereRaw("applications.application_code COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern])
                 ->orWhereHas('citizen', function (Builder $citizenQuery) use ($pattern): void {
                     $citizenQuery
                         ->withTrashed()
                         ->where(function (Builder $identityQuery) use ($pattern): void {
                             $identityQuery
-                                ->whereRaw("users.name ILIKE ? ESCAPE E'\\\\'", [$pattern])
-                                ->orWhereRaw("users.citizen_id ILIKE ? ESCAPE E'\\\\'", [$pattern]);
+                                ->whereRaw("users.name COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern])
+                                ->orWhereRaw("users.citizen_id COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern]);
                         });
                 })
                 ->orWhereHas('serviceType', fn (Builder $serviceQuery): Builder => $serviceQuery
                     ->withTrashed()
-                    ->whereRaw("service_types.name ILIKE ? ESCAPE E'\\\\'", [$pattern]));
+                    ->whereRaw("service_types.name COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern]));
         });
     }
 
@@ -246,11 +246,25 @@ class Application extends Model
     {
         return $query
             ->whereNotIn('status', ApplicationStatus::completedValues())
-            ->whereNotNull('submitted_at')
             ->whereHas('serviceType', fn (Builder $serviceQuery): Builder => $serviceQuery
                 ->withTrashed()
-                ->whereNotNull('processing_time_days')
-                ->whereRaw('applications.submitted_at + make_interval(days => service_types.processing_time_days::integer) < CURRENT_TIMESTAMP'));
+                ->whereRaw(self::overdueConditionSql()));
+    }
+
+    /**
+     * Shared PostgreSQL predicate for list and dashboard overdue calculations.
+     *
+     * Both calling queries expose the service_types table under its canonical
+     * name so the operational definition cannot drift between drill-downs and
+     * aggregate metrics.
+     */
+    public static function overdueConditionSql(): string
+    {
+        return 'applications.submitted_at IS NOT NULL'
+            .' AND service_types.processing_time_days IS NOT NULL'
+            .' AND applications.submitted_at'
+            .' + make_interval(days => service_types.processing_time_days::integer)'
+            .' < CURRENT_TIMESTAMP';
     }
 
     public function scopeSortForAdmin(Builder $query, string $sort): Builder

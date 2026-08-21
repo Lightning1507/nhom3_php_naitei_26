@@ -47,9 +47,9 @@ class UserController extends Controller
 
                 $userQuery->where(function (Builder $searchQuery) use ($pattern): void {
                     $searchQuery
-                        ->whereRaw("users.name ILIKE ? ESCAPE E'\\\\'", [$pattern])
-                        ->orWhereRaw("users.email ILIKE ? ESCAPE E'\\\\'", [$pattern])
-                        ->orWhereRaw("users.citizen_id ILIKE ? ESCAPE E'\\\\'", [$pattern]);
+                        ->whereRaw("users.name COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern])
+                        ->orWhereRaw("users.email COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern])
+                        ->orWhereRaw("users.citizen_id COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern]);
                 });
             })
             ->when($filters['role'] ?? null, fn (Builder $userQuery, string $role): Builder => $userQuery->where('role', $role))
