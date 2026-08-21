@@ -14,54 +14,60 @@ use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Applications\ApproveApplicationRequest;
 use App\Http\Requests\Admin\Applications\AssignApplicationRequest;
+use App\Http\Requests\Admin\Applications\ListApplicationsRequest;
 use App\Http\Requests\Admin\Applications\RejectApplicationRequest;
 use App\Http\Requests\Admin\Applications\RequestSupplementRequest;
 use App\Http\Requests\Admin\Applications\StoreResultDocumentRequest;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
+use App\Models\Department;
+use App\Models\ServiceType;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
 {
-    public function index(Request $request): View
+    public function index(ListApplicationsRequest $request): View|RedirectResponse
     {
-        $this->authorize('viewAny', Application::class);
-
         /** @var User $actor */
         $actor = $request->user();
+        $filters = $request->validated();
+        $visibleScope = Application::query()->visibleTo($actor);
+        $authorizedApplicationCount = (clone $visibleScope)->count();
+        [$serviceOptions, $departmentOptions, $staffOptions] = $this->applicationFilterOptions($visibleScope);
 
-        $query = Application::query()
-            ->with(['serviceType.responsibleDepartment', 'citizen', 'assignedStaff'])
-            ->visibleTo($actor);
+        $query = (clone $visibleScope)
+            ->with([
+                'serviceType' => fn (Builder $serviceQuery): Builder => $serviceQuery
+                    ->withTrashed()
+                    ->with(['responsibleDepartment' => fn (Builder $departmentQuery): Builder => $departmentQuery->withTrashed()]),
+                'citizen' => fn (Builder $citizenQuery): Builder => $citizenQuery->withTrashed(),
+                'assignedStaff' => fn (Builder $staffQuery): Builder => $staffQuery->withTrashed(),
+            ])
+            ->searchForAdmin($filters['q'] ?? null)
+            ->withAdminStatus($filters['status'] ?? null)
+            ->forService(isset($filters['service_type_id']) ? (int) $filters['service_type_id'] : null)
+            ->forDepartment(isset($filters['department_id']) ? (int) $filters['department_id'] : null)
+            ->assignedToStaff(isset($filters['assigned_staff_id']) ? (int) $filters['assigned_staff_id'] : null)
+            ->submittedBetween($filters['submitted_from'] ?? null, $filters['submitted_to'] ?? null)
+            ->when($request->boolean('overdue'), fn (Builder $overdueQuery): Builder => $overdueQuery->overdue())
+            ->sortForAdmin($filters['sort']);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->string('status')->toString());
+        $queryParameters = $this->applicationQueryParameters($filters, $request->boolean('overdue'));
+        $applications = $query->paginate(20)->appends($queryParameters);
+
+        if ($applications->total() > 0 && $applications->currentPage() > $applications->lastPage()) {
+            return redirect()->route('admin.applications.index', [
+                ...$queryParameters,
+                'page' => $applications->lastPage(),
+            ]);
         }
-
-        if ($request->filled('assigned_staff_id')) {
-            $query->where('assigned_staff_id', (int) $request->integer('assigned_staff_id'));
-        }
-
-        if ($request->boolean('overdue')) {
-            $query->whereNull('completed_at')->whereHas(
-                'serviceType',
-                fn ($q) => $q->whereRaw('applications.submitted_at + make_interval(secs => service_types.processing_time_days * 86400) < now()')
-            );
-        }
-
-        if ($request->filled('q')) {
-            $query->where('application_code', 'ilike', '%'.$request->string('q')->toString().'%');
-        }
-
-        $applications = $query
-            ->orderByDesc('submitted_at')
-            ->paginate(15)
-            ->withQueryString();
 
         $claimable = $actor->isStaff()
             ? Application::query()->claimableBy($actor)->count()
@@ -79,25 +85,100 @@ class ApplicationController extends Controller
         $stats = null;
 
         if ($actor->isManager() || $actor->isSuperAdmin()) {
-            $boardQuery = clone $query;
-
             $stats = [
-                'pending' => (clone $boardQuery)->whereIn('status', [
+                'pending' => (clone $visibleScope)->whereIn('status', [
                     ApplicationStatus::Received,
                     ApplicationStatus::Processing,
                     ApplicationStatus::SupplementRequired,
                 ])->count(),
-                'overdue' => (clone $boardQuery)
-                    ->whereNull('completed_at')
-                    ->whereHas(
-                        'serviceType',
-                        fn ($q) => $q->whereRaw('applications.submitted_at + make_interval(secs => service_types.processing_time_days * 86400) < now()')
-                    )
-                    ->count(),
+                'overdue' => (clone $visibleScope)->overdue()->count(),
             ];
         }
 
-        return view('admin.applications.index', compact('applications', 'claimable', 'claimableApplications', 'stats'));
+        $statusOptions = collect(ApplicationStatus::cases())
+            ->map(fn (ApplicationStatus $status): array => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ])
+            ->push([
+                'value' => ApplicationStatus::COMPLETED_FILTER,
+                'label' => 'Đã hoàn thành',
+            ]);
+        $sortOptions = ApplicationStatus::sortOptions();
+        $hasFilters = collect([
+            $filters['q'] ?? null,
+            $filters['status'] ?? null,
+            $filters['service_type_id'] ?? null,
+            $filters['department_id'] ?? null,
+            $filters['assigned_staff_id'] ?? null,
+            $filters['submitted_from'] ?? null,
+            $filters['submitted_to'] ?? null,
+            $request->boolean('overdue') ? true : null,
+            $filters['sort'] !== ApplicationStatus::defaultSort() ? $filters['sort'] : null,
+        ])->contains(fn (mixed $value): bool => $value !== null && $value !== '');
+
+        return view('admin.applications.index', compact(
+            'applications',
+            'authorizedApplicationCount',
+            'claimable',
+            'departmentOptions',
+            'filters',
+            'hasFilters',
+            'serviceOptions',
+            'sortOptions',
+            'staffOptions',
+            'stats',
+            'statusOptions',
+        ));
+    }
+
+    /**
+     * @return array{Collection<int, ServiceType>, Collection<int, Department>, Collection<int, User>}
+     */
+    private function applicationFilterOptions(Builder $visibleScope): array
+    {
+        $serviceIds = (clone $visibleScope)
+            ->whereNotNull('service_type_id')
+            ->distinct()
+            ->pluck('service_type_id');
+        $serviceOptions = ServiceType::withTrashed()
+            ->whereIn('id', $serviceIds)
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get(['id', 'name', 'code', 'responsible_department_id', 'is_active', 'deleted_at']);
+        $departmentOptions = Department::withTrashed()
+            ->whereIn('id', $serviceOptions->pluck('responsible_department_id')->filter()->unique())
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get(['id', 'name', 'code', 'deleted_at']);
+        $staffIds = (clone $visibleScope)
+            ->whereNotNull('assigned_staff_id')
+            ->distinct()
+            ->pluck('assigned_staff_id');
+        $staffOptions = User::withTrashed()
+            ->whereIn('id', $staffIds)
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get(['id', 'name', 'email', 'is_active', 'deleted_at']);
+
+        return [$serviceOptions, $departmentOptions, $staffOptions];
+    }
+
+    /** @return array<string, mixed> */
+    private function applicationQueryParameters(array $filters, bool $overdue): array
+    {
+        $parameters = collect($filters)
+            ->except('page')
+            ->filter(fn (mixed $value): bool => $value !== null && $value !== '')
+            ->all();
+
+        if (! $overdue) {
+            unset($parameters['overdue']);
+        } else {
+            $parameters['overdue'] = 1;
+        }
+
+        return $parameters;
     }
 
     public function show(Application $application): View
