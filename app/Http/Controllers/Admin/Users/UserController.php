@@ -39,8 +39,8 @@ class UserController extends Controller
         $query = User::query()
             ->select(self::SAFE_COLUMNS)
             ->withCount([
-                'departments as departments_count' => fn (Builder $departmentQuery): Builder => $departmentQuery->withTrashed(),
-                'ledDepartments as led_departments_count' => fn (Builder $departmentQuery): Builder => $departmentQuery->withTrashed(),
+                'departments as departments_count' => fn ($departmentQuery) => $departmentQuery->withTrashed(),
+                'ledDepartments as led_departments_count' => fn ($departmentQuery) => $departmentQuery->withTrashed(),
             ])
             ->when($filters['search'] ?? null, function (Builder $userQuery, string $search): void {
                 $pattern = '%'.$this->escapeLikePattern($search).'%';
@@ -101,7 +101,7 @@ class UserController extends Controller
             ->withCount([
                 'submittedApplications',
                 'assignedApplications',
-                'assignedApplications as unfinished_assigned_applications_count' => fn (Builder $query): Builder => $query
+                'assignedApplications as unfinished_assigned_applications_count' => fn ($query) => $query
                     ->whereNotIn('status', ApplicationStatus::completedValues()),
             ])
             ->findOrFail($user->getKey());

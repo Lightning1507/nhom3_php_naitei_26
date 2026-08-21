@@ -40,7 +40,7 @@ class UserStatusManagementTest extends TestCase
         $this->assertTrue($deactivated->metadata['before']['is_active']);
         $this->assertFalse($deactivated->metadata['after']['is_active']);
 
-        $this->actingAs($target)->get(route('admin.dashboard'))->assertForbidden();
+        $this->actingAs($target->fresh())->get(route('admin.dashboard'))->assertForbidden();
 
         $this->actingAs($actor)->patch(route('admin.users.status.update', $target), [
             'is_active' => true,
