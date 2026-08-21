@@ -32,6 +32,10 @@ export default function MyApplicationDetailPage() {
 
     const isEditable = application?.status === 'received';
     const canUpload = application?.status === 'received' || application?.status === 'supplement_required';
+    const supplementNote = application?.supplement_note ?? null;
+    const timeline = application?.timeline ?? [];
+    const resultNote = application?.result_note ?? null;
+    const rejectionReason = application?.rejection_reason ?? null;
 
     async function loadApplication() {
         setLoadError(false);
@@ -93,6 +97,33 @@ export default function MyApplicationDetailPage() {
             isMounted = false;
         };
     }, [id, navigate]);
+
+    useEffect(() => {
+        if (!application || application.status === 'approved' || application.status === 'rejected') {
+            return undefined;
+        }
+
+        const interval = window.setInterval(() => {
+            loadApplication();
+        }, 30000);
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                loadApplication();
+            }
+        };
+
+        const handleFocus = () => loadApplication();
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            window.clearInterval(interval);
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
+    }, [application?.status, id]);
 
     useEffect(() => {
         if (!flash) {
@@ -265,9 +296,64 @@ export default function MyApplicationDetailPage() {
                         </section>
                     )}
 
+                    {application.status === 'supplement_required' && supplementNote && (
+                        <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-4" role="alert">
+                            <p className="text-[13px] font-bold uppercase tracking-wide text-amber-800">Yêu cầu bổ sung từ cán bộ</p>
+                            <p className="mt-2 text-sm leading-6 text-amber-900 whitespace-pre-wrap">{supplementNote}</p>
+                            {missingDocs.length > 0 && (
+                                <p className="mt-3 text-sm font-semibold text-amber-900">
+                                    Tài liệu cần bổ sung: {missingDocs.map((doc) => doc.label).join(', ')}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     {missingDocs.length > 0 && (application.status === 'received' || application.status === 'supplement_required') && (
                         <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-danger">
                             Thiếu {missingDocs.length} tài liệu bắt buộc: {missingDocs.map((doc) => doc.label).join(', ')}. Vui lòng tải lên để hồ sơ được xử lý.
+                        </div>
+                    )}
+
+                    {timeline.length > 0 && (
+                        <section className="mt-8">
+                            <h2 className="mb-4 text-[18px] font-bold text-gray-900">Tiến độ xử lý</h2>
+                            <ol className="relative border-l border-gray-200 pl-6">
+                                {timeline.map((entry, idx) => (
+                                    <li key={`${entry.from_status}-${entry.to_status}-${idx}`} className="mb-4">
+                                        <div className="absolute -left-[5px] mt-1 h-2.5 w-2.5 rounded-full bg-primary"></div>
+                                        <p className="text-sm font-semibold text-gray-900">
+                                            {entry.from_status ? `${entry.from_status} → ${entry.to_status}` : entry.to_status}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {entry.changed_by_name ? `bởi ${entry.changed_by_name}` : ''} {entry.created_at ? `· ${formatDateTime(entry.created_at)}` : ''}
+                                        </p>
+                                        {entry.note && (
+                                            <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{entry.note}</p>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
+                        </section>
+                    )}
+
+                    {application.status === 'approved' && (
+                        <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4">
+                            <p className="text-[13px] font-bold uppercase tracking-wide text-emerald-800">Kết quả: Đã duyệt</p>
+                            {resultNote && <p className="mt-2 text-sm text-emerald-900 whitespace-pre-wrap">{resultNote}</p>}
+                            {application.completed_at && (
+                                <p className="mt-1 text-xs text-emerald-700">Hoàn tất lúc {formatDateTime(application.completed_at)}</p>
+                            )}
+                            <p className="mt-2 text-sm text-emerald-800">Vui lòng kiểm tra tài liệu kết quả bên dưới (nếu có) và liên hệ phòng ban nếu cần.</p>
+                        </div>
+                    )}
+
+                    {application.status === 'rejected' && (
+                        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4">
+                            <p className="text-[13px] font-bold uppercase tracking-wide text-red-800">Kết quả: Bị từ chối</p>
+                            {rejectionReason && <p className="mt-2 text-sm text-red-900 whitespace-pre-wrap">{rejectionReason}</p>}
+                            {application.completed_at && (
+                                <p className="mt-1 text-xs text-red-700">Hoàn tất lúc {formatDateTime(application.completed_at)}</p>
+                            )}
                         </div>
                     )}
 
@@ -348,26 +434,25 @@ export default function MyApplicationDetailPage() {
                                             />
                                         </div>
                                     ))}
+                                    {files.length > 0 && (
+                                        <div className="mt-4 flex justify-end">
+                                            <button
+                                                type="button"
+                                                disabled={uploading}
+                                                className="btn-primary rounded-xl px-7 py-3 text-[15px]"
+                                                onClick={handleUpload}
+                                            >
+                                                {uploading ? 'Đang tải lên...' : 'Tải lên tài liệu bổ sung'}
+                                            </button>
+                                        </div>
+                                    )}
+                                    <p className="mt-3 text-xs text-gray-500">Sau khi tải lên, hồ sơ vẫn ở trạng thái chờ bổ sung. Cán bộ sẽ kiểm tra và tiếp tục xử lý — bạn không cần bấm thêm nút nào.</p>
                                 </div>
                             ) : (
-                                <DocumentUploader
-                                    requirement={null}
-                                    files={filesForCode('')}
-                                    onAdd={(next) => addFiles('', next)}
-                                    onRemove={(file) => removeFile(filesForCode('').find((entry) => entry.file === file))}
-                                />
-                            )}
-
-                            {files.length > 0 && (
-                                <div className="mt-4 flex justify-end">
-                                    <button
-                                        type="button"
-                                        disabled={uploading}
-                                        className="btn-primary rounded-xl px-7 py-3 text-[15px]"
-                                        onClick={handleUpload}
-                                    >
-                                        {uploading ? 'Đang tải lên...' : 'Tải lên tài liệu'}
-                                    </button>
+                                <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 text-sm text-gray-600">
+                                    {application.status === 'supplement_required'
+                                        ? 'Đã tải đủ các tài liệu được yêu cầu. Vui lòng chờ cán bộ tiếp tục xử lý — trạng thái sẽ tự cập nhật, không cần gửi thêm.'
+                                        : 'Hiện không có tài liệu nào cần bổ sung.'}
                                 </div>
                             )}
                         </section>

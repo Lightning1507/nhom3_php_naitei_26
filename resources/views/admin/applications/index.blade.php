@@ -207,15 +207,6 @@
                                     @if ($application->citizen?->trashed() || ($application->citizen && ! $application->citizen->is_active))
                                         <x-admin.badge variant="neutral">Không còn hoạt động</x-admin.badge>
                                     @endif
-                                <td class="max-w-[260px]">
-                                    <p class="truncate font-medium text-gray-950" title="{{ $application->serviceType?->name }}">{{ $application->serviceType?->name }}</p>
-                                    <p class="truncate text-xs text-gray-500">{{ $application->serviceType?->responsibleDepartment?->name }}</p>
-                                </td>
-                                <td class="max-w-[200px]">
-                                    <p class="truncate" title="{{ $application->citizen?->name }}">{{ $application->citizen?->name }}</p>
-                                </td>
-                                <td class="max-w-[200px]">
-                                    <p class="truncate" title="{{ $application->assignedStaff?->name }}">{{ $application->assignedStaff?->name ?: 'Chưa gán' }}</p>
                                 </td>
                                 <td>
                                     <p class="max-w-xs truncate font-medium text-gray-950">{{ $application->serviceType?->name ?? 'Không còn dữ liệu' }}</p>
