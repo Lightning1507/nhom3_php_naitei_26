@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Departments\DepartmentMemberController;
 use App\Http\Controllers\Admin\Departments\TransferDepartmentMemberController;
 use App\Http\Controllers\Admin\ServiceCategories\ServiceCategoryController;
 use App\Http\Controllers\Admin\ServiceTypes\ServiceTypeController;
+use App\Http\Controllers\Admin\UserImportController;
 use App\Http\Controllers\Api\V1\Auth\GoogleCitizenAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +57,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
         Route::resource('service-categories', ServiceCategoryController::class);
         Route::resource('service-types', ServiceTypeController::class);
+
+        // User Import routes
+        Route::get('/users/import', [UserImportController::class, 'index'])->name('users.import');
+        Route::post('/users/import/citizens', [UserImportController::class, 'importCitizens'])->name('users.import.citizens');
+        Route::post('/users/import/staff', [UserImportController::class, 'importStaff'])->name('users.import.staff');
         Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
         Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
         Route::post('/applications/{application}/assign', [ApplicationController::class, 'assign'])->name('applications.assign');

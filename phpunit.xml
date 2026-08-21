@@ -29,12 +29,12 @@
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="pgsql"/>
-        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_HOST" value="aws-0-ap-southeast-1.pooler.supabase.com"/>
         <env name="DB_PORT" value="5432"/>
-        <env name="DB_DATABASE" value="public_service_management_testing"/>
-        <env name="DB_USERNAME" value="postgres"/>
-        <env name="DB_SCHEMA" value="public"/>
-        <env name="DB_SSLMODE" value="prefer"/>
+        <env name="DB_DATABASE" value="postgres"/>
+        <env name="DB_USERNAME" value="postgres.ryfhcotkrmeiiptgwgxc"/>
+        <env name="DB_PASSWORD" value="Xsw@2wsx123a"/>
+        <env name="DB_SSLMODE" value="require"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
