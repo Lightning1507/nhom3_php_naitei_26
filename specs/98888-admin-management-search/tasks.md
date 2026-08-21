@@ -72,18 +72,18 @@ description: "Dependency-ordered implementation tasks for F07 Admin Management &
 
 ### Tests for User Story 2
 
-- [ ] T012 [P] [US2] Write failing detail authorization, 404-masking, reassignment recheck, complete read-model, deterministic history, archived relation, terminal result/rejection, and GET non-mutation tests in `tests/Feature/Admin/ApplicationDetailTest.php`
-- [ ] T013 [P] [US2] Update failing Citizen/internal document tests so parent Application visibility is required while Citizen ownership behavior remains unchanged in `tests/Feature/Api/V1/ApplicationAuthorizationTest.php`
-- [ ] T014 [P] [US2] Add regression assertions that F05 action visibility and assign/claim/process/supplement/approve/reject behavior still use existing policies and Actions in `tests/Feature/Admin/ApplicationProcessingTest.php`
+- [X] T012 [P] [US2] Write failing detail authorization, 404-masking, reassignment recheck, complete read-model, deterministic history, archived relation, terminal result/rejection, and GET non-mutation tests in `tests/Feature/Admin/ApplicationDetailTest.php`
+- [X] T013 [P] [US2] Update failing Citizen/internal document tests so parent Application visibility is required while Citizen ownership behavior remains unchanged in `tests/Feature/Api/V1/ApplicationAuthorizationTest.php`
+- [X] T014 [P] [US2] Add regression assertions that F05 action visibility and assign/claim/process/supplement/approve/reject behavior still use existing policies and Actions in `tests/Feature/Admin/ApplicationProcessingTest.php`
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Make internal `view` authorization query `Application::visibleTo($user)` and return `denyAsNotFound()` outside scope while preserving Citizen ownership in `app/Policies/ApplicationPolicy.php`
-- [ ] T016 [P] [US2] Require parent-Application visibility and document ownership/association for private downloads instead of allowing every internal actor in `app/Policies/ApplicationDocumentPolicy.php`
-- [ ] T017 [P] [US2] Add explicit soft-delete-aware historical read relations for Citizen, assigned Staff, Service Type, and responsible Department without widening operational F05 eligibility relations in `app/Models/Application.php` and `app/Models/ServiceType.php`
-- [ ] T018 [P] [US2] Make assignment Staff/actor, status-change actor, and document uploader historical relations soft-delete-aware with deterministic timestamp-plus-ID ordering in `app/Models/ApplicationAssignment.php`, `app/Models/ApplicationStatusHistory.php`, and `app/Models/ApplicationDocument.php`
-- [ ] T019 [US2] Refactor `show()` and document download to authorize the canonical scope on every request, eager-load the full historical read model, verify the document belongs to the bound Application, and avoid workflow mutations in `app/Http/Controllers/Admin/Applications/ApplicationController.php`
-- [ ] T020 [US2] Render Citizen, Service, Department, current Staff, form data, documents, assignments, status history, all timestamps, result/rejection, archived badges, and existing `@can`-guarded F05 actions in `resources/views/admin/applications/show.blade.php`
+- [X] T015 [P] [US2] Make internal `view` authorization query `Application::visibleTo($user)` and return `denyAsNotFound()` outside scope while preserving Citizen ownership in `app/Policies/ApplicationPolicy.php`
+- [X] T016 [P] [US2] Require parent-Application visibility and document ownership/association for private downloads instead of allowing every internal actor in `app/Policies/ApplicationDocumentPolicy.php`
+- [X] T017 [P] [US2] Add explicit soft-delete-aware historical read relations for Citizen, assigned Staff, Service Type, and responsible Department without widening operational F05 eligibility relations in `app/Models/Application.php` and `app/Models/ServiceType.php`
+- [X] T018 [P] [US2] Make assignment Staff/actor, status-change actor, and document uploader historical relations soft-delete-aware with deterministic timestamp-plus-ID ordering in `app/Models/ApplicationAssignment.php`, `app/Models/ApplicationStatusHistory.php`, and `app/Models/ApplicationDocument.php`
+- [X] T019 [US2] Refactor `show()` and document download to authorize the canonical scope on every request, eager-load the full historical read model, verify the document belongs to the bound Application, and avoid workflow mutations in `app/Http/Controllers/Admin/Applications/ApplicationController.php`
+- [X] T020 [US2] Render Citizen, Service, Department, current Staff, form data, documents, assignments, status history, all timestamps, result/rejection, archived badges, and existing `@can`-guarded F05 actions in `resources/views/admin/applications/show.blade.php`
 - [ ] T021 [US2] Run and resolve the focused US2 and F05 regression suite in `tests/Feature/Admin/ApplicationDetailTest.php`, `tests/Feature/Admin/ApplicationAuthorizationTest.php`, `tests/Feature/Admin/ApplicationProcessingTest.php`, and `tests/Feature/Api/V1/ApplicationAuthorizationTest.php`
 
 **Checkpoint**: User Story 2 can be validated from direct URLs independently; authorized history remains readable and protected data remains undisclosed.

@@ -522,9 +522,35 @@ class ApplicationProcessingTest extends TestCase
             ->assertSee($this->application->application_code);
     }
 
+    public function test_detail_keeps_f05_actions_guarded_by_the_existing_application_policy(): void
+    {
+        $this->application->update(['assigned_staff_id' => $this->staff->id]);
+
+        $staffResponse = $this->actingAs($this->staff)
+            ->get(route('admin.applications.show', $this->application));
+
+        $staffResponse->assertOk()
+            ->assertDontSee(route('admin.applications.assign', $this->application), false)
+            ->assertSee(route('admin.applications.start-processing', $this->application), false)
+            ->assertSee(route('admin.applications.request-supplement', $this->application), false)
+            ->assertSee(route('admin.applications.approve', $this->application), false)
+            ->assertSee(route('admin.applications.reject', $this->application), false);
+
+        $managerResponse = $this->actingAs($this->manager)
+            ->get(route('admin.applications.show', $this->application));
+
+        $managerResponse->assertOk()
+            ->assertSee(route('admin.applications.assign', $this->application), false)
+            ->assertDontSee(route('admin.applications.start-processing', $this->application), false)
+            ->assertDontSee(route('admin.applications.approve', $this->application), false)
+            ->assertDontSee(route('admin.applications.reject', $this->application), false);
+    }
+
     public function test_staff_can_download_citizen_document_from_admin_ui(): void
     {
         Storage::fake('local');
+
+        $this->application->update(['assigned_staff_id' => $this->staff->id]);
 
         $document = $this->application->documents()->create([
             'uploaded_by' => $this->application->citizen_id,

@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class ApplicationPolicy
 {
@@ -20,37 +21,43 @@ class ApplicationPolicy
             && $user->canAccessProtectedResources();
     }
 
-    public function view(User $user, Application $application): bool
+    public function view(User $user, Application $application): Response|bool
     {
         if (! $user->canAccessProtectedResources() || $this->isTrashed($application)) {
-            return false;
+            return Response::denyAsNotFound();
         }
 
         if ($user->isSuperAdmin()) {
-            return true;
+            return Response::allow();
         }
 
         if ($user->isManager()) {
             $departmentId = $application->serviceType?->responsible_department_id;
 
             return $departmentId !== null
-                && $user->ledDepartments()->whereKey($departmentId)->exists();
+                && $user->ledDepartments()->whereKey($departmentId)->exists()
+                    ? Response::allow()
+                    : Response::denyAsNotFound();
         }
 
         if ($user->isStaff()) {
             if ($application->assigned_staff_id === $user->id) {
-                return true;
+                return Response::allow();
             }
 
             $departmentId = $application->serviceType?->responsible_department_id;
 
-            return $application->assigned_staff_id === null
+            $isClaimable = $application->assigned_staff_id === null
                 && $application->status === ApplicationStatus::Received
                 && $departmentId !== null
                 && $user->departments()->whereKey($departmentId)->exists();
+
+            return $isClaimable ? Response::allow() : Response::denyAsNotFound();
         }
 
-        return $user->id === $application->citizen_id;
+        return $user->id === $application->citizen_id
+            ? Response::allow()
+            : Response::denyAsNotFound();
     }
 
     public function uploadDocument(User $user, Application $application): bool

@@ -51,7 +51,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthorizationException $exception, $request) {
             if ($request->is('api/*')) {
-                return ApiResponse::error('Bạn không có quyền thực hiện thao tác này.', null, 403);
+                $status = $exception->status() ?? 403;
+
+                return ApiResponse::error(
+                    $status === 404
+                        ? 'Không tìm thấy tài nguyên.'
+                        : 'Bạn không có quyền thực hiện thao tác này.',
+                    null,
+                    $status,
+                );
             }
         });
     })->create();

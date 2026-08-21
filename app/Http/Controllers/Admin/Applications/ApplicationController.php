@@ -187,12 +187,14 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         $application->load([
+            'historicalCitizen',
+            'historicalAssignedStaff',
+            'historicalServiceType.historicalResponsibleDepartment',
             'serviceType.responsibleDepartment.users',
-            'citizen',
-            'assignedStaff',
-            'documents',
+            'documents.uploader',
             'assignments.staff',
             'assignments.assignedBy',
+            'assignments.department',
             'statusHistories.changedBy',
         ]);
 
@@ -318,9 +320,10 @@ class ApplicationController extends Controller
         ApplicationDocument $document,
     ): StreamedResponse {
         $this->authorize('view', $application);
-        abort_unless($application->documents()->whereKey($document->getKey())->exists(), 404);
+        abort_unless($document->application_id === $application->getKey(), 404);
 
         $this->authorize('download', $document);
+        abort_unless(Storage::disk($document->disk)->exists($document->path), 404);
 
         $disk = Storage::disk($document->disk);
 

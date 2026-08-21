@@ -35,9 +35,19 @@ class Application extends Model
         return $this->belongsTo(User::class, 'citizen_id');
     }
 
+    public function historicalCitizen(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'citizen_id')->withTrashed();
+    }
+
     public function serviceType(): BelongsTo
     {
         return $this->belongsTo(ServiceType::class);
+    }
+
+    public function historicalServiceType(): BelongsTo
+    {
+        return $this->belongsTo(ServiceType::class, 'service_type_id')->withTrashed();
     }
 
     public function assignedStaff(): BelongsTo
@@ -45,19 +55,24 @@ class Application extends Model
         return $this->belongsTo(User::class, 'assigned_staff_id');
     }
 
+    public function historicalAssignedStaff(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_staff_id')->withTrashed();
+    }
+
     public function documents(): HasMany
     {
-        return $this->hasMany(ApplicationDocument::class);
+        return $this->hasMany(ApplicationDocument::class)->chronological();
     }
 
     public function assignments(): HasMany
     {
-        return $this->hasMany(ApplicationAssignment::class);
+        return $this->hasMany(ApplicationAssignment::class)->chronological();
     }
 
     public function statusHistories(): HasMany
     {
-        return $this->hasMany(ApplicationStatusHistory::class);
+        return $this->hasMany(ApplicationStatusHistory::class)->chronological();
     }
 
     public function activeAssignment(): ?ApplicationAssignment
