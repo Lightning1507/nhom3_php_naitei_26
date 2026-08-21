@@ -283,7 +283,6 @@
             </section>
             <section class="admin-card" aria-labelledby="workflow-actions-title">
                 <div class="admin-card-body space-y-3">
-                <h2 id="workflow-actions-title" class="text-lg font-bold text-gray-950">Thao tác</h2>
                     @php
                         $status = $application->status->value;
                         $assignedToMe = $application->assignedStaff?->getKey() === auth()->id();
@@ -321,7 +320,9 @@
 
                     @can('assign', $application)
                         @if (! $isTerminal)
-                            <x-admin.button data-dialog-open="assign-application-{{ $application->id }}" class="w-full">Phân công / đổi cán bộ</x-admin.button>
+                            <x-admin.button type="button" data-dialog-open="assign-application-{{ $application->id }}" class="w-full">
+                                Phân công / đổi cán bộ
+                            </x-admin.button>
                         @endif
                     @endcan
 
@@ -339,6 +340,15 @@
                             <x-admin.button type="button" variant="secondary" data-dialog-open="request-supplement-{{ $application->id }}" class="w-full">
                                 Yêu cầu bổ sung
                             </x-admin.button>
+                        @endif
+                    @endcan
+
+                    @can('resume', $application)
+                        @if ($status === 'supplement_required' && $assignedToMe)
+                            <form method="POST" action="{{ route('admin.applications.resume', $application) }}">
+                                @csrf
+                                <x-admin.button type="submit" class="w-full">Tiếp tục xử lý</x-admin.button>
+                            </form>
                         @endif
                     @endcan
 

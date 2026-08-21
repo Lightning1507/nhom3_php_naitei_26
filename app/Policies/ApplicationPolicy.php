@@ -23,16 +23,42 @@ class ApplicationPolicy
 
     public function view(User $user, Application $application): Response|bool
     {
-        if (in_array($user->role, [UserRole::Staff, UserRole::Manager, UserRole::SuperAdmin], true)) {
-            return Application::query()
-                ->visibleTo($user)
-                ->whereKey($application->getKey())
-                ->exists()
+        if (! $user->canAccessProtectedResources() || $this->isTrashed($application)) {
+            return Response::denyAsNotFound();
+        }
+
+        if ($user->isSuperAdmin()) {
+            return Response::allow();
+        }
+
+        if ($user->isManager()) {
+            $departmentId = $application->serviceType?->responsible_department_id;
+
+            return $departmentId !== null
+                && $user->ledDepartments()->whereKey($departmentId)->exists()
                     ? Response::allow()
                     : Response::denyAsNotFound();
         }
 
-        return $user->id === $application->citizen_id;
+        if ($user->isStaff()) {
+            if ($application->assigned_staff_id === $user->id) {
+                return Response::allow();
+            }
+
+            $departmentId = $application->serviceType?->responsible_department_id;
+
+            $isClaimable = $application->assigned_staff_id === null
+                && $application->status === ApplicationStatus::Received
+                && $departmentId !== null
+                && $user->departments()->whereKey($departmentId)->exists();
+
+            return $isClaimable ? Response::allow() : Response::denyAsNotFound();
+        }
+
+        // Citizen: return 403 (not 404) to match existing API tests; internal uses 404 to hide IDs
+        return $user->id === $application->citizen_id
+            ? Response::allow()
+            : Response::deny('Bạn không có quyền xem hồ sơ này.', 403);
     }
 
     public function uploadDocument(User $user, Application $application): bool
@@ -66,6 +92,10 @@ class ApplicationPolicy
     {
         if (! $this->isActiveInternalUser($user) || $this->isTrashed($application)) {
             return false;
+        }
+
+        if ($user->isSuperAdmin()) {
+            return true;
         }
 
         if (! $user->isStaff()) {

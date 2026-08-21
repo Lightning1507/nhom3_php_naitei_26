@@ -278,6 +278,26 @@ class Application extends Model
             );
     }
 
+    public function scopeAssignableTo(Builder $query, User $actor): Builder
+    {
+        if ($actor->isSuperAdmin()) {
+            return $query->whereNotIn('status', [ApplicationStatus::Approved, ApplicationStatus::Rejected]);
+        }
+
+        if ($actor->isManager()) {
+            $departmentIds = $actor->ledDepartments()->pluck('id');
+
+            return $query
+                ->whereNotIn('status', [ApplicationStatus::Approved, ApplicationStatus::Rejected])
+                ->whereHas(
+                    'serviceType',
+                    fn (Builder $serviceQuery) => $serviceQuery->whereIn('responsible_department_id', $departmentIds)
+                );
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
     private static function escapeLikePattern(string $value): string
     {
         return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
