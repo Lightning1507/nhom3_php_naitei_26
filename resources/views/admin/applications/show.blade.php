@@ -169,6 +169,13 @@
                                 <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
                             </div>
                         @endif
+        <section class="admin-card lg:col-span-2" aria-labelledby="application-info-title">
+            <div class="admin-card-body space-y-4">
+                <h2 id="application-info-title" class="text-lg font-bold text-gray-950">Thông tin hồ sơ</h2>
+                <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div class="min-w-0">
+                        <dt class="text-[13px] font-medium text-gray-500">Người nộp</dt>
+                        <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $application->citizen?->name }}</dd>
                     </div>
                 </section>
             @endif
@@ -201,6 +208,79 @@
                 </dl>
             </section>
 
+                    </dl>
+                </div>
+            </section>
+
+            <section class="admin-card" aria-labelledby="submitted-data-title">
+                <h2 id="submitted-data-title" class="admin-card-title">Dữ liệu đã khai</h2>
+                <div class="admin-card-body">
+                    @if (filled($application->form_data))
+                        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            @foreach ($application->form_data as $key => $value)
+                                <div class="rounded-lg border border-border bg-gray-50 px-3 py-2">
+                                    <dt class="text-[13px] font-medium text-gray-500">{{ str_replace('_', ' ', (string) $key) }}</dt>
+                                    <dd class="mt-1 break-words text-sm font-medium text-gray-900">
+                                        {{ is_scalar($value) || $value === null
+                                            ? ($value ?? '—')
+                                            : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}
+                                    </dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    @else
+                        <p class="text-sm text-gray-600">Hồ sơ không có dữ liệu biểu mẫu.</p>
+                    @endif
+                </div>
+            </section>
+
+            @if ($application->result_note || $application->rejection_reason)
+                <section class="admin-card" aria-labelledby="application-result-title">
+                    <h2 id="application-result-title" class="admin-card-title">Kết quả xử lý</h2>
+                    <div class="admin-card-body space-y-3">
+                        @if ($application->result_note)
+                            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                                <p class="text-[13px] font-semibold text-emerald-800">Ghi chú kết quả</p>
+                                <p class="mt-1 text-sm text-emerald-900">{{ $application->result_note }}</p>
+                            </div>
+                        @endif
+                        @if ($application->rejection_reason)
+                            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                                <p class="text-[13px] font-semibold text-red-800">Lý do từ chối</p>
+                                <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </section>
+            @endif
+        </div>
+
+        <aside class="space-y-6" aria-label="Thông tin bổ sung và thao tác xử lý">
+            <section class="admin-card" aria-labelledby="timestamps-title">
+                <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
+                <dl class="admin-card-body space-y-3 text-sm">
+                    <div>
+                        <dt class="text-gray-500">Ngày nộp</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Bắt đầu xử lý</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Hoàn tất</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Tạo bản ghi</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Cập nhật gần nhất</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                </dl>
+            </section>
             <section class="admin-card" aria-labelledby="workflow-actions-title">
                 <div class="admin-card-body space-y-3">
                 <h2 id="workflow-actions-title" class="text-lg font-bold text-gray-950">Thao tác</h2>
@@ -346,7 +426,58 @@
             </div>
         </div>
     </section>
+        </aside>
+    </div>
 
+    <section class="admin-card mt-6" aria-labelledby="documents-title">
+        <h2 id="documents-title" class="admin-card-title">Tài liệu hồ sơ</h2>
+        <div class="admin-card-body">
+            <div class="grid gap-3 md:grid-cols-2">
+                @forelse ($application->documents as $document)
+                    <article class="rounded-lg border border-border bg-white px-4 py-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="break-words text-sm font-semibold text-gray-950">{{ $document->original_name }}</p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    {{ $document->requirement_label ?: match ($document->document_kind?->value) {
+                                        'submission' => 'Tài liệu nộp ban đầu',
+                                        'supplement' => 'Tài liệu bổ sung',
+                                        'result' => 'Tài liệu kết quả',
+                                        default => 'Tài liệu hồ sơ',
+                                    } }}
+                                </p>
+                            </div>
+                            @can('download', $document)
+                                <a class="shrink-0 text-sm font-semibold text-primary hover:underline"
+                                   href="{{ route('admin.applications.documents.download', [$application, $document]) }}">
+                                    Tải xuống
+                                </a>
+                            @endcan
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
+                            <span>{{ $document->mime_type ?: 'Không rõ định dạng' }}</span>
+                            @if ($document->file_size)
+                                <span>{{ number_format($document->file_size / 1024, 1) }} KB</span>
+                            @endif
+                            <span>{{ $document->created_at?->format('d/m/Y H:i') }}</span>
+                        </div>
+                        @if ($document->uploader)
+                            <p class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                                <span>Tải lên bởi {{ $document->uploader->name }}</span>
+                                @if ($document->uploader->trashed())
+                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                @elseif (! $document->uploader->is_active)
+                                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                                @endif
+                            </p>
+                        @endif
+                    </article>
+                @empty
+                    <p class="text-sm text-gray-600">Chưa có tài liệu.</p>
+                @endforelse
+            </div>
+        </div>
+    </section>
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
         <section class="admin-card" aria-labelledby="timeline-title">
             <div class="admin-card-body">
@@ -382,7 +513,6 @@
             </ol>
             </div>
         </section>
-
         <section class="admin-card" aria-labelledby="assignments-title">
             <div class="admin-card-body">
                 <h2 id="assignments-title" class="text-lg font-bold text-gray-950">Lịch sử phân công</h2>
