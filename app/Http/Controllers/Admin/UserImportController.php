@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Services\CsvImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class UserImportController extends Controller
@@ -23,7 +24,13 @@ class UserImportController extends Controller
     {
         $departments = Department::query()->orderBy('name')->get();
 
-        return view('admin.users.import', compact('departments'));
+        // Retrieve report from cache if a key was flashed (avoid cookie size limit)
+        $report = null;
+        if ($key = session('import_report_key')) {
+            $report = Cache::pull($key);
+        }
+
+        return view('admin.users.import', compact('departments', 'report'));
     }
 
     /**
@@ -32,15 +39,20 @@ class UserImportController extends Controller
     public function importCitizens(CsvImportRequest $request): RedirectResponse|JsonResponse
     {
         $file = $request->file('csv_file');
-        $report = $this->importService->importCitizens($file->getRealPath());
+        $rollbackOnError = $request->boolean('rollback_on_error');
+        $report = $this->importService->importCitizens($file->getRealPath(), $rollbackOnError);
 
         if ($request->wantsJson()) {
             return response()->json($report);
         }
 
+        // Store large report in cache (5 min TTL), only flash the key into cookie session
+        $cacheKey = 'import_report_'.uniqid();
+        Cache::put($cacheKey, $report, now()->addMinutes(5));
+
         return redirect()
             ->route('admin.users.import')
-            ->with('report', $report)
+            ->with('import_report_key', $cacheKey)
             ->with('import_type', 'citizen');
     }
 
@@ -50,15 +62,20 @@ class UserImportController extends Controller
     public function importStaff(CsvImportRequest $request): RedirectResponse|JsonResponse
     {
         $file = $request->file('csv_file');
-        $report = $this->importService->importStaff($file->getRealPath());
+        $rollbackOnError = $request->boolean('rollback_on_error');
+        $report = $this->importService->importStaff($file->getRealPath(), $rollbackOnError);
 
         if ($request->wantsJson()) {
             return response()->json($report);
         }
 
+        // Store large report in cache (5 min TTL), only flash the key into cookie session
+        $cacheKey = 'import_report_'.uniqid();
+        Cache::put($cacheKey, $report, now()->addMinutes(5));
+
         return redirect()
             ->route('admin.users.import')
-            ->with('report', $report)
+            ->with('import_report_key', $cacheKey)
             ->with('import_type', 'staff');
     }
 }

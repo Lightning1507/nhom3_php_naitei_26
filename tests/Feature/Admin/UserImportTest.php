@@ -37,7 +37,7 @@ class UserImportTest extends TestCase
 
         $response->assertOk()
             ->assertViewIs('admin.users.import')
-            ->assertSee('Import Tài khoản từ CSV');
+            ->assertSee('Nhập dữ liệu tài khoản từ tệp CSV');
     }
 
     public function test_admin_can_import_citizens_from_csv_with_partial_errors(): void
@@ -177,5 +177,35 @@ class UserImportTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('success', false)
             ->assertJsonPath('data.failure_count', 0);
+    }
+
+    public function test_import_rolls_back_entirely_when_rollback_on_error_is_enabled(): void
+    {
+        $admin = User::factory()->withRole(UserRole::SuperAdmin)->create();
+        User::factory()->create(['email' => 'duplicate@gmail.com']);
+
+        $csvContent = implode("\n", [
+            'name,email,citizen_id,phone,address,date_of_birth',
+            'User One,valid.email@gmail.com,001098000999,0987654321,Hanoi,1990-01-01',
+            'User Two,duplicate@gmail.com,001098000888,0987654322,Hanoi,1991-02-02', // duplicate email
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('rollback.csv', $csvContent);
+
+        $response = $this->actingAs($admin)
+            ->post('/admin/users/import/citizens', [
+                'csv_file' => $file,
+                'rollback_on_error' => '1',
+            ], ['Accept' => 'application/json']);
+
+        $response->assertOk()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('data.total_rows', 2)
+            ->assertJsonPath('data.success_count', 0)
+            ->assertJsonPath('data.failure_count', 1);
+
+        $this->assertDatabaseMissing('users', [
+            'email' => 'valid.email@gmail.com',
+        ]);
     }
 }

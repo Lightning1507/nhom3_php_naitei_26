@@ -17,9 +17,10 @@ class CsvImportService
      * Import Citizen accounts from CSV file.
      *
      * @param  string  $filePath  Absolute path to uploaded CSV file.
+     * @param  bool  $rollbackOnError  If true, cancel entire import if any row fails validation.
      * @return array<string, mixed>
      */
-    public function importCitizens(string $filePath): array
+    public function importCitizens(string $filePath, bool $rollbackOnError = false): array
     {
         return $this->processCsv(
             filePath: $filePath,
@@ -51,7 +52,8 @@ class CsvImportService
                 }
 
                 return $inserted;
-            }
+            },
+            rollbackOnError: $rollbackOnError,
         );
     }
 
@@ -59,9 +61,10 @@ class CsvImportService
      * Import Staff accounts from CSV file.
      *
      * @param  string  $filePath  Absolute path to uploaded CSV file.
+     * @param  bool  $rollbackOnError  If true, cancel entire import if any row fails validation.
      * @return array<string, mixed>
      */
-    public function importStaff(string $filePath): array
+    public function importStaff(string $filePath, bool $rollbackOnError = false): array
     {
         return $this->processCsv(
             filePath: $filePath,
@@ -99,7 +102,8 @@ class CsvImportService
                 }
 
                 return $inserted;
-            }
+            },
+            rollbackOnError: $rollbackOnError,
         );
     }
 
@@ -114,7 +118,8 @@ class CsvImportService
         string $type,
         array $requiredHeaders,
         callable $rulesCallback,
-        callable $saveCallback
+        callable $saveCallback,
+        bool $rollbackOnError = false,
     ): array {
         if (! file_exists($filePath) || ! is_readable($filePath)) {
             return [
@@ -149,8 +154,24 @@ class CsvImportService
             ];
         }
 
+        // Auto-detect CSV delimiter (comma vs semicolon vs tab)
+        $firstLine = fgets($handle);
+        rewind($handle);
+        $delimiter = ',';
+        if ($firstLine !== false) {
+            $semicolonCount = substr_count($firstLine, ';');
+            $commaCount = substr_count($firstLine, ',');
+            $tabCount = substr_count($firstLine, "\t");
+
+            if ($semicolonCount > $commaCount && $semicolonCount > $tabCount) {
+                $delimiter = ';';
+            } elseif ($tabCount > $commaCount && $tabCount > $semicolonCount) {
+                $delimiter = "\t";
+            }
+        }
+
         // Parse header and strip UTF-8 BOM if present
-        $rawHeaders = fgetcsv($handle);
+        $rawHeaders = fgetcsv($handle, 0, $delimiter);
         if (! is_array($rawHeaders) || empty(filter_var_array($rawHeaders))) {
             fclose($handle);
 
@@ -211,7 +232,7 @@ class CsvImportService
         $seenEmails = [];
         $seenCitizenIds = [];
 
-        while (($row = fgetcsv($handle)) !== false) {
+        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
             $lineNumber++;
 
             // Skip completely empty rows
@@ -278,36 +299,44 @@ class CsvImportService
 
         fclose($handle);
 
-        // Perform database inserts in a transaction
-        $successCount = 0;
-        if (! empty($validRows)) {
-            $successCount = DB::transaction(fn () => call_user_func($saveCallback, $validRows));
-        }
-
         $failureCount = count($errors);
+        $successCount = 0;
+
+        // Perform database inserts in a transaction IF not rolling back on error
+        if ($rollbackOnError && $failureCount > 0) {
+            $successCount = 0;
+            $message = "Đã hủy toàn bộ lượt nhập do phát hiện {$failureCount} dòng bị lỗi (Chế độ Hủy toàn bộ được bật).";
+        } else {
+            if (! empty($validRows)) {
+                $successCount = DB::transaction(fn () => call_user_func($saveCallback, $validRows));
+            }
+            $message = "Đã nhập thành công {$successCount}/{$totalRows} tài khoản.";
+        }
 
         // Log activity
         ActivityLog::query()->create([
             'actor_id' => Auth::id(),
             'action' => 'user.import.'.$type,
             'subject_type' => User::class,
-            'description' => "Đã import {$successCount} tài khoản {$type} từ CSV với {$failureCount} lỗi.",
+            'description' => "Đã import {$type}: {$successCount} thành công, {$failureCount} lỗi (RollbackOnError: ".($rollbackOnError ? 'Bật' : 'Tắt').').',
             'metadata' => [
                 'total_rows' => $totalRows,
                 'success_count' => $successCount,
                 'failure_count' => $failureCount,
+                'rollback_on_error' => $rollbackOnError,
             ],
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
 
         return [
-            'success' => true,
-            'message' => "Đã nhập thành công {$successCount}/{$totalRows} tài khoản.",
+            'success' => $failureCount === 0 || ($successCount > 0 && ! $rollbackOnError),
+            'message' => $message,
             'data' => [
                 'total_rows' => $totalRows,
                 'success_count' => $successCount,
                 'failure_count' => $failureCount,
+                'rollback_on_error' => $rollbackOnError,
                 'errors' => $errors,
             ],
         ];

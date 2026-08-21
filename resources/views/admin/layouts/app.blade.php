@@ -99,7 +99,7 @@
                         'text-white/65 hover:bg-white/10 hover:text-white' => ! request()->routeIs('admin.users.import*'),
                     ])
                 >
-                    Import CSV
+                    Nhập dữ liệu CSV
                 </a>
             </nav>
 

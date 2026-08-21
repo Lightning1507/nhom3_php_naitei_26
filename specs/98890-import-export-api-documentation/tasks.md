@@ -33,13 +33,13 @@
 
 ### Implementation Tasks for User Story 2
 
-- [ ] T011 [P] [US2] Create CsvExportService with streamed response generator and UTF-8 BOM output in `app/Services/CsvExportService.php`
-- [ ] T012 [P] [US2] Implement filter-aware query exporters for Citizens, Applications, Services, Departments, Staff in `app/Services/CsvExportService.php`
-- [ ] T013 [P] [US2] Create DataExportRequest for query filter validation in `app/Http/Requests/Admin/DataExportRequest.php`
-- [ ] T014 [US2] Create DataExportController and register routes in `app/Http/Controllers/Admin/DataExportController.php` and `routes/web.php`
-- [ ] T015 [US2] Add "Export CSV" buttons with active filter binding on Admin list views in `resources/views/admin/applications/index.blade.php`, `resources/views/admin/users/index.blade.php`, `resources/views/admin/departments/index.blade.php`, and `resources/views/admin/service-types/index.blade.php`
-- [ ] T016 [P] [US2] Add Activity Log audit records for CSV Export actions in `app/Services/CsvExportService.php`
-- [ ] T017 [P] [US2] Create Feature tests for CSV data export in `tests/Feature/Admin/DataExportTest.php`
+- [x] T011 [P] [US2] Create CsvExportService with streamed response generator and UTF-8 BOM output in `app/Services/CsvExportService.php`
+- [x] T012 [P] [US2] Implement filter-aware query exporters for Citizens, Applications, Services, Departments, Staff in `app/Services/CsvExportService.php`
+- [x] T013 [P] [US2] Create DataExportRequest for query filter validation in `app/Http/Requests/Admin/DataExportRequest.php`
+- [x] T014 [US2] Create DataExportController and register routes in `app/Http/Controllers/Admin/DataExportController.php` and `routes/web.php`
+- [x] T015 [US2] Add "Export CSV" buttons with active filter binding on Admin list views in `resources/views/admin/applications/index.blade.php`, `resources/views/admin/users/index.blade.php`, `resources/views/admin/departments/index.blade.php`, and `resources/views/admin/service-types/index.blade.php`
+- [x] T016 [P] [US2] Add Activity Log audit records for CSV Export actions in `app/Services/CsvExportService.php`
+- [x] T017 [P] [US2] Create Feature tests for CSV data export in `tests/Feature/Admin/DataExportTest.php`
 
 ---
 

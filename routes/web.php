@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\Applications\ApplicationController;
 use App\Http\Controllers\Admin\Auth\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DataExportController;
 use App\Http\Controllers\Admin\Departments\DepartmentCandidateController;
 use App\Http\Controllers\Admin\Departments\DepartmentController;
 use App\Http\Controllers\Admin\Departments\DepartmentLeaderController;
@@ -59,7 +60,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::resource('service-categories', ServiceCategoryController::class);
         Route::resource('service-types', ServiceTypeController::class);
 
-        // User Import routes
+        // User Import & Data Export routes
+        Route::get('/export/{resource}', [DataExportController::class, 'export'])->name('export');
         Route::get('/users/import', [UserImportController::class, 'index'])->name('users.import');
         Route::post('/users/import/citizens', [UserImportController::class, 'importCitizens'])->name('users.import.citizens');
         Route::post('/users/import/staff', [UserImportController::class, 'importStaff'])->name('users.import.staff');
