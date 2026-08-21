@@ -169,13 +169,6 @@
                                 <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
                             </div>
                         @endif
-        <section class="admin-card lg:col-span-2" aria-labelledby="application-info-title">
-            <div class="admin-card-body space-y-4">
-                <h2 id="application-info-title" class="text-lg font-bold text-gray-950">Thông tin hồ sơ</h2>
-                <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div class="min-w-0">
-                        <dt class="text-[13px] font-medium text-gray-500">Người nộp</dt>
-                        <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $application->citizen?->name }}</dd>
                     </div>
                 </section>
             @endif
@@ -208,80 +201,8 @@
                 </dl>
             </section>
 
-                    </dl>
-                </div>
-            </section>
-
-            <section class="admin-card" aria-labelledby="submitted-data-title">
-                <h2 id="submitted-data-title" class="admin-card-title">Dữ liệu đã khai</h2>
-                <div class="admin-card-body">
-                    @if (filled($application->form_data))
-                        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            @foreach ($application->form_data as $key => $value)
-                                <div class="rounded-lg border border-border bg-gray-50 px-3 py-2">
-                                    <dt class="text-[13px] font-medium text-gray-500">{{ str_replace('_', ' ', (string) $key) }}</dt>
-                                    <dd class="mt-1 break-words text-sm font-medium text-gray-900">
-                                        {{ is_scalar($value) || $value === null
-                                            ? ($value ?? '—')
-                                            : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}
-                                    </dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                    @else
-                        <p class="text-sm text-gray-600">Hồ sơ không có dữ liệu biểu mẫu.</p>
-                    @endif
-                </div>
-            </section>
-
-            @if ($application->result_note || $application->rejection_reason)
-                <section class="admin-card" aria-labelledby="application-result-title">
-                    <h2 id="application-result-title" class="admin-card-title">Kết quả xử lý</h2>
-                    <div class="admin-card-body space-y-3">
-                        @if ($application->result_note)
-                            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                                <p class="text-[13px] font-semibold text-emerald-800">Ghi chú kết quả</p>
-                                <p class="mt-1 text-sm text-emerald-900">{{ $application->result_note }}</p>
-                            </div>
-                        @endif
-                        @if ($application->rejection_reason)
-                            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-                                <p class="text-[13px] font-semibold text-red-800">Lý do từ chối</p>
-                                <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
-                            </div>
-                        @endif
-                    </div>
-                </section>
-            @endif
-        </div>
-
-        <aside class="space-y-6" aria-label="Thông tin bổ sung và thao tác xử lý">
-            <section class="admin-card" aria-labelledby="timestamps-title">
-                <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
-                <dl class="admin-card-body space-y-3 text-sm">
-                    <div>
-                        <dt class="text-gray-500">Ngày nộp</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Bắt đầu xử lý</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Hoàn tất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Tạo bản ghi</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Cập nhật gần nhất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                </dl>
-            </section>
             <section class="admin-card" aria-labelledby="workflow-actions-title">
+                <h2 id="workflow-actions-title" class="admin-card-title">Thao tác F05</h2>
                 <div class="admin-card-body space-y-3">
                     @php
                         $status = $application->status->value;
