@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ApplicationStatus;
 use App\Support\ServiceSchema;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -67,14 +68,14 @@ class Application extends Model
 
     public function isOverdue(): bool
     {
-        if ($this->completed_at !== null) {
+        if ($this->status->isTerminal()) {
             return false;
         }
 
         $processingTimeDays = (int) ($this->serviceType?->processing_time_days ?? 0);
 
         return $this->submitted_at !== null
-            && $this->submitted_at->addDays($processingTimeDays)->isPast();
+            && $this->submitted_at->copy()->addDays($processingTimeDays)->isPast();
     }
 
     public function supplementNote(): ?string
@@ -120,6 +121,10 @@ class Application extends Model
 
     public function scopeVisibleTo(Builder $query, User $actor): Builder
     {
+        if (! $actor->canAccessProtectedResources()) {
+            return $query->whereRaw('1 = 0');
+        }
+
         if ($actor->isSuperAdmin()) {
             return $query;
         }
@@ -129,11 +134,120 @@ class Application extends Model
 
             return $query->whereHas(
                 'serviceType',
-                fn (Builder $serviceQuery) => $serviceQuery->whereIn('responsible_department_id', $departmentIds)
+                fn (Builder $serviceQuery): Builder => $serviceQuery
+                    ->withTrashed()
+                    ->whereIn('responsible_department_id', $departmentIds)
             );
         }
 
-        return $query->where('assigned_staff_id', $actor->getKey());
+        if ($actor->isStaff()) {
+            return $query->where('assigned_staff_id', $actor->getKey());
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    public function scopeSearchForAdmin(Builder $query, ?string $keyword): Builder
+    {
+        if ($keyword === null) {
+            return $query;
+        }
+
+        $pattern = '%'.self::escapeLikePattern($keyword).'%';
+
+        return $query->where(function (Builder $searchQuery) use ($pattern): void {
+            $searchQuery
+                ->whereRaw("applications.application_code ILIKE ? ESCAPE E'\\\\'", [$pattern])
+                ->orWhereHas('citizen', function (Builder $citizenQuery) use ($pattern): void {
+                    $citizenQuery
+                        ->withTrashed()
+                        ->where(function (Builder $identityQuery) use ($pattern): void {
+                            $identityQuery
+                                ->whereRaw("users.name ILIKE ? ESCAPE E'\\\\'", [$pattern])
+                                ->orWhereRaw("users.citizen_id ILIKE ? ESCAPE E'\\\\'", [$pattern]);
+                        });
+                })
+                ->orWhereHas('serviceType', fn (Builder $serviceQuery): Builder => $serviceQuery
+                    ->withTrashed()
+                    ->whereRaw("service_types.name ILIKE ? ESCAPE E'\\\\'", [$pattern]));
+        });
+    }
+
+    public function scopeWithAdminStatus(Builder $query, ?string $status): Builder
+    {
+        if ($status === null) {
+            return $query;
+        }
+
+        return $status === ApplicationStatus::COMPLETED_FILTER
+            ? $query->whereIn('status', ApplicationStatus::completedValues())
+            : $query->where('status', $status);
+    }
+
+    public function scopeForService(Builder $query, ?int $serviceTypeId): Builder
+    {
+        return $serviceTypeId === null
+            ? $query
+            : $query->where('service_type_id', $serviceTypeId);
+    }
+
+    public function scopeForDepartment(Builder $query, ?int $departmentId): Builder
+    {
+        if ($departmentId === null) {
+            return $query;
+        }
+
+        return $query->whereHas(
+            'serviceType',
+            fn (Builder $serviceQuery): Builder => $serviceQuery
+                ->withTrashed()
+                ->where('responsible_department_id', $departmentId),
+        );
+    }
+
+    public function scopeAssignedToStaff(Builder $query, ?int $staffId): Builder
+    {
+        return $staffId === null
+            ? $query
+            : $query->where('assigned_staff_id', $staffId);
+    }
+
+    public function scopeSubmittedBetween(Builder $query, ?string $from, ?string $to): Builder
+    {
+        $timezone = (string) config('app.timezone', 'UTC');
+
+        if ($from !== null) {
+            $query->where('submitted_at', '>=', CarbonImmutable::createFromFormat('!Y-m-d', $from, $timezone));
+        }
+
+        if ($to !== null) {
+            $query->where('submitted_at', '<', CarbonImmutable::createFromFormat('!Y-m-d', $to, $timezone)->addDay());
+        }
+
+        return $query;
+    }
+
+    public function scopeOverdue(Builder $query): Builder
+    {
+        return $query
+            ->whereNotIn('status', ApplicationStatus::completedValues())
+            ->whereNotNull('submitted_at')
+            ->whereHas('serviceType', fn (Builder $serviceQuery): Builder => $serviceQuery
+                ->withTrashed()
+                ->whereNotNull('processing_time_days')
+                ->whereRaw('applications.submitted_at + make_interval(days => service_types.processing_time_days::integer) < CURRENT_TIMESTAMP'));
+    }
+
+    public function scopeSortForAdmin(Builder $query, string $sort): Builder
+    {
+        return match ($sort) {
+            'oldest' => $query->orderBy('submitted_at')->orderBy('id'),
+            'code_asc' => $query->orderBy('application_code')->orderBy('id'),
+            'code_desc' => $query->orderByDesc('application_code')->orderByDesc('id'),
+            'status_asc' => $query->orderBy('status')->orderBy('id'),
+            'status_desc' => $query->orderByDesc('status')->orderByDesc('id'),
+            default => $query->orderByRaw('submitted_at DESC NULLS LAST')->orderByDesc('id'),
+        };
     }
 
     public function scopeClaimableBy(Builder $query, User $actor): Builder
@@ -147,6 +261,11 @@ class Application extends Model
                 'serviceType',
                 fn (Builder $serviceQuery) => $serviceQuery->whereIn('responsible_department_id', $departmentIds)
             );
+    }
+
+    private static function escapeLikePattern(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 
     /**
