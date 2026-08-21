@@ -17,9 +17,13 @@ final readonly class ClaimApplicationAction
         return DB::transaction(function () use ($application, $actor): Application {
             $lockedActor = User::query()->lockForUpdate()->find($actor->getKey());
 
-            if ($lockedActor === null || ! $lockedActor->isStaff() || ! $lockedActor->canAccessProtectedResources()) {
+            if (
+                $lockedActor === null
+                || (! $lockedActor->isStaff() && ! $lockedActor->isSuperAdmin())
+                || ! $lockedActor->canAccessProtectedResources()
+            ) {
                 throw ValidationException::withMessages([
-                    'application' => 'Chỉ Staff đang hoạt động mới có thể nhận hồ sơ.',
+                    'application' => 'Chỉ Staff đang hoạt động hoặc Super Admin mới có thể nhận hồ sơ.',
                 ]);
             }
 
@@ -35,27 +39,24 @@ final readonly class ClaimApplicationAction
 
             $serviceType = $locked->serviceType;
 
-            if ($serviceType === null || ! $lockedActor->departments()->whereKey($serviceType->responsible_department_id)->exists()) {
-                if (! $actor->isSuperAdmin() && ($serviceType === null || ! $actor->departments()->whereKey($serviceType->responsible_department_id)->exists())) {
-                    throw ValidationException::withMessages([
-                        'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
-                    ]);
-                }
-
-                ApplicationAssignment::query()->create([
-                    'application_id' => $locked->getKey(),
-                    'staff_id' => $lockedActor->getKey(),
-                    'department_id' => $serviceType->responsible_department_id,
-                    'assigned_by' => $lockedActor->getKey(),
-                    'assigned_at' => now(),
+            if (! $lockedActor->isSuperAdmin() && ($serviceType === null || ! $lockedActor->departments()->whereKey($serviceType->responsible_department_id)->exists())) {
+                throw ValidationException::withMessages([
+                    'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
                 ]);
-
-                $locked->assigned_staff_id = $lockedActor->getKey();
-                $locked->save();
-
-                return $locked->refresh();
             }
-        }
-        );
+
+            ApplicationAssignment::query()->create([
+                'application_id' => $locked->getKey(),
+                'staff_id' => $lockedActor->getKey(),
+                'department_id' => $serviceType->responsible_department_id,
+                'assigned_by' => $lockedActor->getKey(),
+                'assigned_at' => now(),
+            ]);
+
+            $locked->assigned_staff_id = $lockedActor->getKey();
+            $locked->save();
+
+            return $locked->refresh();
+        });
     }
 }

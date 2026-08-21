@@ -39,17 +39,17 @@ class UserController extends Controller
         $query = User::query()
             ->select(self::SAFE_COLUMNS)
             ->withCount([
-                'departments as departments_count' => fn (Builder $departmentQuery): Builder => $departmentQuery->withTrashed(),
-                'ledDepartments as led_departments_count' => fn (Builder $departmentQuery): Builder => $departmentQuery->withTrashed(),
+                'departments as departments_count' => fn ($departmentQuery) => $departmentQuery->withTrashed(),
+                'ledDepartments as led_departments_count' => fn ($departmentQuery) => $departmentQuery->withTrashed(),
             ])
             ->when($filters['search'] ?? null, function (Builder $userQuery, string $search): void {
                 $pattern = '%'.$this->escapeLikePattern($search).'%';
 
                 $userQuery->where(function (Builder $searchQuery) use ($pattern): void {
                     $searchQuery
-                        ->whereRaw("users.name ILIKE ? ESCAPE E'\\\\'", [$pattern])
-                        ->orWhereRaw("users.email ILIKE ? ESCAPE E'\\\\'", [$pattern])
-                        ->orWhereRaw("users.citizen_id ILIKE ? ESCAPE E'\\\\'", [$pattern]);
+                        ->whereRaw("users.name COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern])
+                        ->orWhereRaw("users.email COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern])
+                        ->orWhereRaw("users.citizen_id COLLATE \"und-x-icu\" ILIKE ? COLLATE \"und-x-icu\" ESCAPE E'\\\\'", [$pattern]);
                 });
             })
             ->when($filters['role'] ?? null, fn (Builder $userQuery, string $role): Builder => $userQuery->where('role', $role))
@@ -87,12 +87,12 @@ class UserController extends Controller
         $user = User::query()
             ->select(self::SAFE_COLUMNS)
             ->with([
-                'departments' => fn (Builder $query): Builder => $query
+                'departments' => fn ($query) => $query
                     ->withTrashed()
                     ->select(['departments.id', 'departments.name', 'departments.code', 'departments.deleted_at'])
                     ->orderBy('departments.name')
                     ->orderBy('departments.id'),
-                'ledDepartments' => fn (Builder $query): Builder => $query
+                'ledDepartments' => fn ($query) => $query
                     ->withTrashed()
                     ->select(['id', 'name', 'code', 'leader_id', 'deleted_at'])
                     ->orderBy('name')
@@ -101,7 +101,7 @@ class UserController extends Controller
             ->withCount([
                 'submittedApplications',
                 'assignedApplications',
-                'assignedApplications as unfinished_assigned_applications_count' => fn (Builder $query): Builder => $query
+                'assignedApplications as unfinished_assigned_applications_count' => fn ($query) => $query
                     ->whereNotIn('status', ApplicationStatus::completedValues()),
             ])
             ->findOrFail($user->getKey());

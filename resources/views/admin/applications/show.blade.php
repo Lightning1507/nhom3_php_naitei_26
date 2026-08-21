@@ -46,7 +46,7 @@
                 <div class="min-w-0">
                     <p class="text-[13px] font-bold uppercase tracking-wide text-amber-800">Đang chờ bổ sung tài liệu</p>
                     @if ($application->supplementNote())
-                        <p class="mt-1 text-sm text-amber-900">
+                        <p class="mt-1 break-words text-sm text-amber-900 whitespace-pre-wrap">
                             <span class="font-semibold">Ghi chú của cán bộ:</span> {{ $application->supplementNote() }}
                         </p>
                     @endif
@@ -75,18 +75,18 @@
                 <h2 id="application-info-title" class="admin-card-title">Thông tin hồ sơ</h2>
                 <div class="admin-card-body">
                     <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Mã hồ sơ</dt>
-                            <dd class="mt-0.5 font-medium text-gray-950">{{ $application->application_code }}</dd>
+                            <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $application->application_code }}</dd>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Trạng thái</dt>
-                            <dd class="mt-0.5">{{ $application->status->label() }}</dd>
+                            <dd class="mt-0.5 break-words">{{ $application->status->label() }}</dd>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Công dân</dt>
-                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
-                                <span>{{ $citizen?->name ?: 'Không còn thông tin' }}</span>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-gray-950">
+                                <span class="break-words">{{ $citizen?->name ?: 'Không còn thông tin' }}</span>
                                 @if ($citizen?->trashed())
                                     <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                 @elseif ($citizen && ! $citizen->is_active)
@@ -94,13 +94,13 @@
                                 @endif
                             </dd>
                             @if ($citizen?->citizen_id)
-                                <dd class="mt-1 text-xs text-gray-500">Mã định danh: {{ $citizen->citizen_id }}</dd>
+                                <dd class="mt-1 break-words text-xs text-gray-500">Mã định danh: {{ $citizen->citizen_id }}</dd>
                             @endif
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Cán bộ đang xử lý</dt>
-                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
-                                <span>{{ $assignedStaff?->name ?: 'Chưa phân công' }}</span>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-gray-950">
+                                <span class="break-words">{{ $assignedStaff?->name ?: 'Chưa phân công' }}</span>
                                 @if ($assignedStaff?->trashed())
                                     <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                 @elseif ($assignedStaff && ! $assignedStaff->is_active)
@@ -108,23 +108,23 @@
                                 @endif
                             </dd>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Dịch vụ</dt>
-                            <dd class="mt-0.5 font-medium text-gray-950">{{ $service?->name ?: 'Không còn thông tin' }}</dd>
+                            <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $service?->name ?: 'Không còn thông tin' }}</dd>
                             @if ($service?->code)
-                                <dd class="mt-1 text-xs text-gray-500">{{ $service->code }}</dd>
+                                <dd class="mt-1 break-words text-xs text-gray-500">{{ $service->code }}</dd>
                             @endif
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Phòng ban phụ trách</dt>
-                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
-                                <span>{{ $department?->name ?: 'Không còn thông tin' }}</span>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-gray-950">
+                                <span class="break-words">{{ $department?->name ?: 'Không còn thông tin' }}</span>
                                 @if ($department?->trashed())
                                     <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                 @endif
                             </dd>
                             @if ($department?->code)
-                                <dd class="mt-1 text-xs text-gray-500">{{ $department->code }}</dd>
+                                <dd class="mt-1 break-words text-xs text-gray-500">{{ $department->code }}</dd>
                             @endif
                         </div>
                     </dl>
@@ -160,128 +160,49 @@
                         @if ($application->result_note)
                             <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                                 <p class="text-[13px] font-semibold text-emerald-800">Ghi chú kết quả</p>
-                                <p class="mt-1 text-sm text-emerald-900">{{ $application->result_note }}</p>
+                                <p class="mt-1 break-words text-sm text-emerald-900 whitespace-pre-wrap">{{ $application->result_note }}</p>
                             </div>
                         @endif
                         @if ($application->rejection_reason)
                             <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                                 <p class="text-[13px] font-semibold text-red-800">Lý do từ chối</p>
-                                <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
+                                <p class="mt-1 break-words text-sm text-red-900 whitespace-pre-wrap">{{ $application->rejection_reason }}</p>
                             </div>
                         @endif
-        <section class="admin-card lg:col-span-2" aria-labelledby="application-info-title">
-            <div class="admin-card-body space-y-4">
-                <h2 id="application-info-title" class="text-lg font-bold text-gray-950">Thông tin hồ sơ</h2>
-                <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    </div>
+                </section>
+            @endif
+        </div>
+
+        <aside class="space-y-6" aria-label="Thông tin bổ sung và thao tác xử lý">
+            <section class="admin-card" aria-labelledby="timestamps-title">
+                <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
+                <dl class="admin-card-body space-y-3 text-sm">
                     <div class="min-w-0">
-                        <dt class="text-[13px] font-medium text-gray-500">Người nộp</dt>
-                        <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $application->citizen?->name }}</dd>
-                    </div>
-                </section>
-            @endif
-        </div>
-
-        <aside class="space-y-6" aria-label="Thông tin bổ sung và thao tác xử lý">
-            <section class="admin-card" aria-labelledby="timestamps-title">
-                <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
-                <dl class="admin-card-body space-y-3 text-sm">
-                    <div>
                         <dt class="text-gray-500">Ngày nộp</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Bắt đầu xử lý</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Hoàn tất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Tạo bản ghi</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Cập nhật gần nhất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
                 </dl>
             </section>
 
-                    </dl>
-                </div>
-            </section>
-
-            <section class="admin-card" aria-labelledby="submitted-data-title">
-                <h2 id="submitted-data-title" class="admin-card-title">Dữ liệu đã khai</h2>
-                <div class="admin-card-body">
-                    @if (filled($application->form_data))
-                        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            @foreach ($application->form_data as $key => $value)
-                                <div class="rounded-lg border border-border bg-gray-50 px-3 py-2">
-                                    <dt class="text-[13px] font-medium text-gray-500">{{ str_replace('_', ' ', (string) $key) }}</dt>
-                                    <dd class="mt-1 break-words text-sm font-medium text-gray-900">
-                                        {{ is_scalar($value) || $value === null
-                                            ? ($value ?? '—')
-                                            : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}
-                                    </dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                    @else
-                        <p class="text-sm text-gray-600">Hồ sơ không có dữ liệu biểu mẫu.</p>
-                    @endif
-                </div>
-            </section>
-
-            @if ($application->result_note || $application->rejection_reason)
-                <section class="admin-card" aria-labelledby="application-result-title">
-                    <h2 id="application-result-title" class="admin-card-title">Kết quả xử lý</h2>
-                    <div class="admin-card-body space-y-3">
-                        @if ($application->result_note)
-                            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                                <p class="text-[13px] font-semibold text-emerald-800">Ghi chú kết quả</p>
-                                <p class="mt-1 text-sm text-emerald-900">{{ $application->result_note }}</p>
-                            </div>
-                        @endif
-                        @if ($application->rejection_reason)
-                            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-                                <p class="text-[13px] font-semibold text-red-800">Lý do từ chối</p>
-                                <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
-                            </div>
-                        @endif
-                    </div>
-                </section>
-            @endif
-        </div>
-
-        <aside class="space-y-6" aria-label="Thông tin bổ sung và thao tác xử lý">
-            <section class="admin-card" aria-labelledby="timestamps-title">
-                <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
-                <dl class="admin-card-body space-y-3 text-sm">
-                    <div>
-                        <dt class="text-gray-500">Ngày nộp</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Bắt đầu xử lý</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Hoàn tất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Tạo bản ghi</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-gray-500">Cập nhật gần nhất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
-                    </div>
-                </dl>
-            </section>
             <section class="admin-card" aria-labelledby="workflow-actions-title">
+                <h2 id="workflow-actions-title" class="admin-card-title">Thao tác</h2>
                 <div class="admin-card-body space-y-3">
                     @php
                         $status = $application->status->value;
@@ -305,7 +226,7 @@
                     @if ($guidance)
                         <div class="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm leading-5 text-blue-900" role="status">
                             <p class="text-[13px] font-bold uppercase tracking-wide text-blue-700">Bước tiếp theo</p>
-                            <p class="mt-1">{{ $guidance }}</p>
+                            <p class="mt-1 break-words">{{ $guidance }}</p>
                         </div>
                     @endif
 
@@ -352,13 +273,6 @@
                         @endif
                     @endcan
 
-                    @can('resume', $application)
-                        <form method="POST" action="{{ route('admin.applications.resume', $application) }}">
-                            @csrf
-                            <x-admin.button type="submit" class="w-full">Tiếp tục xử lý</x-admin.button>
-                        </form>
-                    @endcan
-
                     @can('approve', $application)
                         @if ($status === 'processing' && $assignedToMe)
                             <x-admin.button type="button" variant="secondary" data-dialog-open="approve-application-{{ $application->id }}" class="w-full">
@@ -380,7 +294,7 @@
                             <x-admin.button type="button" variant="secondary" data-dialog-open="result-document-{{ $application->id }}" class="w-full">
                                 Đính kèm tài liệu kết quả
                             </x-admin.button>
-                        @endif    
+                        @endif
                     @endcan
                 </div>
             </section>
@@ -405,64 +319,20 @@
                                     } }}
                                 </p>
                             </div>
-                            @can('download', $document)
-                                <a class="shrink-0 text-sm font-semibold text-primary hover:underline"
-                                   href="{{ route('admin.applications.documents.download', [$application, $document]) }}">
-                                    Tải xuống
-                                </a>
-                            @endcan
-                        </div>
-                        <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
-                            <span>{{ $document->mime_type ?: 'Không rõ định dạng' }}</span>
-                            @if ($document->file_size)
-                                <span>{{ number_format($document->file_size / 1024, 1) }} KB</span>
-                            @endif
-                            <span>{{ $document->created_at?->format('d/m/Y H:i') }}</span>
-                        </div>
-                        @if ($document->uploader)
-                            <p class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                                <span>Tải lên bởi {{ $document->uploader->name }}</span>
-                                @if ($document->uploader->trashed())
-                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
-                                @elseif (! $document->uploader->is_active)
-                                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                            <div class="flex shrink-0 items-center gap-2">
+                                @php
+                                    $previewable = in_array($document->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'], true);
+                                @endphp
+                                @if ($previewable)
+                                    <button type="button" class="text-sm font-semibold text-primary hover:underline" data-dialog-open="preview-document-{{ $application->id }}-{{ $document->id }}">Xem</button>
                                 @endif
-                            </p>
-                        @endif
-                    </article>
-                @empty
-                    <p class="text-sm text-gray-600">Chưa có tài liệu.</p>
-                @endforelse
-            </div>
-        </div>
-    </section>
-        </aside>
-    </div>
-
-    <section class="admin-card mt-6" aria-labelledby="documents-title">
-        <h2 id="documents-title" class="admin-card-title">Tài liệu hồ sơ</h2>
-        <div class="admin-card-body">
-            <div class="grid gap-3 md:grid-cols-2">
-                @forelse ($application->documents as $document)
-                    <article class="rounded-lg border border-border bg-white px-4 py-3">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <p class="break-words text-sm font-semibold text-gray-950">{{ $document->original_name }}</p>
-                                <p class="mt-1 text-xs text-gray-500">
-                                    {{ $document->requirement_label ?: match ($document->document_kind?->value) {
-                                        'submission' => 'Tài liệu nộp ban đầu',
-                                        'supplement' => 'Tài liệu bổ sung',
-                                        'result' => 'Tài liệu kết quả',
-                                        default => 'Tài liệu hồ sơ',
-                                    } }}
-                                </p>
+                                @can('download', $document)
+                                    <a class="text-sm font-semibold text-primary hover:underline"
+                                       href="{{ route('admin.applications.documents.download', [$application, $document]) }}">
+                                        Tải xuống
+                                    </a>
+                                @endcan
                             </div>
-                            @can('download', $document)
-                                <a class="shrink-0 text-sm font-semibold text-primary hover:underline"
-                                   href="{{ route('admin.applications.documents.download', [$application, $document]) }}">
-                                    Tải xuống
-                                </a>
-                            @endcan
                         </div>
                         <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
                             <span>{{ $document->mime_type ?: 'Không rõ định dạng' }}</span>
@@ -488,12 +358,12 @@
             </div>
         </div>
     </section>
+
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
-        <section class="admin-card" aria-labelledby="timeline-title">
-            <div class="admin-card-body">
-                <h2 id="timeline-title" class="text-lg font-bold text-gray-950">Lịch sử xử lý</h2>
-            <ol class="mt-4 space-y-3">
-                @forelse ($application->statusHistories->sortBy(fn ($h) => [$h->created_at?->timestamp ?? 0, $h->id]) as $history)
+        <section class="admin-card" aria-labelledby="status-history-title">
+            <h2 id="status-history-title" class="admin-card-title">Lịch sử trạng thái</h2>
+            <ol class="admin-card-body space-y-4">
+                @forelse ($application->statusHistories as $history)
                     <li class="flex gap-3">
                         <span class="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
                         <div class="min-w-0">
@@ -513,7 +383,7 @@
                                 @endif
                             </p>
                             @if ($history->note)
-                                <p class="mt-0.5 break-words text-sm text-gray-600">{{ $history->note }}</p>
+                                <p class="mt-1 break-words text-sm text-gray-600 whitespace-pre-wrap">{{ $history->note }}</p>
                             @endif
                         </div>
                     </li>
@@ -523,6 +393,7 @@
             </ol>
             </div>
         </section>
+
         <section class="admin-card" aria-labelledby="assignments-title">
             <div class="admin-card-body">
                 <h2 id="assignments-title" class="text-lg font-bold text-gray-950">Lịch sử phân công</h2>
@@ -551,17 +422,17 @@
                                 @endif
                             </p>
                             @if ($assignment->department)
-                                <p class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                    <span>{{ $assignment->department->name }}</span>
+                                <p class="mt-1 flex flex-wrap items-center gap-2 break-words text-xs text-gray-500">
+                                    <span class="break-words">{{ $assignment->department->name }}</span>
                                     @if ($assignment->department->trashed())
                                         <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                     @endif
                                 </p>
                             @endif
                             @if ($assignment->note)
-                                <p class="mt-1 text-sm text-gray-600">{{ $assignment->note }}</p>
+                                <p class="mt-1 break-words text-sm text-gray-600 whitespace-pre-wrap">{{ $assignment->note }}</p>
                             @endif
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-1 break-words text-xs text-gray-500">
                                 {{ $assignment->ended_at
                                     ? 'Kết thúc '.$assignment->ended_at->format('d/m/Y H:i')
                                     : 'Đang hiệu lực' }}
