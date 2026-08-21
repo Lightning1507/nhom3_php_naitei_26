@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Enums\ApplicationStatus;
-use Carbon\CarbonImmutable;
 use App\Support\ServiceSchema;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
