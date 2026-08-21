@@ -202,6 +202,7 @@ class ApplicationWorkspaceViewTest extends TestCase
         $this->actingAs($this->manager)
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('Quản lý hồ sơ dịch vụ công');
+            ->assertSee('Tổng quan vận hành')
+            ->assertSee('Xem danh sách');
     }
 }
