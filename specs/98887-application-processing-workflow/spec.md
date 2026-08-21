@@ -143,6 +143,13 @@ Citizen theo dõi toàn bộ vòng đời hồ sơ của mình qua timeline tr�
 
 - **FR-024**: System MUST cung cấp cho Manager/Super Admin tổng quan số hồ sơ đang chờ xử lý (pending: `received`/`processing`/`supplement_required`) và số hồ sơ quá hạn (overdue: chưa hoàn thành quá `processing_time_days` của dịch vụ kể từ `submitted_at`) trong phạm vi quản lý.
 
+#### Admin UI — hiển thị, hướng dẫn & preview tài liệu
+
+- **FR-025**: System MUST hiển thị rõ ràng trên trang chi tiết hồ sơ (Admin) ghi chú yêu cầu bổ sung của staff và danh sách tài liệu bắt buộc còn thiếu (theo `requirement_code`/`label`) khi hồ sơ ở `supplement_required` — dưới dạng khối cảnh báo nổi bật, không chỉ ẩn trong timeline.
+- **FR-026**: System MUST hiển thị trên trang chi tiết hồ sơ (Admin) hướng dẫn "bước tiếp theo" theo trạng thái hiện tại và quyền của actor: chỉ bày nút hành động hợp lệ kế tiếp (vd `received` → Nhận/Bắt đầu xử lý; `processing` → Yêu cầu bổ sung/Duyệt/Từ chối), các nút không áp dụng ở trạng thái hiện tại bị ẩn (hoặc vô hiệu kèm lý do) — không hiển thị bừa bãi mọi nút.
+- **FR-027**: System MUST cho phép Staff/Manager/Super Admin xem trước (preview) tài liệu đính kèm (PDF/image) ngay trong trang chi tiết hồ sơ mà không cần tải xuống; nút tải xuống vẫn giữ để lưu file.
+- **FR-028**: System MUST render worklist (`index`) và chi tiết (`show`) không bị tràn/lệch chữ khỏi card ở mọi kích thước màn hình (văn bản dài được wrap/truncate đúng chỗ); hiển thị chính xác trạng thái, badge quá hạn, người xử lý và phân nhóm "Hồ sơ của tôi" (assigned) vs "Có thể nhận" (claimable) cho Staff.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Application**: Hồ sơ dịch vụ công; là trung tâm của workflow. Trạng thái (`received`/`processing`/`supplement_required`/`approved`/`rejected`) được chuyển theo tập chuyển hợp lệ duy nhất; `assigned_staff_id` xác định staff duy nhất có quyền xử lý; các cột `processing_started_at`, `completed_at`, `result_note`, `rejection_reason` được cập nhật theo từng bước xử lý.

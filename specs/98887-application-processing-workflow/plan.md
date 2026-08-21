@@ -133,6 +133,13 @@ git push -u origin task/<ticket-id>-<slug>
   `x-admin` components như `departments/show.blade.php`), upload result doc, khối thiếu tài liệu.
 - Alpine dialog cho assign (candidate combobox staff phòng ban phụ trách), request-supplement,
   approve, reject.
+- **Khối yêu cầu bổ sung nổi bật** (FR-025): khi `supplement_required`, hiển thị banner ghi chú
+  staff + danh sách tài liệu bắt buộc còn thiếu; đồng thời xác nhận note supplement hiển thị đúng.
+- **Hướng dẫn bước tiếp theo** (FR-026): worklist/show chỉ bày nút hợp lệ theo trạng thái hiện tại +
+  quyền actor; khu "Bước tiếp theo" mô tả việc cần làm.
+- **Preview tài liệu** (FR-027): xem trước PDF/image inline trong trang chi tiết (thẻ `<iframe>`/`<object>`
+  hoặc `object URL`), giữ nút Tải; cho cả submission/supplement/result.
+- **Fix layout** (FR-028): chống tràn chữ khỏi card (truncate/wrap), căn chỉnh bảng, responsive.
 - Test render qua route (Blade) `tests/Feature/Admin/ApplicationWorkspaceViewTest.php`.
 
 **Commit**: `feat: #99476 build admin staff workspace UI`

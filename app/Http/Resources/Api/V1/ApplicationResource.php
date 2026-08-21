@@ -87,29 +87,6 @@ class ApplicationResource extends JsonResource
      */
     private function missingRequiredDocuments(): array
     {
-        if (! in_array($this->status, [ApplicationStatus::Received, ApplicationStatus::SupplementRequired], true)) {
-            return [];
-        }
-
-        if (! $this->relationLoaded('serviceType') || ! $this->relationLoaded('documents')) {
-            return [];
-        }
-
-        $requirements = ServiceSchema::normalizeDocumentRequirements($this->serviceType->document_requirements);
-
-        $uploadedCodes = $this->documents
-            ->pluck('requirement_code')
-            ->filter()
-            ->flip();
-
-        $missing = [];
-
-        foreach ($requirements as $requirement) {
-            if ($requirement['required'] && ! $uploadedCodes->has($requirement['code'])) {
-                $missing[] = ['code' => $requirement['code'], 'label' => $requirement['label']];
-            }
-        }
-
-        return $missing;
+        return $this->resource->missingRequiredDocuments();
     }
 }
