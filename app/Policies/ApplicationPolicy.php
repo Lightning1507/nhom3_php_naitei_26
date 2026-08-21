@@ -55,9 +55,10 @@ class ApplicationPolicy
             return $isClaimable ? Response::allow() : Response::denyAsNotFound();
         }
 
+        // Citizen: return 403 (not 404) to match existing API tests; internal uses 404 to hide IDs
         return $user->id === $application->citizen_id
             ? Response::allow()
-            : Response::denyAsNotFound();
+            : Response::deny('Bạn không có quyền xem hồ sơ này.', 403);
     }
 
     public function uploadDocument(User $user, Application $application): bool

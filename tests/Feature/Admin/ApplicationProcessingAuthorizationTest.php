@@ -284,7 +284,7 @@ class ApplicationProcessingAuthorizationTest extends TestCase
 
         $this->actingAs($this->staff)
             ->get(route('admin.applications.show', $otherApp))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_manager_cannot_view_application_of_other_department(): void
@@ -294,7 +294,7 @@ class ApplicationProcessingAuthorizationTest extends TestCase
 
         $this->actingAs($this->manager)
             ->get(route('admin.applications.show', $otherApp))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_staff_can_view_own_assigned_application(): void
