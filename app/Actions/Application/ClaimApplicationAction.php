@@ -36,24 +36,26 @@ final readonly class ClaimApplicationAction
             $serviceType = $locked->serviceType;
 
             if ($serviceType === null || ! $lockedActor->departments()->whereKey($serviceType->responsible_department_id)->exists()) {
-            if (! $actor->isSuperAdmin() && ($serviceType === null || ! $actor->departments()->whereKey($serviceType->responsible_department_id)->exists())) {
-                throw ValidationException::withMessages([
-                    'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
+                if (! $actor->isSuperAdmin() && ($serviceType === null || ! $actor->departments()->whereKey($serviceType->responsible_department_id)->exists())) {
+                    throw ValidationException::withMessages([
+                        'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
+                    ]);
+                }
+
+                ApplicationAssignment::query()->create([
+                    'application_id' => $locked->getKey(),
+                    'staff_id' => $lockedActor->getKey(),
+                    'department_id' => $serviceType->responsible_department_id,
+                    'assigned_by' => $lockedActor->getKey(),
+                    'assigned_at' => now(),
                 ]);
+
+                $locked->assigned_staff_id = $lockedActor->getKey();
+                $locked->save();
+
+                return $locked->refresh();
             }
-
-            ApplicationAssignment::query()->create([
-                'application_id' => $locked->getKey(),
-                'staff_id' => $lockedActor->getKey(),
-                'department_id' => $serviceType->responsible_department_id,
-                'assigned_by' => $lockedActor->getKey(),
-                'assigned_at' => now(),
-            ]);
-
-            $locked->assigned_staff_id = $lockedActor->getKey();
-            $locked->save();
-
-            return $locked->refresh();
-        });
+        }
+        );
     }
 }

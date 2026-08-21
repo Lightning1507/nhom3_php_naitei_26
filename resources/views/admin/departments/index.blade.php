@@ -8,9 +8,14 @@
             <h1 class="text-2xl font-bold text-gray-950">Phòng ban</h1>
             <p class="mt-1 text-sm text-gray-600">Tra cứu cơ cấu phòng ban, lãnh đạo, thành viên và dịch vụ trong phạm vi được phép.</p>
         </div>
-        @can('create', \App\Models\Department::class)
-            <x-admin.button :href="route('admin.departments.create')">Tạo phòng ban</x-admin.button>
-        @endcan
+        <div class="flex items-center gap-3">
+            <x-admin.button variant="secondary" :href="route('admin.export', array_merge(['resource' => 'departments'], request()->query()))">
+                Xuất CSV
+            </x-admin.button>
+            @can('create', \App\Models\Department::class)
+                <x-admin.button :href="route('admin.departments.create')">Tạo phòng ban</x-admin.button>
+            @endcan
+        </div>
     </div>
 
     <section class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Thống kê phòng ban">

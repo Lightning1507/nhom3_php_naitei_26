@@ -9,9 +9,14 @@
             <p class="mt-1 text-sm text-gray-600">Quản lý các dịch vụ công được cung cấp trên hệ thống.</p>
         </div>
 
-        @can('create', \App\Models\ServiceType::class)
-            <x-admin.button :href="route('admin.service-types.create')">Tạo dịch vụ</x-admin.button>
-        @endcan
+        <div class="flex items-center gap-3">
+            <x-admin.button variant="secondary" :href="route('admin.export', array_merge(['resource' => 'services'], request()->query()))">
+                Xuất CSV
+            </x-admin.button>
+            @can('create', \App\Models\ServiceType::class)
+                <x-admin.button :href="route('admin.service-types.create')">Tạo dịch vụ</x-admin.button>
+            @endcan
+        </div>
     </div>
 
     <!-- Filters -->

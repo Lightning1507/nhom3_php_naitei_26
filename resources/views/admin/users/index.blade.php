@@ -3,9 +3,19 @@
 @section('title', 'Quản lý người dùng')
 
 @section('content')
-    <div class="mb-5">
-        <h1 class="text-2xl font-bold text-gray-950">Người dùng</h1>
-        <p class="mt-1 text-sm text-gray-600">Tra cứu tài khoản và trạng thái truy cập. Vai trò, hồ sơ định danh và cơ cấu tổ chức được quản lý bởi feature tương ứng.</p>
+    <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-950">Người dùng</h1>
+            <p class="mt-1 text-sm text-gray-600">Tra cứu tài khoản và trạng thái truy cập. Vai trò, hồ sơ định danh và cơ cấu tổ chức được quản lý bởi feature tương ứng.</p>
+        </div>
+        <div class="flex flex-shrink-0 flex-wrap items-center gap-2">
+            <x-admin.button variant="secondary" :href="route('admin.export', array_merge(['resource' => request('role') === 'staff' || request('role') === 'manager' ? 'staff' : 'citizens'], request()->query()))">
+                Xuất CSV
+            </x-admin.button>
+            <x-admin.button :href="route('admin.users.import')">
+                Nhập dữ liệu CSV
+            </x-admin.button>
+        </div>
     </div>
 
     <section class="admin-card" aria-labelledby="user-results-title">

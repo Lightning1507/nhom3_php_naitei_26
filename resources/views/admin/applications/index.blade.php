@@ -8,6 +8,11 @@
             <h1 class="text-2xl font-bold text-gray-950">Hồ sơ dịch vụ công</h1>
             <p class="mt-1 text-sm text-gray-600">Tra cứu hồ sơ trong đúng phạm vi trách nhiệm của bạn.</p>
         </div>
+        <div>
+            <x-admin.button variant="secondary" :href="route('admin.export', array_merge(['resource' => 'applications'], request()->query()))">
+                Xuất CSV
+            </x-admin.button>
+        </div>
     </div>
 
     @isset($stats)
