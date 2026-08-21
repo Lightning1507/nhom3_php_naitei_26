@@ -3,37 +3,37 @@
 @section('title', 'Chi tiết hồ sơ '.$application->application_code)
 
 @section('content')
+    @php
+        $citizen = $application->historicalCitizen;
+        $service = $application->historicalServiceType;
+        $department = $service?->historicalResponsibleDepartment;
+        $assignedStaff = $application->historicalAssignedStaff;
+    @endphp
+
     <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-            <p class="text-sm text-gray-500">
-                <a class="font-semibold text-primary hover:underline" href="{{ route('admin.applications.index') }}">← Hồ sơ</a>
-            </p>
+            <a class="text-sm font-semibold text-primary hover:underline" href="{{ route('admin.applications.index') }}">
+                ← Danh sách hồ sơ
+            </a>
             <h1 class="mt-1 text-2xl font-bold text-gray-950">{{ $application->application_code }}</h1>
-            <p class="mt-1 text-sm text-gray-600">{{ $application->serviceType?->name }}</p>
+            <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                <span>{{ $service?->name ?: 'Dịch vụ không còn khả dụng' }}</span>
+                @if ($service?->trashed())
+                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                @elseif ($service && ! $service->is_active)
+                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                @endif
+            </div>
         </div>
-        <div class="flex flex-wrap gap-2">
-            <x-admin.badge :variant="match ($application->status->value) {
-                'approved' => 'success',
-                'rejected' => 'danger',
-                'supplement_required' => 'warning',
-                'processing' => 'info',
-                default => 'neutral',
-            }">
-                {{ match ($application->status->value) {
-                    'received' => 'Mới tiếp nhận',
-                    'processing' => 'Đang xử lý',
-                    'supplement_required' => 'Chờ bổ sung',
-                    'approved' => 'Đã duyệt',
-                    'rejected' => 'Đã từ chối',
-                    default => $application->status->value,
-                } }}
-            </x-admin.badge>
-        </div>
+
+        <x-admin.badge :variant="$application->status->badgeVariant()">
+            {{ $application->status->label() }}
+        </x-admin.badge>
     </div>
 
     @if ($application->isOverdue())
         <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
-            Hồ sơ đã quá hạn xử lý theo {{ $application->serviceType?->processing_time_days }} ngày kể từ khi nộp.
+            Hồ sơ đã quá hạn xử lý theo {{ $service?->processing_time_days }} ngày kể từ khi nộp.
         </div>
     @endif
 
@@ -70,6 +70,7 @@
     @endif
 
     <div class="grid gap-6 lg:grid-cols-3">
+<<<<<<< HEAD
         <section class="admin-card lg:col-span-2" aria-labelledby="application-info-title">
             <div class="admin-card-body space-y-4">
                 <h2 id="application-info-title" class="text-lg font-bold text-gray-950">Thông tin hồ sơ</h2>
@@ -123,13 +124,144 @@
                                 <dd class="break-words text-sm font-medium text-gray-900">{{ is_scalar($value) ? $value : json_encode($value) }}</dd>
                             </div>
                         @endforeach
+=======
+        <div class="space-y-6 lg:col-span-2">
+            <section class="admin-card" aria-labelledby="application-info-title">
+                <h2 id="application-info-title" class="admin-card-title">Thông tin hồ sơ</h2>
+                <div class="admin-card-body">
+                    <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                        <div>
+                            <dt class="text-[13px] font-medium text-gray-500">Mã hồ sơ</dt>
+                            <dd class="mt-0.5 font-medium text-gray-950">{{ $application->application_code }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-[13px] font-medium text-gray-500">Trạng thái</dt>
+                            <dd class="mt-0.5">{{ $application->status->label() }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-[13px] font-medium text-gray-500">Công dân</dt>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
+                                <span>{{ $citizen?->name ?: 'Không còn thông tin' }}</span>
+                                @if ($citizen?->trashed())
+                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                @elseif ($citizen && ! $citizen->is_active)
+                                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                                @endif
+                            </dd>
+                            @if ($citizen?->citizen_id)
+                                <dd class="mt-1 text-xs text-gray-500">Mã định danh: {{ $citizen->citizen_id }}</dd>
+                            @endif
+                        </div>
+                        <div>
+                            <dt class="text-[13px] font-medium text-gray-500">Cán bộ đang xử lý</dt>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
+                                <span>{{ $assignedStaff?->name ?: 'Chưa phân công' }}</span>
+                                @if ($assignedStaff?->trashed())
+                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                @elseif ($assignedStaff && ! $assignedStaff->is_active)
+                                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                                @endif
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-[13px] font-medium text-gray-500">Dịch vụ</dt>
+                            <dd class="mt-0.5 font-medium text-gray-950">{{ $service?->name ?: 'Không còn thông tin' }}</dd>
+                            @if ($service?->code)
+                                <dd class="mt-1 text-xs text-gray-500">{{ $service->code }}</dd>
+                            @endif
+                        </div>
+                        <div>
+                            <dt class="text-[13px] font-medium text-gray-500">Phòng ban phụ trách</dt>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
+                                <span>{{ $department?->name ?: 'Không còn thông tin' }}</span>
+                                @if ($department?->trashed())
+                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                @endif
+                            </dd>
+                            @if ($department?->code)
+                                <dd class="mt-1 text-xs text-gray-500">{{ $department->code }}</dd>
+                            @endif
+                        </div>
+>>>>>>> 9d05b7b (feat: implement secure admin application detail)
                     </dl>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <aside class="space-y-6" aria-label="Thao tác xử lý">
+            <section class="admin-card" aria-labelledby="submitted-data-title">
+                <h2 id="submitted-data-title" class="admin-card-title">Dữ liệu đã khai</h2>
+                <div class="admin-card-body">
+                    @if (filled($application->form_data))
+                        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            @foreach ($application->form_data as $key => $value)
+                                <div class="rounded-lg border border-border bg-gray-50 px-3 py-2">
+                                    <dt class="text-[13px] font-medium text-gray-500">{{ str_replace('_', ' ', (string) $key) }}</dt>
+                                    <dd class="mt-1 break-words text-sm font-medium text-gray-900">
+                                        {{ is_scalar($value) || $value === null
+                                            ? ($value ?? '—')
+                                            : json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}
+                                    </dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    @else
+                        <p class="text-sm text-gray-600">Hồ sơ không có dữ liệu biểu mẫu.</p>
+                    @endif
+                </div>
+            </section>
+
+            @if ($application->result_note || $application->rejection_reason)
+                <section class="admin-card" aria-labelledby="application-result-title">
+                    <h2 id="application-result-title" class="admin-card-title">Kết quả xử lý</h2>
+                    <div class="admin-card-body space-y-3">
+                        @if ($application->result_note)
+                            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                                <p class="text-[13px] font-semibold text-emerald-800">Ghi chú kết quả</p>
+                                <p class="mt-1 text-sm text-emerald-900">{{ $application->result_note }}</p>
+                            </div>
+                        @endif
+                        @if ($application->rejection_reason)
+                            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                                <p class="text-[13px] font-semibold text-red-800">Lý do từ chối</p>
+                                <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </section>
+            @endif
+        </div>
+
+        <aside class="space-y-6" aria-label="Thông tin bổ sung và thao tác xử lý">
+            <section class="admin-card" aria-labelledby="timestamps-title">
+                <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
+                <dl class="admin-card-body space-y-3 text-sm">
+                    <div>
+                        <dt class="text-gray-500">Ngày nộp</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Bắt đầu xử lý</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Hoàn tất</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Tạo bản ghi</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">Cập nhật gần nhất</dt>
+                        <dd class="font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                    </div>
+                </dl>
+            </section>
+
             <section class="admin-card" aria-labelledby="workflow-actions-title">
+<<<<<<< HEAD
+=======
+                <h2 id="workflow-actions-title" class="admin-card-title">Thao tác F05</h2>
+>>>>>>> 9d05b7b (feat: implement secure admin application detail)
                 <div class="admin-card-body space-y-3">
                 <h2 id="workflow-actions-title" class="text-lg font-bold text-gray-950">Thao tác</h2>
                     @php
@@ -168,9 +300,15 @@
                     @endcan
 
                     @can('assign', $application)
+<<<<<<< HEAD
                         @if (! $isTerminal)
                             <x-admin.button data-dialog-open="assign-application-{{ $application->id }}" class="w-full">Phân công / đổi cán bộ</x-admin.button>
                         @endif
+=======
+                        <x-admin.button type="button" data-dialog-open="assign-application-{{ $application->id }}" class="w-full">
+                            Phân công / đổi cán bộ
+                        </x-admin.button>
+>>>>>>> 9d05b7b (feat: implement secure admin application detail)
                     @endcan
 
                     @can('startProcessing', $application)
@@ -183,6 +321,7 @@
                     @endcan
 
                     @can('requestSupplement', $application)
+<<<<<<< HEAD
                         @if ($status === 'processing' && $assignedToMe)
                             <x-admin.button variant="secondary" data-dialog-open="request-supplement-{{ $application->id }}" class="w-full">Yêu cầu bổ sung</x-admin.button>
                         @endif
@@ -241,30 +380,134 @@
                     @endforelse
                 </div>
             </section>
+=======
+                        <x-admin.button type="button" variant="secondary" data-dialog-open="request-supplement-{{ $application->id }}" class="w-full">
+                            Yêu cầu bổ sung
+                        </x-admin.button>
+                    @endcan
+
+                    @can('resume', $application)
+                        <form method="POST" action="{{ route('admin.applications.resume', $application) }}">
+                            @csrf
+                            <x-admin.button type="submit" class="w-full">Tiếp tục xử lý</x-admin.button>
+                        </form>
+                    @endcan
+
+                    @can('approve', $application)
+                        <x-admin.button type="button" variant="secondary" data-dialog-open="approve-application-{{ $application->id }}" class="w-full">
+                            Duyệt hồ sơ
+                        </x-admin.button>
+                    @endcan
+
+                    @can('reject', $application)
+                        <x-admin.button type="button" variant="danger" data-dialog-open="reject-application-{{ $application->id }}" class="w-full">
+                            Từ chối hồ sơ
+                        </x-admin.button>
+                    @endcan
+
+                    @can('uploadResultDocument', $application)
+                        <x-admin.button type="button" variant="secondary" data-dialog-open="result-document-{{ $application->id }}" class="w-full">
+                            Đính kèm tài liệu kết quả
+                        </x-admin.button>
+                    @endcan
+                </div>
+            </section>
+>>>>>>> 9d05b7b (feat: implement secure admin application detail)
         </aside>
     </div>
 
+    <section class="admin-card mt-6" aria-labelledby="documents-title">
+        <h2 id="documents-title" class="admin-card-title">Tài liệu hồ sơ</h2>
+        <div class="admin-card-body">
+            <div class="grid gap-3 md:grid-cols-2">
+                @forelse ($application->documents as $document)
+                    <article class="rounded-lg border border-border bg-white px-4 py-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="break-words text-sm font-semibold text-gray-950">{{ $document->original_name }}</p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    {{ $document->requirement_label ?: match ($document->document_kind?->value) {
+                                        'submission' => 'Tài liệu nộp ban đầu',
+                                        'supplement' => 'Tài liệu bổ sung',
+                                        'result' => 'Tài liệu kết quả',
+                                        default => 'Tài liệu hồ sơ',
+                                    } }}
+                                </p>
+                            </div>
+                            @can('download', $document)
+                                <a class="shrink-0 text-sm font-semibold text-primary hover:underline"
+                                   href="{{ route('admin.applications.documents.download', [$application, $document]) }}">
+                                    Tải xuống
+                                </a>
+                            @endcan
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
+                            <span>{{ $document->mime_type ?: 'Không rõ định dạng' }}</span>
+                            @if ($document->file_size)
+                                <span>{{ number_format($document->file_size / 1024, 1) }} KB</span>
+                            @endif
+                            <span>{{ $document->created_at?->format('d/m/Y H:i') }}</span>
+                        </div>
+                        @if ($document->uploader)
+                            <p class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                                <span>Tải lên bởi {{ $document->uploader->name }}</span>
+                                @if ($document->uploader->trashed())
+                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                @elseif (! $document->uploader->is_active)
+                                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                                @endif
+                            </p>
+                        @endif
+                    </article>
+                @empty
+                    <p class="text-sm text-gray-600">Chưa có tài liệu.</p>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
+<<<<<<< HEAD
         <section class="admin-card" aria-labelledby="timeline-title">
             <div class="admin-card-body">
                 <h2 id="timeline-title" class="text-lg font-bold text-gray-950">Lịch sử xử lý</h2>
             <ol class="mt-4 space-y-3">
                 @forelse ($application->statusHistories->sortBy(fn ($h) => [$h->created_at?->timestamp ?? 0, $h->id]) as $history)
+=======
+        <section class="admin-card" aria-labelledby="status-history-title">
+            <h2 id="status-history-title" class="admin-card-title">Lịch sử trạng thái</h2>
+            <ol class="admin-card-body space-y-4">
+                @forelse ($application->statusHistories as $history)
+>>>>>>> 9d05b7b (feat: implement secure admin application detail)
                     <li class="flex gap-3">
                         <span class="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-gray-900">
-                                {{ $history->from_status?->value ?: '—' }} → {{ $history->to_status->value }}
-                                <span class="font-normal text-gray-500">bởi {{ $history->changedBy?->name }}</span>
+                                {{ $history->from_status?->label() ?: 'Khởi tạo' }}
+                                → {{ $history->to_status->label() }}
+                            </p>
+                            <p class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                <span>{{ $history->created_at?->format('d/m/Y H:i') }}</span>
+                                @if ($history->changedBy)
+                                    <span>bởi {{ $history->changedBy->name }}</span>
+                                    @if ($history->changedBy->trashed())
+                                        <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                    @elseif (! $history->changedBy->is_active)
+                                        <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                                    @endif
+                                @endif
                             </p>
                             @if ($history->note)
+<<<<<<< HEAD
                                 <p class="mt-0.5 break-words text-sm text-gray-600">{{ $history->note }}</p>
+=======
+                                <p class="mt-1 text-sm text-gray-600">{{ $history->note }}</p>
+>>>>>>> 9d05b7b (feat: implement secure admin application detail)
                             @endif
-                            <p class="text-xs text-gray-400">{{ $history->created_at?->format('d/m/Y H:i') }}</p>
                         </div>
                     </li>
                 @empty
-                    <li class="text-sm text-gray-600">Chưa có lịch sử.</li>
+                    <li class="text-sm text-gray-600">Chưa có lịch sử trạng thái.</li>
                 @endforelse
             </ol>
             </div>
@@ -278,20 +521,40 @@
                     <li class="flex gap-3">
                         <span class="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
                         <div class="min-w-0">
-                            <p class="text-sm font-medium text-gray-900">
-                                {{ $assignment->staff?->name }}
-                                <span class="font-normal text-gray-500">bởi {{ $assignment->assignedBy?->name }}</span>
-                            </p>
-                            @if ($assignment->note)
-                                <p class="mt-0.5 break-words text-sm text-gray-600">{{ $assignment->note }}</p>
-                            @endif
-                            <p class="text-xs text-gray-400">
-                                {{ $assignment->assigned_at?->format('d/m/Y H:i') }}
-                                @if ($assignment->ended_at)
-                                    → hết hiệu lực {{ $assignment->ended_at->format('d/m/Y H:i') }}
-                                @else
-                                    (đang hiệu lực)
+                            <p class="flex flex-wrap items-center gap-2 text-sm font-medium text-gray-900">
+                                <span>{{ $assignment->staff?->name ?: 'Cán bộ không còn thông tin' }}</span>
+                                @if ($assignment->staff?->trashed())
+                                    <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                @elseif ($assignment->staff && ! $assignment->staff->is_active)
+                                    <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
                                 @endif
+                            </p>
+                            <p class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                <span>{{ $assignment->assigned_at?->format('d/m/Y H:i') }}</span>
+                                @if ($assignment->assignedBy)
+                                    <span>bởi {{ $assignment->assignedBy->name }}</span>
+                                    @if ($assignment->assignedBy->trashed())
+                                        <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                    @elseif (! $assignment->assignedBy->is_active)
+                                        <x-admin.badge variant="warning">Đã vô hiệu hóa</x-admin.badge>
+                                    @endif
+                                @endif
+                            </p>
+                            @if ($assignment->department)
+                                <p class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                    <span>{{ $assignment->department->name }}</span>
+                                    @if ($assignment->department->trashed())
+                                        <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
+                                    @endif
+                                </p>
+                            @endif
+                            @if ($assignment->note)
+                                <p class="mt-1 text-sm text-gray-600">{{ $assignment->note }}</p>
+                            @endif
+                            <p class="mt-1 text-xs text-gray-500">
+                                {{ $assignment->ended_at
+                                    ? 'Kết thúc '.$assignment->ended_at->format('d/m/Y H:i')
+                                    : 'Đang hiệu lực' }}
                             </p>
                         </div>
                     </li>
@@ -315,9 +578,9 @@
                 @csrf
                 <div>
                     <label class="admin-label" for="assign-staff-{{ $application->id }}">Cán bộ xử lý</label>
-                    <select id="assign-staff-{{ $application->id }}" class="admin-select" name="staff_id">
+                    <select id="assign-staff-{{ $application->id }}" class="admin-select" name="staff_id" required>
                         <option value="">Chọn cán bộ…</option>
-                        @foreach ($application->serviceType?->responsibleDepartment?->users?->filter(fn ($u) => $u->isStaff() && $u->canAccessProtectedResources()) ?? [] as $candidate)
+                        @foreach ($application->serviceType?->responsibleDepartment?->users?->filter(fn ($user) => $user->isStaff() && $user->canAccessProtectedResources()) ?? [] as $candidate)
                             <option value="{{ $candidate->id }}" @selected(old('staff_id') == $candidate->id)>{{ $candidate->name }}</option>
                         @endforeach
                     </select>

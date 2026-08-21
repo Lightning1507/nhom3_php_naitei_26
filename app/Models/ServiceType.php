@@ -37,6 +37,11 @@ class ServiceType extends Model
         return $this->belongsTo(Department::class, 'responsible_department_id');
     }
 
+    public function historicalResponsibleDepartment(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'responsible_department_id')->withTrashed();
+    }
+
     public function staff(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'service_staff', 'service_type_id', 'staff_id')
