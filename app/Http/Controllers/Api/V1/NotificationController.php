@@ -9,7 +9,6 @@ use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class NotificationController extends Controller
 {
@@ -65,58 +64,5 @@ class NotificationController extends Controller
             'Đã đánh dấu tất cả thông báo là đã đọc.',
             ['unread_count' => 0],
         );
-    }
-
-    public function stream(Request $request): StreamedResponse
-    {
-        return response()->stream(function () use ($request): void {
-            $lastFingerprint = null;
-            $startedAt = time();
-
-            do {
-                $payload = $this->streamPayload($request);
-                $fingerprint = $payload['unread_count'].'|'.$payload['latest_notification_id'].'|'.$payload['latest_notification_read_at'];
-
-                if ($fingerprint !== $lastFingerprint) {
-                    echo "event: notifications\n";
-                    echo 'data: '.json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)."\n\n";
-
-                    $lastFingerprint = $fingerprint;
-
-                    if (ob_get_level() > 0) {
-                        ob_flush();
-                    }
-
-                    flush();
-                }
-
-                if ($request->boolean('once')) {
-                    break;
-                }
-
-                sleep(2);
-            } while (! connection_aborted() && time() - $startedAt < 60);
-        }, 200, [
-            'Cache-Control' => 'no-cache, no-transform',
-            'Content-Type' => 'text/event-stream',
-            'X-Accel-Buffering' => 'no',
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function streamPayload(Request $request): array
-    {
-        $user = $request->user();
-        $notifications = $user->notifications()->latest()->limit(10)->get();
-        $latest = $notifications->first();
-
-        return [
-            'unread_count' => $user->unreadNotifications()->count(),
-            'latest_notification_id' => $latest?->id,
-            'latest_notification_read_at' => $latest?->read_at?->toISOString(),
-            'notifications' => NotificationResource::collection($notifications)->resolve($request),
-        ];
     }
 }

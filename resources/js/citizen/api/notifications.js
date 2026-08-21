@@ -17,7 +17,3 @@ export async function markAllNotificationsAsRead() {
 
     return data;
 }
-
-export function createNotificationStream() {
-    return new EventSource('/api/v1/notifications/stream', { withCredentials: true });
-}

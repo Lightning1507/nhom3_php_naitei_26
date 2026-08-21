@@ -86,37 +86,11 @@ Authenticated Citizen users.
 }
 ```
 
-### Stream Notification Updates
+## Near Real-Time Refresh
 
-`GET /api/v1/notifications/stream`
-
-**Transport**: Server-Sent Events (`text/event-stream`)
-
-**Event name**: `notifications`
-
-**Event payload**:
-
-```json
-{
-  "unread_count": 1,
-  "latest_notification_id": "uuid",
-  "latest_notification_read_at": null,
-  "notifications": [
-    {
-      "id": "uuid",
-      "event": "application.supplement_requested",
-      "title": "Cần bổ sung hồ sơ",
-      "message": "Hồ sơ HS-20260821-00001 cần bổ sung thông tin hoặc tài liệu.",
-      "application_id": 1,
-      "application_code": "HS-20260821-00001",
-      "status": "supplement_required",
-      "url": "/applications/1",
-      "read_at": null,
-      "created_at": "2026-08-21T10:00:00Z"
-    }
-  ]
-}
-```
+- Citizen UI refreshes notification state by polling `GET /api/v1/notifications`.
+- When the latest notification or unread count changes, the Citizen application list/detail pages refresh their application data.
+- This avoids long-lived local development requests while still keeping citizen pages current after workflow updates.
 
 ## Error Cases
 

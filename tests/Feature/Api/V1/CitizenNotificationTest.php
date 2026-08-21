@@ -98,34 +98,6 @@ class CitizenNotificationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_citizen_can_open_notification_stream_snapshot(): void
-    {
-        [$citizen, $application] = $this->citizenWithApplication();
-
-        $citizen->notify(ApplicationStatusNotification::statusChanged($application, ApplicationStatus::SupplementRequired));
-
-        $response = $this->actingAs($citizen, 'sanctum')
-            ->get('/api/v1/notifications/stream?once=1', ['Accept' => 'text/event-stream']);
-
-        $response->assertOk()
-            ->assertHeader('content-type', 'text/event-stream; charset=UTF-8');
-
-        $content = $response->streamedContent();
-
-        $this->assertStringContainsString('event: notifications', $content);
-        $this->assertStringContainsString('Cần bổ sung hồ sơ', $content);
-        $this->assertStringContainsString($application->application_code, $content);
-    }
-
-    public function test_internal_user_cannot_open_citizen_notification_stream(): void
-    {
-        $staff = User::factory()->withRole(UserRole::Staff)->create();
-
-        $this->actingAs($staff, 'sanctum')
-            ->get('/api/v1/notifications/stream?once=1', ['Accept' => 'text/event-stream'])
-            ->assertForbidden();
-    }
-
     /**
      * @return array{User, Application}
      */
