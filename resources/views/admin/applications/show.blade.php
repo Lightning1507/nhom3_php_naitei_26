@@ -46,7 +46,7 @@
                 <div class="min-w-0">
                     <p class="text-[13px] font-bold uppercase tracking-wide text-amber-800">Đang chờ bổ sung tài liệu</p>
                     @if ($application->supplementNote())
-                        <p class="mt-1 text-sm text-amber-900">
+                        <p class="mt-1 break-words text-sm text-amber-900 whitespace-pre-wrap">
                             <span class="font-semibold">Ghi chú của cán bộ:</span> {{ $application->supplementNote() }}
                         </p>
                     @endif
@@ -160,13 +160,13 @@
                         @if ($application->result_note)
                             <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                                 <p class="text-[13px] font-semibold text-emerald-800">Ghi chú kết quả</p>
-                                <p class="mt-1 text-sm text-emerald-900">{{ $application->result_note }}</p>
+                                <p class="mt-1 break-words text-sm text-emerald-900 whitespace-pre-wrap">{{ $application->result_note }}</p>
                             </div>
                         @endif
                         @if ($application->rejection_reason)
                             <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                                 <p class="text-[13px] font-semibold text-red-800">Lý do từ chối</p>
-                                <p class="mt-1 text-sm text-red-900">{{ $application->rejection_reason }}</p>
+                                <p class="mt-1 break-words text-sm text-red-900 whitespace-pre-wrap">{{ $application->rejection_reason }}</p>
                             </div>
                         @endif
                     </div>
@@ -178,31 +178,31 @@
             <section class="admin-card" aria-labelledby="timestamps-title">
                 <h2 id="timestamps-title" class="admin-card-title">Các mốc thời gian</h2>
                 <dl class="admin-card-body space-y-3 text-sm">
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Ngày nộp</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->submitted_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Bắt đầu xử lý</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->processing_started_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Hoàn tất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->completed_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Tạo bản ghi</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->created_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <dt class="text-gray-500">Cập nhật gần nhất</dt>
-                        <dd class="font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
+                        <dd class="break-words font-medium text-gray-950">{{ $application->updated_at?->format('d/m/Y H:i') ?: '—' }}</dd>
                     </div>
                 </dl>
             </section>
 
             <section class="admin-card" aria-labelledby="workflow-actions-title">
-                <h2 id="workflow-actions-title" class="admin-card-title">Thao tác F05</h2>
+                <h2 id="workflow-actions-title" class="admin-card-title">Thao tác</h2>
                 <div class="admin-card-body space-y-3">
                     @php
                         $status = $application->status->value;
@@ -226,7 +226,7 @@
                     @if ($guidance)
                         <div class="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm leading-5 text-blue-900" role="status">
                             <p class="text-[13px] font-bold uppercase tracking-wide text-blue-700">Bước tiếp theo</p>
-                            <p class="mt-1">{{ $guidance }}</p>
+                            <p class="mt-1 break-words">{{ $guidance }}</p>
                         </div>
                     @endif
 
@@ -383,7 +383,7 @@
                                 @endif
                             </p>
                             @if ($history->note)
-                                <p class="mt-1 text-sm text-gray-600">{{ $history->note }}</p>
+                                <p class="mt-1 break-words text-sm text-gray-600 whitespace-pre-wrap">{{ $history->note }}</p>
                             @endif
                         </div>
                     </li>
@@ -422,17 +422,17 @@
                                 @endif
                             </p>
                             @if ($assignment->department)
-                                <p class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                    <span>{{ $assignment->department->name }}</span>
+                                <p class="mt-1 flex flex-wrap items-center gap-2 break-words text-xs text-gray-500">
+                                    <span class="break-words">{{ $assignment->department->name }}</span>
                                     @if ($assignment->department->trashed())
                                         <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                     @endif
                                 </p>
                             @endif
                             @if ($assignment->note)
-                                <p class="mt-1 text-sm text-gray-600">{{ $assignment->note }}</p>
+                                <p class="mt-1 break-words text-sm text-gray-600 whitespace-pre-wrap">{{ $assignment->note }}</p>
                             @endif
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-1 break-words text-xs text-gray-500">
                                 {{ $assignment->ended_at
                                     ? 'Kết thúc '.$assignment->ended_at->format('d/m/Y H:i')
                                     : 'Đang hiệu lực' }}
