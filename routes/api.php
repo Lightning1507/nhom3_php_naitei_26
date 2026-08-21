@@ -46,6 +46,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::patch('/me', [ProfileController::class, 'update'])->name('profile.update');
 
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/stream', [NotificationController::class, 'stream'])->name('notifications.stream');
         Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])
             ->name('notifications.read-all');
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])

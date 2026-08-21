@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import {
+    createNotificationStream,
     fetchNotifications,
     markAllNotificationsAsRead,
     markNotificationAsRead,
@@ -11,6 +12,7 @@ import { formatDateTime } from '../utils/format';
 export default function NotificationMenu({ enabled = false }) {
     const navigate = useNavigate();
     const menuRef = useRef(null);
+    const streamFingerprintRef = useRef('');
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -38,6 +40,39 @@ export default function NotificationMenu({ enabled = false }) {
 
     useEffect(() => {
         loadNotifications();
+    }, [enabled]);
+
+    useEffect(() => {
+        if (!enabled || typeof EventSource === 'undefined') {
+            return undefined;
+        }
+
+        const stream = createNotificationStream();
+
+        function updateFromStream(event) {
+            try {
+                const payload = JSON.parse(event.data);
+                const fingerprint = `${payload.unread_count ?? 0}|${payload.latest_notification_id ?? ''}|${payload.latest_notification_read_at ?? ''}`;
+                const shouldNotifyPage = streamFingerprintRef.current !== '' && streamFingerprintRef.current !== fingerprint;
+
+                setNotifications(payload.notifications ?? []);
+                setUnreadCount(payload.unread_count ?? 0);
+                streamFingerprintRef.current = fingerprint;
+
+                if (shouldNotifyPage) {
+                    window.dispatchEvent(new CustomEvent('citizen-notifications:updated', { detail: payload }));
+                }
+            } catch {
+                loadNotifications();
+            }
+        }
+
+        stream.addEventListener('notifications', updateFromStream);
+
+        return () => {
+            stream.removeEventListener('notifications', updateFromStream);
+            stream.close();
+        };
     }, [enabled]);
 
     useEffect(() => {
