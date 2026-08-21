@@ -91,6 +91,19 @@
                     </a>
                 @endcan
 
+                @can('viewAny', \App\Models\User::class)
+                    <a
+                        href="{{ route('admin.users.index') }}"
+                        @class([
+                            'whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
+                            'bg-white/20 text-white' => request()->routeIs('admin.users.index', 'admin.users.show'),
+                            'text-white/65 hover:bg-white/10 hover:text-white' => ! request()->routeIs('admin.users.index', 'admin.users.show'),
+                        ])
+                    >
+                        Người dùng
+                    </a>
+                @endcan
+
                 <a
                     href="{{ route('admin.users.import') }}"
                     @class([
