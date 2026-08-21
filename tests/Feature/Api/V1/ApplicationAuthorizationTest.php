@@ -7,6 +7,7 @@ use App\Enums\DocumentKind;
 use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\ApplicationDocument;
+use App\Models\Department;
 use App\Models\ServiceType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -196,13 +197,15 @@ class ApplicationAuthorizationTest extends TestCase
         $this->assertDatabaseCount('applications', 0);
     }
 
-    public function test_staff_can_download_any_citizens_document(): void
+    public function test_staff_can_download_a_document_when_the_parent_application_is_assigned_to_them(): void
     {
         Storage::fake('local');
 
         $staff = User::factory()->staff()->create();
         $citizen = $this->makeCitizen();
-        $application = $this->makeApplication($citizen);
+        $application = $this->makeApplication($citizen, [
+            'assigned_staff_id' => $staff->id,
+        ]);
         $document = $this->makeDocument($application);
 
         Storage::disk('local')->put($document->path, 'fake-content');
@@ -211,6 +214,67 @@ class ApplicationAuthorizationTest extends TestCase
             ->get("/api/v1/applications/{$application->id}/documents/{$document->id}")
             ->assertOk()
             ->assertDownload('baocao.pdf');
+    }
+
+    public function test_staff_cannot_download_a_document_when_the_parent_application_is_outside_scope(): void
+    {
+        Storage::fake('local');
+
+        $staff = User::factory()->staff()->create();
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen);
+        $document = $this->makeDocument($application);
+        Storage::disk('local')->put($document->path, 'fake-content');
+
+        $this->actingAs($staff, 'sanctum')
+            ->get("/api/v1/applications/{$application->id}/documents/{$document->id}")
+            ->assertNotFound();
+    }
+
+    public function test_manager_document_access_uses_the_parent_application_department_scope(): void
+    {
+        Storage::fake('local');
+
+        $manager = User::factory()->manager()->create();
+        $department = Department::factory()->ledBy($manager)->create();
+        $service = ServiceType::factory()->create([
+            'responsible_department_id' => $department->id,
+        ]);
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen, [
+            'service_type_id' => $service->id,
+        ]);
+        $document = $this->makeDocument($application);
+        Storage::disk('local')->put($document->path, 'fake-content');
+
+        $this->actingAs($manager, 'sanctum')
+            ->get("/api/v1/applications/{$application->id}/documents/{$document->id}")
+            ->assertOk()
+            ->assertDownload('baocao.pdf');
+
+        $outsideManager = User::factory()->manager()->create();
+        Department::factory()->ledBy($outsideManager)->create();
+
+        $this->actingAs($outsideManager, 'sanctum')
+            ->get("/api/v1/applications/{$application->id}/documents/{$document->id}")
+            ->assertNotFound();
+    }
+
+    public function test_document_route_rejects_a_document_from_another_parent_application(): void
+    {
+        $staff = User::factory()->staff()->create();
+        $citizen = $this->makeCitizen();
+        $application = $this->makeApplication($citizen, [
+            'assigned_staff_id' => $staff->id,
+        ]);
+        $otherApplication = $this->makeApplication($citizen, [
+            'assigned_staff_id' => $staff->id,
+        ]);
+        $document = $this->makeDocument($otherApplication);
+
+        $this->actingAs($staff, 'sanctum')
+            ->get("/api/v1/applications/{$application->id}/documents/{$document->id}")
+            ->assertNotFound();
     }
 
     public function test_inactive_citizen_cannot_submit_an_application(): void
