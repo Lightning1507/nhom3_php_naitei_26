@@ -177,7 +177,8 @@
                     </div>
                     <div>
                         <dt class="text-xs font-semibold uppercase text-gray-500">Hành động</dt>
-                        <dd class="mt-1 font-mono text-gray-950">{{ $log->action }}</dd>
+                        <dd class="mt-1 font-semibold text-gray-950">{{ $actionLabel }}</dd>
+                        <dd class="mt-1 break-all font-mono text-xs text-gray-500">{{ $log->action }}</dd>
                     </div>
                     <div>
                         <dt class="text-xs font-semibold uppercase text-gray-500">IP</dt>
