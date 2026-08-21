@@ -13,13 +13,14 @@
     @isset($stats)
         <section class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Thống kê hồ sơ">
             @foreach ([
-                ['label' => 'Đang chờ xử lý', 'value' => $stats['pending'], 'class' => 'text-amber-700'],
-                ['label' => 'Quá hạn', 'value' => $stats['overdue'], 'class' => 'text-red-700'],
+                ['label' => 'Đang chờ xử lý', 'value' => $stats['pending'], 'class' => 'text-amber-700', 'hint' => 'received + processing + supplement_required'],
+                ['label' => 'Quá hạn', 'value' => $stats['overdue'], 'class' => 'text-red-700', 'hint' => 'Chưa hoàn thành quá processing_time_days kể từ submitted_at'],
             ] as $stat)
                 <article class="admin-card">
                     <div class="admin-card-body">
                         <p class="text-[13px] font-medium text-gray-500">{{ $stat['label'] }}</p>
                         <p class="mt-1 text-2xl font-bold {{ $stat['class'] }}">{{ number_format($stat['value']) }}</p>
+                        <p class="mt-1 text-xs text-gray-500">{{ $stat['hint'] }}</p>
                     </div>
                 </article>
             @endforeach
@@ -182,8 +183,8 @@
                 <h2 class="text-base font-bold text-gray-950">Hồ sơ của tôi</h2>
                 <p class="mt-0.5 text-sm text-gray-600">Các hồ sơ đã được gán cho bạn hoặc nằm trong phạm vi quản lý.</p>
             </div>
-            <div class="admin-table-wrap rounded-none border-x-0 border-t-0" tabindex="0" aria-label="Bảng hồ sơ có thể cuộn ngang">
-                <table class="admin-table min-w-[1120px]">
+            <div class="admin-table-wrap overflow-x-auto rounded-none border-x-0 border-t-0" tabindex="0" aria-label="Bảng hồ sơ có thể cuộn ngang">
+                <table class="admin-table min-w-[960px] w-full">
                     <caption class="sr-only">Danh sách hồ sơ trong phạm vi được phép</caption>
                     <thead>
                         <tr>
@@ -201,31 +202,31 @@
                         @foreach ($applications as $application)
                             <tr>
                                 <td class="whitespace-nowrap font-mono font-semibold text-primary">{{ $application->application_code }}</td>
-                                <td>
-                                    <p class="font-medium text-gray-950">{{ $application->citizen?->name ?? 'Không còn dữ liệu' }}</p>
-                                    <p class="text-xs text-gray-500">{{ $application->citizen?->citizen_id ?: 'Chưa có CCCD' }}</p>
+                                <td class="max-w-[180px]">
+                                    <p class="truncate font-medium text-gray-950" title="{{ $application->citizen?->name }}">{{ $application->citizen?->name ?? 'Không còn dữ liệu' }}</p>
+                                    <p class="truncate text-xs text-gray-500" title="{{ $application->citizen?->citizen_id }}">{{ $application->citizen?->citizen_id ?: 'Chưa có CCCD' }}</p>
                                     @if ($application->citizen?->trashed() || ($application->citizen && ! $application->citizen->is_active))
                                         <x-admin.badge variant="neutral">Không còn hoạt động</x-admin.badge>
                                     @endif
                                 </td>
-                                <td>
-                                    <p class="max-w-xs truncate font-medium text-gray-950">{{ $application->serviceType?->name ?? 'Không còn dữ liệu' }}</p>
-                                    <p class="text-xs text-gray-500">{{ $application->serviceType?->code }}</p>
+                                <td class="max-w-[200px]">
+                                    <p class="truncate font-medium text-gray-950" title="{{ $application->serviceType?->name }}">{{ $application->serviceType?->name ?? 'Không còn dữ liệu' }}</p>
+                                    <p class="truncate text-xs text-gray-500" title="{{ $application->serviceType?->code }}">{{ $application->serviceType?->code }}</p>
                                     @if ($application->serviceType?->trashed())
                                         <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                     @elseif ($application->serviceType && ! $application->serviceType->is_active)
                                         <x-admin.badge variant="neutral">Ngừng hoạt động</x-admin.badge>
                                     @endif
                                 </td>
-                                <td>
-                                    <p>{{ $application->serviceType?->responsibleDepartment?->name ?? 'Không còn dữ liệu' }}</p>
-                                    <p class="text-xs text-gray-500">{{ $application->serviceType?->responsibleDepartment?->code }}</p>
+                                <td class="max-w-[160px]">
+                                    <p class="truncate" title="{{ $application->serviceType?->responsibleDepartment?->name }}">{{ $application->serviceType?->responsibleDepartment?->name ?? 'Không còn dữ liệu' }}</p>
+                                    <p class="truncate text-xs text-gray-500" title="{{ $application->serviceType?->responsibleDepartment?->code }}">{{ $application->serviceType?->responsibleDepartment?->code }}</p>
                                     @if ($application->serviceType?->responsibleDepartment?->trashed())
                                         <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                     @endif
                                 </td>
-                                <td>
-                                    <p>{{ $application->assignedStaff?->name ?: 'Chưa phân công' }}</p>
+                                <td class="max-w-[160px]">
+                                    <p class="truncate" title="{{ $application->assignedStaff?->name }}">{{ $application->assignedStaff?->name ?: 'Chưa phân công' }}</p>
                                     @if ($application->assignedStaff?->trashed() || ($application->assignedStaff && ! $application->assignedStaff->is_active))
                                         <x-admin.badge variant="neutral">Không còn hoạt động</x-admin.badge>
                                     @endif

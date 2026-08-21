@@ -75,18 +75,18 @@
                 <h2 id="application-info-title" class="admin-card-title">Thông tin hồ sơ</h2>
                 <div class="admin-card-body">
                     <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Mã hồ sơ</dt>
-                            <dd class="mt-0.5 font-medium text-gray-950">{{ $application->application_code }}</dd>
+                            <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $application->application_code }}</dd>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Trạng thái</dt>
-                            <dd class="mt-0.5">{{ $application->status->label() }}</dd>
+                            <dd class="mt-0.5 break-words">{{ $application->status->label() }}</dd>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Công dân</dt>
-                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
-                                <span>{{ $citizen?->name ?: 'Không còn thông tin' }}</span>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-gray-950">
+                                <span class="break-words">{{ $citizen?->name ?: 'Không còn thông tin' }}</span>
                                 @if ($citizen?->trashed())
                                     <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                 @elseif ($citizen && ! $citizen->is_active)
@@ -94,13 +94,13 @@
                                 @endif
                             </dd>
                             @if ($citizen?->citizen_id)
-                                <dd class="mt-1 text-xs text-gray-500">Mã định danh: {{ $citizen->citizen_id }}</dd>
+                                <dd class="mt-1 break-words text-xs text-gray-500">Mã định danh: {{ $citizen->citizen_id }}</dd>
                             @endif
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Cán bộ đang xử lý</dt>
-                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
-                                <span>{{ $assignedStaff?->name ?: 'Chưa phân công' }}</span>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-gray-950">
+                                <span class="break-words">{{ $assignedStaff?->name ?: 'Chưa phân công' }}</span>
                                 @if ($assignedStaff?->trashed())
                                     <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                 @elseif ($assignedStaff && ! $assignedStaff->is_active)
@@ -108,23 +108,23 @@
                                 @endif
                             </dd>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Dịch vụ</dt>
-                            <dd class="mt-0.5 font-medium text-gray-950">{{ $service?->name ?: 'Không còn thông tin' }}</dd>
+                            <dd class="mt-0.5 break-words font-medium text-gray-950">{{ $service?->name ?: 'Không còn thông tin' }}</dd>
                             @if ($service?->code)
-                                <dd class="mt-1 text-xs text-gray-500">{{ $service->code }}</dd>
+                                <dd class="mt-1 break-words text-xs text-gray-500">{{ $service->code }}</dd>
                             @endif
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <dt class="text-[13px] font-medium text-gray-500">Phòng ban phụ trách</dt>
-                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 font-medium text-gray-950">
-                                <span>{{ $department?->name ?: 'Không còn thông tin' }}</span>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-gray-950">
+                                <span class="break-words">{{ $department?->name ?: 'Không còn thông tin' }}</span>
                                 @if ($department?->trashed())
                                     <x-admin.badge variant="neutral">Đã lưu trữ</x-admin.badge>
                                 @endif
                             </dd>
                             @if ($department?->code)
-                                <dd class="mt-1 text-xs text-gray-500">{{ $department->code }}</dd>
+                                <dd class="mt-1 break-words text-xs text-gray-500">{{ $department->code }}</dd>
                             @endif
                         </div>
                     </dl>
