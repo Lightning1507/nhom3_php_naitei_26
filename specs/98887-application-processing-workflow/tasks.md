@@ -42,15 +42,15 @@ demonstrated as an incremental deliverable after the shared foundation is comple
 
 **CRITICAL**: No user story work should begin until this phase is complete.
 
-- [ ] T004 Create app/Support/Application/ApplicationTransitionMap.php — allowed transitions
+- [X] T004 Create app/Support/Application/ApplicationTransitionMap.php — allowed transitions
   `received→processing`, `processing→supplement_required`, `supplement_required→processing`,
   `processing→approved`, `processing→rejected`; `assertTransition(from,to)` throwing 422 on any other
   (incl. no-op and from terminal states)
-- [ ] T005 [P] Create database/factories/ApplicationFactory.php (status, service_type, citizen,
+- [X] T005 [P] Create database/factories/ApplicationFactory.php (status, service_type, citizen,
   submitted_at, optional assigned_staff_id/processing_started_at/completed_at/result_note/rejection_reason)
-- [ ] T006 [P] Create database/factories/ApplicationAssignmentFactory.php (active or ended, assigned_by,
+- [X] T006 [P] Create database/factories/ApplicationAssignmentFactory.php (active or ended, assigned_by,
   department_id) and database/factories/ApplicationStatusHistoryFactory.php (from/to, changed_by, note)
-- [ ] T007 Add model helpers to app/Models/Application.php: `activeAssignment()` (first `ended_at`
+- [X] T007 Add model helpers to app/Models/Application.php: `activeAssignment()` (first `ended_at`
   null), `isOverdue()` (`completed_at` null && `submitted_at + processing_time_days < now`),
   `supplementNote()` (latest history with `to_status=supplement_required`)
 
@@ -72,27 +72,27 @@ responsible department → 422; assigning a terminal application → 422.
 
 ### Tests for User Story 1
 
-- [ ] T008 [P] [US1] Add assign-success test (assigned_staff_id + application_assignments row + status
+- [X] T008 [P] [US1] Add assign-success test (assigned_staff_id + application_assignments row + status
   unchanged + history untouched) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T009 [P] [US1] Add reassign test (old assignment ended_at, new row, pointer moved) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T010 [P] [US1] Add assign-terminal 422 test (approved/rejected) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T011 [P] [US1] Add staff-assign 403 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T012 [P] [US1] Add wrong-department-staff 422 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T013 [P] [US1] Add inactive/trashed-staff 422 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T014 [P] [US1] Add manager-out-of-scope invisible test (list excludes other departments; Super Admin sees all) in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T009 [P] [US1] Add reassign test (old assignment ended_at, new row, pointer moved) in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T010 [P] [US1] Add assign-terminal 422 test (approved/rejected) in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T011 [P] [US1] Add staff-assign 403 test in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T012 [P] [US1] Add wrong-department-staff 422 test in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T013 [P] [US1] Add inactive/trashed-staff 422 test in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T014 [P] [US1] Add manager-out-of-scope invisible test (list excludes other departments; Super Admin sees all) in tests/Feature/Admin/ApplicationProcessingTest.php
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create app/Actions/Application/AssignApplicationAction.php (transaction:
+- [X] T015 [P] [US1] Create app/Actions/Application/AssignApplicationAction.php (transaction:
   lockForUpdate application, close active assignment if any (ended_at), create assignment row, update
   assigned_staff_id; reject terminal / wrong-scope / inactive staff)
-- [ ] T016 [P] [US1] Create app/Http/Requests/Admin/Applications/AssignApplicationRequest.php
+- [X] T016 [P] [US1] Create app/Http/Requests/Admin/Applications/AssignApplicationRequest.php
   (`staff_id` required, exists active Staff, belongs to responsible department via `scopeEligibleDepartmentStaff`)
-- [ ] T017 [P] [US1] Add admin routes to routes/web.php in `admin` group (`auth`+`internal`):
+- [X] T017 [P] [US1] Add admin routes to routes/web.php in `admin` group (`auth`+`internal`):
   `admin.applications.index`, `admin.applications.show`, `admin.applications.assign`; wire
   app/Http/Controllers/Admin/Applications/ApplicationController.php (index/show) and
   ApplicationAssignmentController.php (store) with flash redirect
-- [ ] T018 [US1] Implement index query in ApplicationController: Staff → own assigned (+ claimable
+- [X] T018 [US1] Implement index query in ApplicationController: Staff → own assigned (+ claimable
   group), Manager/Super Admin → scope board with pending + overdue counts (FR-024) and filters
   (status, assigned_staff_id, overdue, q)
 
@@ -113,33 +113,33 @@ start/approve/reject → 403.
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Add claim-success test (assigned_staff_id + assigned_by=self, status unchanged,
+- [X] T019 [P] [US2] Add claim-success test (assigned_staff_id + assigned_by=self, status unchanged,
   assignment row) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T020 [P] [US2] Add claim-already-assigned 409 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T021 [P] [US2] Add start-processing-success test (processing_started_at set if null, history,
+- [X] T020 [P] [US2] Add claim-already-assigned 409 test in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T021 [P] [US2] Add start-processing-success test (processing_started_at set if null, history,
   keep if already set) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T022 [P] [US2] Add approve-success test (approved, completed_at, result_note) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T023 [P] [US2] Add reject-success + reject-missing-reason 422 tests in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T024 [P] [US2] Add invalid-transition 422 tests (received→approved, approved→processing,
+- [X] T022 [P] [US2] Add approve-success test (approved, completed_at, result_note) in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T023 [P] [US2] Add reject-success + reject-missing-reason 422 tests in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T024 [P] [US2] Add invalid-transition 422 tests (received→approved, approved→processing,
   supplement_required→rejected, no-op processing→processing) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T025 [P] [US2] Add unassigned-staff-action 403 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T026 [P] [US2] Add concurrent-transition test (two transitions same app, one succeeds, history
+- [X] T025 [P] [US2] Add unassigned-staff-action 403 test in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T026 [P] [US2] Add concurrent-transition test (two transitions same app, one succeeds, history
   not lost/duplicated) in tests/Feature/Admin/ApplicationProcessingTest.php
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Create app/Actions/Application/ClaimApplicationAction.php (transaction +
+- [X] T027 [P] [US2] Create app/Actions/Application/ClaimApplicationAction.php (transaction +
   lockForUpdate: only unassigned `received`, staff in responsible department, assigned_by=self)
-- [ ] T028 [P] [US2] Create app/Actions/Application/StartProcessingAction.php (transition + set
+- [X] T028 [P] [US2] Create app/Actions/Application/StartProcessingAction.php (transition + set
   processing_started_at if null)
-- [ ] T029 [P] [US2] Create app/Actions/Application/ApproveApplicationAction.php (transition + completed_at
+- [X] T029 [P] [US2] Create app/Actions/Application/ApproveApplicationAction.php (transition + completed_at
   + result_note) and app/Actions/Application/RejectApplicationAction.php (transition + completed_at +
   rejection_reason)
-- [ ] T030 [P] [US2] Create shared transition helper (transaction wrapper: lockForUpdate, assertTransition,
+- [X] T030 [P] [US2] Create shared transition helper (transaction wrapper: lockForUpdate, assertTransition,
   update status, write application_status_histories) reused by all transition Actions
-- [ ] T031 [P] [US2] Create FormRequests: RequestSupplementRequest (note required), ApproveApplicationRequest
+- [X] T031 [P] [US2] Create FormRequests: RequestSupplementRequest (note required), ApproveApplicationRequest
   (result_note optional), RejectApplicationRequest (rejection_reason required)
-- [ ] T032 [US2] Add admin routes + controllers for claim, start-processing, approve, reject
+- [X] T032 [US2] Add admin routes + controllers for claim, start-processing, approve, reject
   (POST forms → flash redirect); wire store() with `authorize` (T3 completes enforcement)
 
 **Checkpoint**: US2 is fully functional and independently testable.
@@ -159,22 +159,22 @@ processing (soft, returning missing list).
 
 ### Tests for User Story 3
 
-- [ ] T033 [P] [US3] Add request-supplement-success test (status + note in history) and
+- [X] T033 [P] [US3] Add request-supplement-success test (status + note in history) and
   missing-note 422 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T034 [P] [US3] Add request-supplement-from-received 422 test (received→supplement_required) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T035 [P] [US3] Add resume-success test (supplement_required→processing, missing list returned) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T036 [P] [US3] Add citizen-supplement-upload test (201, document_kind=supplement, requirement_code
+- [X] T034 [P] [US3] Add request-supplement-from-received 422 test (received→supplement_required) in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T035 [P] [US3] Add resume-success test (supplement_required→processing, missing list returned) in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T036 [P] [US3] Add citizen-supplement-upload test (201, document_kind=supplement, requirement_code
   set, already-uploaded slot 422) in tests/Feature/Api/V1/ApplicationDocumentTest.php
-- [ ] T037 [P] [US3] Add citizen-upload-at-approved/rejected 403 test in tests/Feature/Api/V1/ApplicationDocumentTest.php
-- [ ] T038 [P] [US3] Add show-supplement-info test (supplement_note + missing_required_documents +
+- [X] T037 [P] [US3] Add citizen-upload-at-approved/rejected 403 test in tests/Feature/Api/V1/ApplicationDocumentTest.php
+- [X] T038 [P] [US3] Add show-supplement-info test (supplement_note + missing_required_documents +
   cannot modify earlier docs) in tests/Feature/Api/V1/ApplicationSubmissionTest.php
 
 ### Implementation for User Story 3
 
-- [ ] T039 [P] [US3] Create app/Actions/Application/RequestSupplementAction.php (transition + note)
+- [X] T039 [P] [US3] Create app/Actions/Application/RequestSupplementAction.php (transition + note)
   and app/Actions/Application/ResumeProcessingAction.php (transition + return missing list)
-- [ ] T040 [P] [US3] Add admin routes + controllers for request-supplement, resume
-- [ ] T041 [US3] Extend app/Http/Resources/Api/V1/ApplicationResource.php: `processing_started_at`,
+- [X] T040 [P] [US3] Add admin routes + controllers for request-supplement, resume
+- [X] T041 [US3] Extend app/Http/Resources/Api/V1/ApplicationResource.php: `processing_started_at`,
   `completed_at`, `result_note`, `rejection_reason`, `assigned_staff`, `supplement_note`, `timeline`
   (owner/internal only; null for others)
 
@@ -193,18 +193,18 @@ shows rejection_reason; another citizen → 403.
 
 ### Tests for User Story 4
 
-- [ ] T042 [P] [US4] Add result-note+completed_at visibility test in tests/Feature/Api/V1/ApplicationSubmissionTest.php
-- [ ] T043 [P] [US4] Add rejection_reason visibility test in tests/Feature/Api/V1/ApplicationSubmissionTest.php
-- [ ] T044 [P] [US4] Add timeline-ordered test (from/to, actor name, created_at ASC) in tests/Feature/Api/V1/ApplicationSubmissionTest.php
-- [ ] T045 [P] [US4] Add result-document download test (owner 200; other citizen 403; guest 401) in tests/Feature/Api/V1/ApplicationDocumentTest.php
-- [ ] T046 [P] [US4] Add cross-application result-doc 404 test (scopeBindings) in tests/Feature/Api/V1/ApplicationDocumentTest.php
+- [X] T042 [P] [US4] Add result-note+completed_at visibility test in tests/Feature/Api/V1/ApplicationSubmissionTest.php
+- [X] T043 [P] [US4] Add rejection_reason visibility test in tests/Feature/Api/V1/ApplicationSubmissionTest.php
+- [X] T044 [P] [US4] Add timeline-ordered test (from/to, actor name, created_at ASC) in tests/Feature/Api/V1/ApplicationSubmissionTest.php
+- [X] T045 [P] [US4] Add result-document download test (owner 200; other citizen 403; guest 401) in tests/Feature/Api/V1/ApplicationDocumentTest.php
+- [X] T046 [P] [US4] Add cross-application result-doc 404 test (scopeBindings) in tests/Feature/Api/V1/ApplicationDocumentTest.php
 
 ### Implementation for User Story 4
 
-- [ ] T047 [P] [US4] Create app/Actions/Application/StoreResultDocumentAction.php (document_kind=result,
+- [X] T047 [P] [US4] Create app/Actions/Application/StoreResultDocumentAction.php (document_kind=result,
   only while `processing`, staff-only) + app/Http/Requests/Admin/Applications/StoreResultDocumentRequest.php
   (reuse document validation rules from F04)
-- [ ] T048 [US4] Add admin route + controller for result-documents (multipart POST → flash redirect)
+- [X] T048 [US4] Add admin route + controller for result-documents (multipart POST → flash redirect)
 
 **Checkpoint**: US4 is fully functional and independently testable.
 
@@ -217,21 +217,21 @@ scoped queries, and blocking of inactive/trashed actors and soft-deleted applica
 
 ### Tests
 
-- [ ] T049 [P] Add assign/claim/transition 403 matrix (staff other department, unassigned staff,
+- [X] T049 [P] Add assign/claim/transition 403 matrix (staff other department, unassigned staff,
   manager-not-assigned, citizen) in tests/Feature/Admin/ApplicationAuthorizationTest.php
-- [ ] T050 [P] Add inactive/trashed-staff blocked 403 test (FR-017) in tests/Feature/Admin/ApplicationAuthorizationTest.php
-- [ ] T051 [P] Add soft-deleted-application blocked 403 test (FR-017) in tests/Feature/Admin/ApplicationAuthorizationTest.php
-- [ ] T052 [P] Add super-admin-override tests (assign/claim/transition allowed) in tests/Feature/Admin/ApplicationAuthorizationTest.php
-- [ ] T053 [P] Add scope query tests (index: staff sees only own; manager sees dept; superadmin all) in tests/Feature/Admin/ApplicationAuthorizationTest.php
+- [X] T050 [P] Add inactive/trashed-staff blocked 403 test (FR-017) in tests/Feature/Admin/ApplicationAuthorizationTest.php
+- [X] T051 [P] Add soft-deleted-application blocked 403 test (FR-017) in tests/Feature/Admin/ApplicationAuthorizationTest.php
+- [X] T052 [P] Add super-admin-override tests (assign/claim/transition allowed) in tests/Feature/Admin/ApplicationAuthorizationTest.php
+- [X] T053 [P] Add scope query tests (index: staff sees only own; manager sees dept; superadmin all) in tests/Feature/Admin/ApplicationAuthorizationTest.php
 
 ### Implementation
 
-- [ ] T054 [P] Add abilities to app/Policies/ApplicationPolicy.php: `assign`, `claim`, `startProcessing`,
+- [X] T054 [P] Add abilities to app/Policies/ApplicationPolicy.php: `assign`, `claim`, `startProcessing`,
   `requestSupplement`, `resume`, `approve`, `reject`, `uploadResultDocument` (assigned_staff_id + role +
   department scope + active/not-trashed guard; Super Admin override)
-- [ ] T055 [P] Add scopes to app/Models/Application.php: `scopeVisibleTo(actor)` (Staff: assigned;
+- [X] T055 [P] Add scopes to app/Models/Application.php: `scopeVisibleTo(actor)` (Staff: assigned;
   Manager: responsible dept; SuperAdmin: all), `scopeAssignableTo(actor)`, `scopeClaimableBy(actor)`
-- [ ] T056 Wire `authorize()` into every admin controller action; confirm `internal` middleware still
+- [X] T056 Wire `authorize()` into every admin controller action; confirm `internal` middleware still
   filters roles; run ApplicationAuthorizationTest
 
 **Checkpoint**: F05 authorization is complete and enforced server-side.
@@ -242,15 +242,42 @@ scoped queries, and blocking of inactive/trashed actors and soft-deleted applica
 
 **Purpose**: Edge cases, citizen SPA polish and quality gates affecting multiple user stories.
 
-- [ ] T057 Add result-doc-upload-when-rejected 409/403 test in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T058 Add reassign-during-processing test (old staff loses access, new staff gains, no reset of
+- [X] T057 Add result-doc-upload-when-rejected 409/403 test in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T058 Add reassign-during-processing test (old staff loses access, new staff gains, no reset of
   processing_started_at) in tests/Feature/Admin/ApplicationProcessingTest.php
-- [ ] T059 Add reassign-terminal 422 and claim-terminal 422 tests in tests/Feature/Admin/ApplicationProcessingTest.php
+- [X] T059 Add reassign-terminal 422 and claim-terminal 422 tests in tests/Feature/Admin/ApplicationProcessingTest.php
 - [ ] T060 Update resources/js/citizen/pages/MyApplicationDetailPage.jsx: timeline block, supplement
   banner + missing-slot upload (reuse DocumentUploader), result/rejection block
 - [ ] T061 Update tests/Feature/CitizenSpaTest.php route-render tests after UI change
 - [ ] T062 Run `php artisan test --env=testing` (full suite), `composer run lint`, `npm run lint`,
   `npm run build` and fix issues
+
+---
+
+## Phase 9: Admin UI Staff Workspace — polish & requirements fixes (Ticket #99476)
+
+**Purpose**: Hoàn thiện worklist/board và trang chi tiết hồ sơ cho Staff/Manager/Super Admin theo
+FR-025 → FR-028: khối yêu cầu bổ sung nổi bật, hướng dẫn bước tiếp theo, preview tài liệu inline,
+và fix lỗi chữ tràn/lệch card.
+
+- [ ] T063 [P] Fix layout overflow: wrap/truncate văn bản dài trong
+  resources/views/admin/applications/index.blade.php (tên dịch vụ, người nộp) và
+  show.blade.php (form_data, note, mô tả) — chống tràn chữ khỏi card ở mọi breakpoint
+- [ ] T064 [P] Add supplement-required banner in resources/views/admin/applications/show.blade.php:
+  khi `status == supplement_required`, hiển thị khối warning ghi chú staff (`supplementNote()`) +
+  danh sách tài liệu bắt buộc còn thiếu (FR-025)
+- [ ] T065 [P] Add "Bước tiếp theo" guidance block in show.blade.php: map status → hành động hợp lệ
+  theo quyền actor (@can), ẩn nút không áp dụng ở trạng thái hiện tại; hiển thị rõ việc cần làm
+  (vd received → Nhận hồ sơ/Bắt đầu xử lý; processing → Yêu cầu bổ sung/Duyệt/Từ chối) (FR-026)
+- [ ] T066 [P] Add document preview in show.blade.php: xem trước PDF/image inline (iframe/object hoặc
+  URL blob) cho tài liệu submission/supplement/result; giữ nút Tải; giới hạn cho 3 role nội bộ
+  (FR-027)
+- [ ] T067 [P] Refactor index.blade.php thành worklist phân nhóm: "Hồ sơ của tôi" (assigned) + "Có
+  thể nhận" (claimable) cho Staff; Assignment Board (pending/overdue) cho Manager/Super Admin (FR-028)
+- [ ] T068 Test render Blade qua route trong tests/Feature/Admin/ApplicationWorkspaceViewTest.php:
+  index (staff/manager/superadmin) + show (banner supplement, guidance, preview, layout) không lỗi
+- [ ] T069 Run `php artisan test --env=testing --filter ApplicationWorkspaceViewTest` + `composer run
+  lint` + `npm run lint` + `npm run build`
 
 ---
 

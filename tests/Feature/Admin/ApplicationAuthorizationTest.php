@@ -150,12 +150,12 @@ class ApplicationAuthorizationTest extends TestCase
             ->assertSee($this->application->application_code);
     }
 
-    public function test_staff_sees_only_own_assigned_applications_in_index(): void
+    public function test_staff_sees_own_assigned_and_department_claimable_in_index(): void
     {
         $this->actingAs($this->staff)
             ->get(route('admin.applications.index'))
             ->assertOk()
-            ->assertDontSee($this->application->application_code);
+            ->assertSee($this->application->application_code);
 
         $this->application->update(['assigned_staff_id' => $this->staff->id]);
 
@@ -163,6 +163,22 @@ class ApplicationAuthorizationTest extends TestCase
             ->get(route('admin.applications.index'))
             ->assertOk()
             ->assertSee($this->application->application_code);
+    }
+
+    public function test_staff_does_not_see_application_of_other_department_in_index(): void
+    {
+        $otherDepartment = Department::factory()->create();
+        $otherService = ServiceType::factory()->create([
+            'responsible_department_id' => $otherDepartment->id,
+        ]);
+        $otherApplication = Application::factory()->create([
+            'service_type_id' => $otherService->id,
+        ]);
+
+        $this->actingAs($this->staff)
+            ->get(route('admin.applications.index'))
+            ->assertOk()
+            ->assertDontSee($otherApplication->application_code);
     }
 
     public function test_manager_sees_applications_of_led_department_in_index(): void
