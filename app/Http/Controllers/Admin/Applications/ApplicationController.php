@@ -179,7 +179,6 @@ class ApplicationController extends Controller
         }
 
         return $parameters;
-        return view('admin.applications.index', compact('applications', 'claimable', 'claimableApplications', 'stats'));
     }
 
     public function show(Application $application): View
