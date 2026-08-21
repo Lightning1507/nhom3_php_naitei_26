@@ -44,11 +44,11 @@ class ApplicationController extends Controller
 
         $query = (clone $visibleScope)
             ->with([
-                'serviceType' => fn (Builder $serviceQuery): Builder => $serviceQuery
+                'serviceType' => fn ($serviceQuery) => $serviceQuery
                     ->withTrashed()
-                    ->with(['responsibleDepartment' => fn (Builder $departmentQuery): Builder => $departmentQuery->withTrashed()]),
-                'citizen' => fn (Builder $citizenQuery): Builder => $citizenQuery->withTrashed(),
-                'assignedStaff' => fn (Builder $staffQuery): Builder => $staffQuery->withTrashed(),
+                    ->with(['responsibleDepartment' => fn ($departmentQuery) => $departmentQuery->withTrashed()]),
+                'citizen' => fn ($citizenQuery) => $citizenQuery->withTrashed(),
+                'assignedStaff' => fn ($staffQuery) => $staffQuery->withTrashed(),
             ])
             ->searchForAdmin($filters['q'] ?? null)
             ->withAdminStatus($filters['status'] ?? null)
