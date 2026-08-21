@@ -532,9 +532,9 @@ class ApplicationProcessingTest extends TestCase
         $staffResponse->assertOk()
             ->assertDontSee(route('admin.applications.assign', $this->application), false)
             ->assertSee(route('admin.applications.start-processing', $this->application), false)
-            ->assertSee(route('admin.applications.request-supplement', $this->application), false)
-            ->assertSee(route('admin.applications.approve', $this->application), false)
-            ->assertSee(route('admin.applications.reject', $this->application), false);
+            ->assertDontSee(route('admin.applications.request-supplement', $this->application), false)
+            ->assertDontSee(route('admin.applications.approve', $this->application), false)
+            ->assertDontSee(route('admin.applications.reject', $this->application), false);
 
         $managerResponse = $this->actingAs($this->manager)
             ->get(route('admin.applications.show', $this->application));

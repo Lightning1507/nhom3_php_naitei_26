@@ -27,7 +27,7 @@ final readonly class ClaimApplicationAction
 
             $serviceType = $locked->serviceType;
 
-            if ($serviceType === null || ! $actor->departments()->whereKey($serviceType->responsible_department_id)->exists()) {
+            if (! $actor->isSuperAdmin() && ($serviceType === null || ! $actor->departments()->whereKey($serviceType->responsible_department_id)->exists())) {
                 throw ValidationException::withMessages([
                     'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
                 ]);
