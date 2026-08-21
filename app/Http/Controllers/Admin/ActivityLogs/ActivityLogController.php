@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\Application\ApplicationActivityLogger;
+use App\Support\Department\DepartmentActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -89,10 +90,34 @@ class ActivityLogController extends Controller
             ApplicationActivityLogger::APPROVED => 'Duyệt hồ sơ',
             ApplicationActivityLogger::REJECTED => 'Từ chối hồ sơ',
             ApplicationActivityLogger::RESULT_DOCUMENT_UPLOADED => 'Đính kèm tài liệu kết quả',
-            'auth.login.success' => 'Đăng nhập thành công',
-            'auth.login.failed' => 'Đăng nhập thất bại',
-            'auth.logout' => 'Đăng xuất',
+            DepartmentActivityLogger::CREATED => 'Tạo phòng ban',
+            DepartmentActivityLogger::UPDATED => 'Cập nhật phòng ban',
+            DepartmentActivityLogger::ARCHIVED => 'Lưu trữ phòng ban',
+            DepartmentActivityLogger::LEADER_CHANGED => 'Đổi lãnh đạo phòng ban',
+            DepartmentActivityLogger::MEMBER_ADDED => 'Thêm thành viên phòng ban',
+            DepartmentActivityLogger::MEMBER_REMOVED => 'Xóa thành viên phòng ban',
+            DepartmentActivityLogger::MEMBER_TRANSFERRED => 'Chuyển thành viên phòng ban',
+            'admin.login_succeeded' => 'Admin đăng nhập thành công',
+            'admin.login_failed' => 'Admin đăng nhập thất bại',
+            'admin.logout' => 'Admin đăng xuất',
             'access.denied' => 'Từ chối truy cập',
+            'citizen.registered' => 'Citizen đăng ký',
+            'citizen.login_succeeded' => 'Citizen đăng nhập thành công',
+            'citizen.login_failed' => 'Citizen đăng nhập thất bại',
+            'citizen.logout' => 'Citizen đăng xuất',
+            'citizen.google_login_succeeded' => 'Citizen đăng nhập Google thành công',
+            'citizen.google_login_failed' => 'Citizen đăng nhập Google thất bại',
+            'citizen.google_registration_completed' => 'Citizen hoàn tất đăng ký Google',
+            'profile.updated' => 'Cập nhật hồ sơ cá nhân',
+            'user.activated' => 'Kích hoạt tài khoản',
+            'user.deactivated' => 'Vô hiệu hóa tài khoản',
+            'user.import.citizen' => 'Nhập CSV Citizen',
+            'user.import.staff' => 'Nhập CSV Staff',
+            'user.export.citizens' => 'Xuất CSV Citizen',
+            'user.export.staff' => 'Xuất CSV Staff',
+            'user.export.applications' => 'Xuất CSV hồ sơ',
+            'user.export.services' => 'Xuất CSV dịch vụ',
+            'user.export.departments' => 'Xuất CSV phòng ban',
         ];
 
         return ActivityLog::query()
