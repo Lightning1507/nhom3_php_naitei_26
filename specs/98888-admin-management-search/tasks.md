@@ -98,22 +98,22 @@ description: "Dependency-ordered implementation tasks for F07 Admin Management &
 
 ### Tests for User Story 3
 
-- [ ] T022 [P] [US3] Write failing guest/role authorization, literal name-email-Citizen-ID search, role/status intersection, newest stable pagination, safe detail, archived organization label, empty state, and secret-omission tests in `tests/Feature/Admin/UserManagementTest.php`
-- [ ] T023 [P] [US3] Write failing activate/deactivate, next-protected-request denial, self/last-admin/active-leader/unfinished-assignment guards, terminal-or-archived dependency exceptions, idempotent no-op, preservation, atomic audit, and audit-rollback tests in `tests/Feature/Admin/UserStatusManagementTest.php`
-- [ ] T024 [P] [US3] Write PostgreSQL concurrency/stale-model tests for simultaneous last-admin deactivation and assign/claim versus deactivation serialization in `tests/Feature/Admin/UserStatusConcurrencyTest.php`
+- [x] T022 [P] [US3] Write failing guest/role authorization, literal name-email-Citizen-ID search, role/status intersection, newest stable pagination, safe detail, archived organization label, empty state, and secret-omission tests in `tests/Feature/Admin/UserManagementTest.php`
+- [x] T023 [P] [US3] Write failing activate/deactivate, next-protected-request denial, self/last-admin/active-leader/unfinished-assignment guards, terminal-or-archived dependency exceptions, idempotent no-op, preservation, atomic audit, and audit-rollback tests in `tests/Feature/Admin/UserStatusManagementTest.php`
+- [x] T024 [P] [US3] Write PostgreSQL concurrency/stale-model tests for simultaneous last-admin deactivation and assign/claim versus deactivation serialization in `tests/Feature/Admin/UserStatusConcurrencyTest.php`
 
 ### Implementation for User Story 3
 
-- [ ] T025 [P] [US3] Implement normalized literal search plus UserRole/status/page validation for the Super Admin list in `app/Http/Requests/Admin/Users/ListUsersRequest.php`
-- [ ] T026 [P] [US3] Validate only the desired boolean `is_active` state and authorize the distinct status ability in `app/Http/Requests/Admin/Users/UpdateUserStatusRequest.php`
-- [ ] T027 [P] [US3] Add active-Super-Admin `viewAny`, administrative `view`, and separate `changeStatus` abilities while preserving active-Citizen self-view/self-update behavior in `app/Policies/UserPolicy.php`
-- [ ] T028 [US3] Implement `SetUserActiveStatus` with deterministic Super Admin row locking, fresh actor/target authorization, all deactivation guards, idempotent no-op, `is_active`-only mutation, and atomic `user.activated`/`user.deactivated` ActivityLog metadata in `app/Actions/User/SetUserActiveStatus.php`
-- [ ] T029 [P] [US3] Lock and revalidate a fresh active Staff User before locking/writing an Application so assign/claim cannot race account deactivation, without changing F05 transitions, in `app/Actions/Application/AssignApplicationAction.php` and `app/Actions/Application/ClaimApplicationAction.php`
-- [ ] T030 [US3] Implement Super Admin User index/show/status endpoints with safe selected columns, escaped query composition, bounded organization/Application summaries, archived organization labels, 20-row pagination, policy calls, Action delegation, and PRG flash/errors in `app/Http/Controllers/Admin/Users/UserController.php`
-- [ ] T031 [US3] Register GET index/show and PATCH status routes with numeric `{user}` constraints after the existing static import routes in `routes/web.php`
-- [ ] T032 [P] [US3] Complete the responsive Super Admin User list with search, role/status filters, safe columns, deterministic pagination, reset and empty states in `resources/views/admin/users/index.blade.php`
-- [ ] T033 [P] [US3] Create the safe User detail, organization/Application summaries, inactive/archive labels, guarded activate/deactivate forms, and keyboard-accessible confirmation dialog in `resources/views/admin/users/show.blade.php`
-- [ ] T034 [US3] Add the `UserPolicy::viewAny`-gated “Người dùng” navigation item while keeping F08 Import separate in `resources/views/admin/layouts/app.blade.php`
+- [x] T025 [P] [US3] Implement normalized literal search plus UserRole/status/page validation for the Super Admin list in `app/Http/Requests/Admin/Users/ListUsersRequest.php`
+- [x] T026 [P] [US3] Validate only the desired boolean `is_active` state and authorize the distinct status ability in `app/Http/Requests/Admin/Users/UpdateUserStatusRequest.php`
+- [x] T027 [P] [US3] Add active-Super-Admin `viewAny`, administrative `view`, and separate `changeStatus` abilities while preserving active-Citizen self-view/self-update behavior in `app/Policies/UserPolicy.php`
+- [x] T028 [US3] Implement `SetUserActiveStatus` with deterministic Super Admin row locking, fresh actor/target authorization, all deactivation guards, idempotent no-op, `is_active`-only mutation, and atomic `user.activated`/`user.deactivated` ActivityLog metadata in `app/Actions/User/SetUserActiveStatus.php`
+- [x] T029 [P] [US3] Lock and revalidate a fresh active Staff User before locking/writing an Application so assign/claim cannot race account deactivation, without changing F05 transitions, in `app/Actions/Application/AssignApplicationAction.php` and `app/Actions/Application/ClaimApplicationAction.php`
+- [x] T030 [US3] Implement Super Admin User index/show/status endpoints with safe selected columns, escaped query composition, bounded organization/Application summaries, archived organization labels, 20-row pagination, policy calls, Action delegation, and PRG flash/errors in `app/Http/Controllers/Admin/Users/UserController.php`
+- [x] T031 [US3] Register GET index/show and PATCH status routes with numeric `{user}` constraints after the existing static import routes in `routes/web.php`
+- [x] T032 [P] [US3] Complete the responsive Super Admin User list with search, role/status filters, safe columns, deterministic pagination, reset and empty states in `resources/views/admin/users/index.blade.php`
+- [x] T033 [P] [US3] Create the safe User detail, organization/Application summaries, inactive/archive labels, guarded activate/deactivate forms, and keyboard-accessible confirmation dialog in `resources/views/admin/users/show.blade.php`
+- [x] T034 [US3] Add the `UserPolicy::viewAny`-gated “Người dùng” navigation item while keeping F08 Import separate in `resources/views/admin/layouts/app.blade.php`
 - [ ] T035 [US3] Run and resolve User-management plus F01 inactive-account/profile regressions in `tests/Feature/Admin/UserManagementTest.php`, `tests/Feature/Admin/UserStatusManagementTest.php`, `tests/Feature/Admin/UserStatusConcurrencyTest.php`, and `tests/Feature/Api/V1/Auth/InactiveAccountAccessTest.php`
 
 **Checkpoint**: User Story 3 is independently usable by Super Admin; account state, audit, concurrency, and F01/F03/F05 boundaries are proven.

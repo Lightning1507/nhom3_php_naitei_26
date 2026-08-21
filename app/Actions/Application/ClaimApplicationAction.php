@@ -15,9 +15,17 @@ final readonly class ClaimApplicationAction
     public function handle(Application $application, User $actor): Application
     {
         return DB::transaction(function () use ($application, $actor): Application {
+            $lockedActor = User::query()->lockForUpdate()->find($actor->getKey());
+
+            if ($lockedActor === null || ! $lockedActor->isStaff() || ! $lockedActor->canAccessProtectedResources()) {
+                throw ValidationException::withMessages([
+                    'application' => 'Chỉ Staff đang hoạt động mới có thể nhận hồ sơ.',
+                ]);
+            }
+
             $locked = Application::query()->lockForUpdate()->findOrFail($application->getKey());
 
-            Gate::forUser($actor)->authorize('claim', $locked);
+            Gate::forUser($lockedActor)->authorize('claim', $locked);
 
             if ($locked->assigned_staff_id !== null || $locked->status !== ApplicationStatus::Received) {
                 throw ValidationException::withMessages([
@@ -27,7 +35,7 @@ final readonly class ClaimApplicationAction
 
             $serviceType = $locked->serviceType;
 
-            if ($serviceType === null || ! $actor->departments()->whereKey($serviceType->responsible_department_id)->exists()) {
+            if ($serviceType === null || ! $lockedActor->departments()->whereKey($serviceType->responsible_department_id)->exists()) {
                 throw ValidationException::withMessages([
                     'application' => 'Bạn không thuộc phòng ban phụ trách dịch vụ của hồ sơ này.',
                 ]);
@@ -35,13 +43,13 @@ final readonly class ClaimApplicationAction
 
             ApplicationAssignment::query()->create([
                 'application_id' => $locked->getKey(),
-                'staff_id' => $actor->getKey(),
+                'staff_id' => $lockedActor->getKey(),
                 'department_id' => $serviceType->responsible_department_id,
-                'assigned_by' => $actor->getKey(),
+                'assigned_by' => $lockedActor->getKey(),
                 'assigned_at' => now(),
             ]);
 
-            $locked->assigned_staff_id = $actor->getKey();
+            $locked->assigned_staff_id = $lockedActor->getKey();
             $locked->save();
 
             return $locked->refresh();

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\Departments\TransferDepartmentMemberController;
 use App\Http\Controllers\Admin\ServiceCategories\ServiceCategoryController;
 use App\Http\Controllers\Admin\ServiceTypes\ServiceTypeController;
 use App\Http\Controllers\Admin\UserImportController;
+use App\Http\Controllers\Admin\Users\UserController;
 use App\Http\Controllers\Api\V1\Auth\GoogleCitizenAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/users/import', [UserImportController::class, 'index'])->name('users.import');
         Route::post('/users/import/citizens', [UserImportController::class, 'importCitizens'])->name('users.import.citizens');
         Route::post('/users/import/staff', [UserImportController::class, 'importStaff'])->name('users.import.staff');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [UserController::class, 'show'])->whereNumber('user')->name('users.show');
+        Route::patch('/users/{user}/status', [UserController::class, 'updateStatus'])
+            ->whereNumber('user')
+            ->name('users.status.update');
         Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
         Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
         Route::post('/applications/{application}/assign', [ApplicationController::class, 'assign'])->name('applications.assign');

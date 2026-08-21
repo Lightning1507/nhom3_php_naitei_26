@@ -15,6 +15,14 @@ final readonly class AssignApplicationAction
     public function handle(Application $application, User $staff, User $actor, ?string $note = null): Application
     {
         return DB::transaction(function () use ($application, $staff, $actor, $note): Application {
+            $lockedStaff = User::query()->lockForUpdate()->find($staff->getKey());
+
+            if ($lockedStaff === null || ! $lockedStaff->isStaff() || ! $lockedStaff->canAccessProtectedResources()) {
+                throw ValidationException::withMessages([
+                    'staff_id' => 'Staff phải đang hoạt động để nhận hồ sơ.',
+                ]);
+            }
+
             $locked = Application::query()->lockForUpdate()->findOrFail($application->getKey());
 
             Gate::forUser($actor)->authorize('assign', $locked);
@@ -36,9 +44,9 @@ final readonly class AssignApplicationAction
                 ]);
             }
 
-            $isEligible = $staff->is_active
-                && ! $staff->trashed()
-                && $staff->departments()->whereKey($serviceType->responsible_department_id)->exists();
+            $isEligible = $lockedStaff->departments()
+                ->whereKey($serviceType->responsible_department_id)
+                ->exists();
 
             if (! $isEligible) {
                 throw ValidationException::withMessages([
@@ -50,14 +58,14 @@ final readonly class AssignApplicationAction
 
             ApplicationAssignment::query()->create([
                 'application_id' => $locked->getKey(),
-                'staff_id' => $staff->getKey(),
+                'staff_id' => $lockedStaff->getKey(),
                 'department_id' => $serviceType->responsible_department_id,
                 'assigned_by' => $actor->getKey(),
                 'assigned_at' => now(),
                 'note' => $note,
             ]);
 
-            $locked->assigned_staff_id = $staff->getKey();
+            $locked->assigned_staff_id = $lockedStaff->getKey();
             $locked->save();
 
             return $locked->refresh();
