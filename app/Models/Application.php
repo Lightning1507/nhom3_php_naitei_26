@@ -240,7 +240,7 @@ class Application extends Model
 
     public function scopeSortForAdmin(Builder $query, string $sort): Builder
     {
-        match ($sort) {
+        return match ($sort) {
             'oldest' => $query->orderBy('submitted_at')->orderBy('id'),
             'code_asc' => $query->orderBy('application_code')->orderBy('id'),
             'code_desc' => $query->orderByDesc('application_code')->orderByDesc('id'),
@@ -248,8 +248,6 @@ class Application extends Model
             'status_desc' => $query->orderByDesc('status')->orderByDesc('id'),
             default => $query->orderByRaw('submitted_at DESC NULLS LAST')->orderByDesc('id'),
         };
-
-        return $query;
     }
 
     public function scopeClaimableBy(Builder $query, User $actor): Builder
