@@ -1,6 +1,6 @@
 # Quickstart: Validate F07 - Admin Management & Search
 
-This guide is for implementation validation after F07 code exists. It deliberately does not run the current test suite until the database target has been made safe.
+This guide is for implementation validation after F07 code exists. Run destructive tests only after the effective database target passes the safety checks below.
 
 ## 1. Safety prerequisite
 
@@ -11,7 +11,7 @@ Use a disposable local PostgreSQL database, for example `public_service_manageme
 3. verify the database name is dedicated to tests;
 4. verify no shared, staging, production, or remote Supabase database is targeted.
 
-The tracked PHPUnit configuration currently contains a remote database credential while many tests use `RefreshDatabase`. Remove that secret from version control and rotate it; do not run destructive tests with that configuration and do not copy the credential into `.env.testing` or documentation.
+The tracked PHPUnit configuration now contains only isolated local defaults, and `tests/TestCase.php` rejects destructive tests unless the environment, host, and database name identify an approved testing target. Existing clones must still remove and rotate any previously exposed remote credential; never copy that credential into `.env.testing` or documentation.
 
 Example PowerShell validation after creating a safe `.env.testing`:
 
@@ -33,6 +33,12 @@ npm run build
 
 No new PHP or JavaScript dependency is expected for F07.
 
+The complete pre-existing backend suite includes an image-upload fixture that needs PHP GD. Verify `gd` appears in `php -m` before the full run. If the Windows CLI has the bundled extension but it is disabled, either enable it in the local `php.ini` or invoke PHPUnit directly for that run:
+
+```powershell
+php -d extension=gd vendor/phpunit/phpunit/phpunit --testsuite=Unit,Feature
+```
+
 ## 3. Focused automated validation
 
 Run focused F07 tests first, then regressions, using the safe local testing environment:
@@ -49,7 +55,7 @@ php artisan test --testsuite=Feature --filter=ApplicationProcessingTest
 Then run the full backend suite and required quality gates:
 
 ```powershell
-php artisan test
+php artisan test --testsuite=Unit,Feature
 composer run lint
 npm run lint
 npm run build

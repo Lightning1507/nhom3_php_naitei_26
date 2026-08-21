@@ -3,9 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Http\Responses\ApiResponse;
+use App\Models\User;
 use App\Support\Auth\AuthEventLogger;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class EnsureInternalUser
@@ -17,11 +19,22 @@ final readonly class EnsureInternalUser
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $authenticatedUser = $request->user();
 
-        if (! $user) {
+        if (! $authenticatedUser) {
             return $this->deny($request, 'Vui lòng đăng nhập.', Response::HTTP_UNAUTHORIZED);
         }
+
+        $user = User::withTrashed()->find($authenticatedUser->getAuthIdentifier());
+
+        if (! $user) {
+            Auth::forgetUser();
+
+            return $this->deny($request, 'Vui lòng đăng nhập.', Response::HTTP_UNAUTHORIZED);
+        }
+
+        Auth::setUser($user);
+        $request->setUserResolver(static fn (): User => $user);
 
         if (! $user->canAccessProtectedResources()) {
             $this->events->accessDenied($user, $request, 'inactive_account');

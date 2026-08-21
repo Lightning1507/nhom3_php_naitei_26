@@ -84,7 +84,7 @@ description: "Dependency-ordered implementation tasks for F07 Admin Management &
 - [X] T018 [P] [US2] Make assignment Staff/actor, status-change actor, and document uploader historical relations soft-delete-aware with deterministic timestamp-plus-ID ordering in `app/Models/ApplicationAssignment.php`, `app/Models/ApplicationStatusHistory.php`, and `app/Models/ApplicationDocument.php`
 - [X] T019 [US2] Refactor `show()` and document download to authorize the canonical scope on every request, eager-load the full historical read model, verify the document belongs to the bound Application, and avoid workflow mutations in `app/Http/Controllers/Admin/Applications/ApplicationController.php`
 - [X] T020 [US2] Render Citizen, Service, Department, current Staff, form data, documents, assignments, status history, all timestamps, result/rejection, archived badges, and existing `@can`-guarded F05 actions in `resources/views/admin/applications/show.blade.php`
-- [ ] T021 [US2] Run and resolve the focused US2 and F05 regression suite in `tests/Feature/Admin/ApplicationDetailTest.php`, `tests/Feature/Admin/ApplicationAuthorizationTest.php`, `tests/Feature/Admin/ApplicationProcessingTest.php`, and `tests/Feature/Api/V1/ApplicationAuthorizationTest.php`
+- [x] T021 [US2] Run and resolve the focused US2 and F05 regression suite in `tests/Feature/Admin/ApplicationDetailTest.php`, `tests/Feature/Admin/ApplicationAuthorizationTest.php`, `tests/Feature/Admin/ApplicationProcessingTest.php`, and `tests/Feature/Api/V1/ApplicationAuthorizationTest.php`
 
 **Checkpoint**: User Story 2 can be validated from direct URLs independently; authorized history remains readable and protected data remains undisclosed.
 
@@ -114,7 +114,7 @@ description: "Dependency-ordered implementation tasks for F07 Admin Management &
 - [x] T032 [P] [US3] Complete the responsive Super Admin User list with search, role/status filters, safe columns, deterministic pagination, reset and empty states in `resources/views/admin/users/index.blade.php`
 - [x] T033 [P] [US3] Create the safe User detail, organization/Application summaries, inactive/archive labels, guarded activate/deactivate forms, and keyboard-accessible confirmation dialog in `resources/views/admin/users/show.blade.php`
 - [x] T034 [US3] Add the `UserPolicy::viewAny`-gated “Người dùng” navigation item while keeping F08 Import separate in `resources/views/admin/layouts/app.blade.php`
-- [ ] T035 [US3] Run and resolve User-management plus F01 inactive-account/profile regressions in `tests/Feature/Admin/UserManagementTest.php`, `tests/Feature/Admin/UserStatusManagementTest.php`, `tests/Feature/Admin/UserStatusConcurrencyTest.php`, and `tests/Feature/Api/V1/Auth/InactiveAccountAccessTest.php`
+- [x] T035 [US3] Run and resolve User-management plus F01 inactive-account/profile regressions in `tests/Feature/Admin/UserManagementTest.php`, `tests/Feature/Admin/UserStatusManagementTest.php`, `tests/Feature/Admin/UserStatusConcurrencyTest.php`, and `tests/Feature/Api/V1/Auth/InactiveAccountAccessTest.php`
 
 **Checkpoint**: User Story 3 is independently usable by Super Admin; account state, audit, concurrency, and F01/F03/F05 boundaries are proven.
 
@@ -128,13 +128,13 @@ description: "Dependency-ordered implementation tasks for F07 Admin Management &
 
 ### Tests for User Story 4
 
-- [ ] T036 [P] [US4] Replace placeholder coverage with failing Staff/Manager/Super Admin scope, six-metric definition, zero-state, drill-down equality, bounded-query-count, and GET non-mutation tests in `tests/Feature/Admin/DashboardTest.php`
+- [x] T036 [P] [US4] Replace placeholder coverage with failing Staff/Manager/Super Admin scope, six-metric definition, zero-state, drill-down equality, bounded-query-count, and GET non-mutation tests in `tests/Feature/Admin/DashboardTest.php`
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Build one conditional aggregate from `Application::visibleTo($actor)` using the shared completed and overdue definitions and expose matching drill-down queries in `app/Http/Controllers/Admin/DashboardController.php`
-- [ ] T038 [P] [US4] Replace the placeholder with responsive metric cards, zero values, explanatory status text, and accessible links to the corresponding filtered Application list in `resources/views/admin/dashboard.blade.php`
-- [ ] T039 [US4] Run and resolve dashboard/list consistency tests in `tests/Feature/Admin/DashboardTest.php` and `tests/Feature/Admin/ApplicationSearchTest.php`
+- [x] T037 [US4] Build one conditional aggregate from `Application::visibleTo($actor)` using the shared completed and overdue definitions and expose matching drill-down queries in `app/Http/Controllers/Admin/DashboardController.php`
+- [x] T038 [P] [US4] Replace the placeholder with responsive metric cards, zero values, explanatory status text, and accessible links to the corresponding filtered Application list in `resources/views/admin/dashboard.blade.php`
+- [x] T039 [US4] Run and resolve dashboard/list consistency tests in `tests/Feature/Admin/DashboardTest.php` and `tests/Feature/Admin/ApplicationSearchTest.php`
 
 **Checkpoint**: All four user stories are independently functional; dashboard figures equal their authorized drill-down lists.
 
@@ -144,10 +144,10 @@ description: "Dependency-ordered implementation tasks for F07 Admin Management &
 
 **Purpose**: Prove scale, close regressions, and validate the complete Admin experience without expanding F07 into F05/F08.
 
-- [ ] T040 [P] Create an explicitly grouped PostgreSQL benchmark with at least 10,000 Applications and 10,000 Users covering list/search/filter/page/dashboard/User-list p95 timing and bounded query counts in `tests/Feature/Admin/AdminManagementQueryPerformanceTest.php`
-- [ ] T041 Run the benchmark from `tests/Feature/Admin/AdminManagementQueryPerformanceTest.php`, record timings/query plans and the SC-002/SC-006 decision in `specs/98888-admin-management-search/performance-results.md`, and add only evidence-backed indexes when required in `database/migrations/2026_08_21_120000_optimize_admin_management_queries.php`
-- [ ] T042 Run the full safe-local backend suite plus `composer run lint`, `npm run lint`, and `npm run build`; fix only F07 regressions in `app/`, `resources/views/admin/`, `resources/css/admin.css`, `resources/js/admin.js`, and `tests/Feature/`
-- [ ] T043 Execute every authorization, search/filter, detail, dashboard, User-status, keyboard/dialog, 1089px desktop, and 375px mobile scenario in `specs/98888-admin-management-search/quickstart.md` and update that file only if the executable validation instructions proved inaccurate
+- [x] T040 [P] Create an explicitly grouped PostgreSQL benchmark with at least 10,000 Applications and 10,000 Users covering list/search/filter/page/dashboard/User-list p95 timing and bounded query counts in `tests/Feature/Admin/AdminManagementQueryPerformanceTest.php`
+- [x] T041 Run the benchmark from `tests/Feature/Admin/AdminManagementQueryPerformanceTest.php`, record timings/query plans and the SC-002/SC-006 decision in `specs/98888-admin-management-search/performance-results.md`, and add only evidence-backed indexes when required in `database/migrations/2026_08_21_120000_optimize_admin_management_queries.php`
+- [x] T042 Run the full safe-local backend suite plus `composer run lint`, `npm run lint`, and `npm run build`; fix only F07 regressions in `app/`, `resources/views/admin/`, `resources/css/admin.css`, `resources/js/admin.js`, and `tests/Feature/`
+- [x] T043 Execute every authorization, search/filter, detail, dashboard, User-status, keyboard/dialog, 1089px desktop, and 375px mobile scenario in `specs/98888-admin-management-search/quickstart.md` and update that file only if the executable validation instructions proved inaccurate
 
 ---
 

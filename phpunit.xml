@@ -11,9 +11,13 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
             <exclude>tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php</exclude>
+            <exclude>tests/Feature/Admin/AdminManagementQueryPerformanceTest.php</exclude>
         </testsuite>
         <testsuite name="DepartmentPerformance">
             <file>tests/Feature/Admin/Departments/DepartmentQueryPerformanceTest.php</file>
+        </testsuite>
+        <testsuite name="AdminManagementPerformance">
+            <file>tests/Feature/Admin/AdminManagementQueryPerformanceTest.php</file>
         </testsuite>
     </testsuites>
     <source>
