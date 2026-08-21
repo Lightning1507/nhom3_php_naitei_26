@@ -22,8 +22,32 @@ class ApplicationPolicy
 
     public function view(User $user, Application $application): bool
     {
-        if (in_array($user->role, [UserRole::Staff, UserRole::Manager, UserRole::SuperAdmin], true)) {
+        if (! $user->canAccessProtectedResources() || $this->isTrashed($application)) {
+            return false;
+        }
+
+        if ($user->isSuperAdmin()) {
             return true;
+        }
+
+        if ($user->isManager()) {
+            $departmentId = $application->serviceType?->responsible_department_id;
+
+            return $departmentId !== null
+                && $user->ledDepartments()->whereKey($departmentId)->exists();
+        }
+
+        if ($user->isStaff()) {
+            if ($application->assigned_staff_id === $user->id) {
+                return true;
+            }
+
+            $departmentId = $application->serviceType?->responsible_department_id;
+
+            return $application->assigned_staff_id === null
+                && $application->status === ApplicationStatus::Received
+                && $departmentId !== null
+                && $user->departments()->whereKey($departmentId)->exists();
         }
 
         return $user->id === $application->citizen_id;
@@ -60,6 +84,10 @@ class ApplicationPolicy
     {
         if (! $this->isActiveInternalUser($user) || $this->isTrashed($application)) {
             return false;
+        }
+
+        if ($user->isSuperAdmin()) {
+            return true;
         }
 
         if (! $user->isStaff()) {

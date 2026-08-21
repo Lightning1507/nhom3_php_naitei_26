@@ -122,6 +122,8 @@ class ApplicationController extends Controller
         Application $application,
         AssignApplicationAction $action,
     ): RedirectResponse {
+        $this->authorize('assign', $application);
+
         $action->handle(
             $application,
             User::query()->findOrFail((int) $request->validated('staff_id')),
@@ -136,6 +138,8 @@ class ApplicationController extends Controller
 
     public function claim(Request $request, Application $application, ClaimApplicationAction $action): RedirectResponse
     {
+        $this->authorize('claim', $application);
+
         $action->handle($application, $request->user());
 
         return redirect()
@@ -145,6 +149,8 @@ class ApplicationController extends Controller
 
     public function startProcessing(Request $request, Application $application, StartProcessingAction $action): RedirectResponse
     {
+        $this->authorize('startProcessing', $application);
+
         $action->handle($application, $request->user());
 
         return redirect()
@@ -157,6 +163,8 @@ class ApplicationController extends Controller
         Application $application,
         RequestSupplementAction $action,
     ): RedirectResponse {
+        $this->authorize('requestSupplement', $application);
+
         $action->handle($application, $request->user(), $request->validated('note'));
 
         return redirect()
@@ -166,6 +174,8 @@ class ApplicationController extends Controller
 
     public function resume(Request $request, Application $application, ResumeProcessingAction $action): RedirectResponse
     {
+        $this->authorize('resume', $application);
+
         $action->handle($application, $request->user());
 
         return redirect()
@@ -178,6 +188,8 @@ class ApplicationController extends Controller
         Application $application,
         ApproveApplicationAction $action,
     ): RedirectResponse {
+        $this->authorize('approve', $application);
+
         $action->handle($application, $request->user(), $request->validated('result_note'));
 
         return redirect()
@@ -190,6 +202,8 @@ class ApplicationController extends Controller
         Application $application,
         RejectApplicationAction $action,
     ): RedirectResponse {
+        $this->authorize('reject', $application);
+
         $action->handle($application, $request->user(), $request->validated('rejection_reason'));
 
         return redirect()
@@ -202,6 +216,8 @@ class ApplicationController extends Controller
         Application $application,
         StoreResultDocumentAction $action,
     ): RedirectResponse {
+        $this->authorize('uploadResultDocument', $application);
+
         $action->handle(
             $application,
             $request->user(),
