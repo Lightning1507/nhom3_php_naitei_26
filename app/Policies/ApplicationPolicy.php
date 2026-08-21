@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class ApplicationPolicy
 {
@@ -20,10 +21,15 @@ class ApplicationPolicy
             && $user->canAccessProtectedResources();
     }
 
-    public function view(User $user, Application $application): bool
+    public function view(User $user, Application $application): Response|bool
     {
         if (in_array($user->role, [UserRole::Staff, UserRole::Manager, UserRole::SuperAdmin], true)) {
-            return true;
+            return Application::query()
+                ->visibleTo($user)
+                ->whereKey($application->getKey())
+                ->exists()
+                    ? Response::allow()
+                    : Response::denyAsNotFound();
         }
 
         return $user->id === $application->citizen_id;
